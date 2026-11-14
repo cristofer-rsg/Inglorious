@@ -46,3 +46,34 @@ export function getZonedMonthBounds(monthKey: string, timeZone: string) {
     end: zonedMidnightIso(nextYear, nextMonth, timeZone),
   };
 }
+
+export function parseClashApiTimestamp(value: string): Date | null {
+  const match = value.match(/^(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})(\\d{2})(?:\\.(\\d{1,3}))?Z$/);
+  if (!match) return null;
+
+  const [, year, month, day, hour, minute, second, milliseconds = "0"] = match;
+  const parts = [year, month, day, hour, minute, second].map(Number);
+  const [numericYear, numericMonth, numericDay, numericHour, numericMinute, numericSecond] = parts;
+  const date = new Date(Date.UTC(
+    numericYear,
+    numericMonth - 1,
+    numericDay,
+    numericHour,
+    numericMinute,
+    numericSecond,
+    Number(milliseconds.padEnd(3, "0")),
+  ));
+
+  if (
+    date.getUTCFullYear() !== numericYear
+    || date.getUTCMonth() !== numericMonth - 1
+    || date.getUTCDate() !== numericDay
+    || date.getUTCHours() !== numericHour
+    || date.getUTCMinutes() !== numericMinute
+    || date.getUTCSeconds() !== numericSecond
+  ) {
+    return null;
+  }
+
+  return date;
+}
