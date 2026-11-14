@@ -11,7 +11,7 @@ function shiftDate(date: string, days: number) {
 }
 
 function parseRaidStartTime(value: string): Date {
-  const clashTime = value.match(/^(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})(\\d{2})(?:\\.(\\d{1,3}))?Z$/);
+  const clashTime = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?Z$/);
   if (clashTime) {
     const [, year, month, day, hour, minute, second, milliseconds = "0"] = clashTime;
     const date = new Date(Date.UTC(
