@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { fetchCurrentClanMembers, fetchLatestRaidSeason } from "@/lib/clash-api";
+import { fetchLatestRaidSeason } from "@/lib/clash-api";
+import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { APP_CONFIG } from "@/lib/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -44,10 +45,11 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [season, roster] = await Promise.all([
+    const [season, rosterResult] = await Promise.all([
       fetchLatestRaidSeason(),
-      fetchCurrentClanMembers(),
+      synchronizeCurrentRoster(),
     ]);
+    const roster = rosterResult.members;
 
     const rosterByTag = new Map(roster.map((member) => [member.player_tag, member]));
     const seasonDate = localDate(season.startTime);
