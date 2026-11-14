@@ -1,5 +1,6 @@
 import { getDashboardData } from "@/lib/dashboard";
 import SiteNav from "@/components/site-nav";
+import { APP_CONFIG } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,7 @@ export default async function HomePage() {
   const podiumOrder = [topThree[1], topThree[0], topThree[2]].filter((player) => player !== undefined);
   const formatJoinDate = (value: string) => new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
-    timeZone: "America/Sao_Paulo",
+    timeZone: APP_CONFIG.timeZone,
   }).format(new Date(value));
 
   return (
