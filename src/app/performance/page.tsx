@@ -1,6 +1,7 @@
 import "server-only";
 
 import SiteNav from "@/components/site-nav";
+import { APP_CONFIG } from "@/lib/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ type PerformanceRow = {
 };
 
 function monthKey() {
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit" }).formatToParts(new Date());
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: APP_CONFIG.timeZone, year: "numeric", month: "2-digit" }).formatToParts(new Date());
   return `${parts.find((part) => part.type === "year")?.value}-${parts.find((part) => part.type === "month")?.value}`;
 }
 
