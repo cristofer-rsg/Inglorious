@@ -2,52 +2,34 @@ import "server-only";
 
 import SiteNav from "@/components/site-nav";
 import { APP_CONFIG } from "@/lib/config";
-import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { addActivityIndex } from "@/lib/performance";
+import { getPerformanceData, type PerformanceRow } from "@/lib/ghost-hunt/performance";
 
 export const dynamic = "force-dynamic";
 
 type SearchParams = {
   month?: string;
   q?: string;
-  scope?: string;
-};
-
-type PlayerRow = {
-  id: string;
-  name: string;
-  player_tag: string | null;
-  active: boolean | null;
-  role: string | null;
-};
-
-type PerformanceRow = {
-  player: string | null;
-  player_tag: string | null;
-  war_attacks: number | null;
-  league_attacks: number | null;
-  raid_attacks: number | null;
-  donations: number | null;
-  clan_games_points: number | null;
-  capital_coins: number | null;
-};
-
-type PlayerPerformance = {
-  id: string;
-  player: string;
-  tag: string;
-  active: boolean;
-  role: string | null;
-  wars: number;
-  league: number;
-  raid: number;
-  donations: number;
-  games: number;
-  capital: number;
-  activityIndex: number;
+  event?: string;
+  situation?: string;
+  order?: string;
 };
 
 const numberFormatter = new Intl.NumberFormat("pt-BR");
+const metrics = [
+  { key: "wars", label: "Guerras", unit: "Ataques", points: "warsPoints", percent: "warsPercent", icon: "⚔" },
+  { key: "league", label: "Liga", unit: "Ataques", points: "leaguePoints", percent: "leaguePercent", icon: "🏆" },
+  { key: "raid", label: "Raide", unit: "Ataques", points: "raidPoints", percent: "raidPercent", icon: "🛡" },
+  { key: "donations", label: "Doações", unit: "Tropas", points: "donationsPoints", percent: "donationsPercent", icon: "🤝" },
+  { key: "games", label: "Jogos do Clã", unit: "Pontos", points: "gamesPoints", percent: "gamesPercent", icon: "🎮" },
+  { key: "capital", label: "Capital", unit: "Moedas", points: "capitalPoints", percent: "capitalPercent", icon: "🏰" },
+] as const;
+
+type MetricKey = typeof metrics[number]["key"];
+type EventKey = "war" | "league" | "raid";
+
+function number(value: number) {
+  return numberFormatter.format(value);
+}
 
 function monthKey() {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -55,7 +37,6 @@ function monthKey() {
     year: "numeric",
     month: "2-digit",
   }).formatToParts(new Date());
-
   return `${parts.find((part) => part.type === "year")?.value}-${parts.find((part) => part.type === "month")?.value}`;
 }
 
@@ -68,13 +49,16 @@ function monthLabel(value: string) {
   return label.charAt(0).toLocaleUpperCase("pt-BR") + label.slice(1);
 }
 
-function number(value: number) {
-  return numberFormatter.format(value);
+function eventAttacks(row: PerformanceRow, event: EventKey): number | null {
+  if (event === "war") return row.lastWarAttacks;
+  if (event === "league") return row.lastLeagueAttacks;
+  return row.lastRaidAttacks ?? 0;
 }
 
-function safeCount(value: number | null) {
-  const parsed = Number(value ?? 0);
-  return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+function eventLabel(event: EventKey) {
+  if (event === "war") return "Última Guerra";
+  if (event === "league") return "Última batalha da Liga";
+  return "Última Raide";
 }
 
 export default async function PerformancePage({
@@ -83,108 +67,70 @@ export default async function PerformancePage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
+  const currentMonth = monthKey();
   const requestedMonth = typeof params.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(params.month)
     ? params.month
     : "";
   const search = typeof params.q === "string" ? params.q.trim().slice(0, 80) : "";
-  const activeOnly = params.scope === "active";
-  const currentMonth = monthKey();
+  const event = ["war", "league", "raid"].includes(params.event ?? "") ? params.event as EventKey : "";
+  const allowedSituations = event === "raid" ? ["attacked", "no-attack"] : ["attacked", "no-attack", "no-data"];
+  const situation = event && allowedSituations.includes(params.situation ?? "") ? params.situation ?? "" : "";
+  const order = params.order === "asc" ? "asc" : "desc";
 
-  let rows: PlayerPerformance[] = [];
-  let summaryTotals = { wars: 0, league: 0, raid: 0, donations: 0, games: 0, capital: 0 };
-  let months = [currentMonth];
-  let error = "";
+  const data = await getPerformanceData(requestedMonth || undefined, true);
+  const selectedMonth = data.months.includes(requestedMonth) ? requestedMonth : data.monthKey || currentMonth;
+  const allRows = data.rows;
+  const activeRows = allRows.filter((row) => row.active);
+  const leadershipRows = activeRows.map((row) => ({
+    ...row,
+    roleLabel: row.role ? row.role.toLocaleUpperCase("pt-BR") : "",
+  })).sort((a, b) =>
+    b.totalPoints - a.totalPoints
+    || b.warsPoints - a.warsPoints
+    || b.leaguePoints - a.leaguePoints
+    || b.raidPoints - a.raidPoints
+    || b.capitalPoints - a.capitalPoints
+    || b.donationsPoints - a.donationsPoints
+    || b.gamesPoints - a.gamesPoints
+    || a.player.localeCompare(b.player, "pt-BR"),
+  ).map((row, index) => ({ ...row, position: index + 1 }));
 
-  try {
-    const supabase = createSupabaseAdmin();
-    const [playersResult, monthsResult] = await Promise.all([
-      supabase.from("players")
-        .select("id,name,player_tag,active,role")
-        .order("name", { ascending: true }),
-      supabase.from("player_monthly_stats")
-        .select("month_key")
-        .order("month_key", { ascending: false })
-        .limit(6000),
-    ]);
+  const eventRows = event
+    ? [...leadershipRows].sort((a, b) => {
+      const left = eventAttacks(a, event);
+      const right = eventAttacks(b, event);
+      if (left === null) return right === null ? a.player.localeCompare(b.player, "pt-BR") : 1;
+      if (right === null) return -1;
+      return (order === "asc" ? left - right : right - left) || a.player.localeCompare(b.player, "pt-BR");
+    })
+    : leadershipRows;
 
-    if (playersResult.error) throw new Error(playersResult.error.message);
-    if (monthsResult.error) throw new Error(monthsResult.error.message);
+  const filteredBySituation = eventRows.filter((row) => {
+    if (!event || !situation) return true;
+    const attacks = eventAttacks(row, event);
+    if (situation === "attacked") return attacks !== null && attacks > 0;
+    if (situation === "no-attack") return attacks === 0;
+    return attacks === null;
+  });
+  const normalizedSearch = search.toLocaleLowerCase("pt-BR");
+  const visibleRows = filteredBySituation.filter((row) =>
+    !normalizedSearch
+    || row.player.toLocaleLowerCase("pt-BR").includes(normalizedSearch)
+    || row.tag.toLocaleLowerCase("pt-BR").includes(normalizedSearch),
+  );
 
-    months = [...new Set([
-      currentMonth,
-      ...(monthsResult.data ?? [])
-        .map((row) => row.month_key)
-        .filter((value): value is string => typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(value)),
-    ])].sort((a, b) => b.localeCompare(a));
-
-    const selectedMonth = months.includes(requestedMonth) ? requestedMonth : currentMonth;
-    const [statsResult] = await Promise.all([
-      supabase.from("player_monthly_performance")
-        .select("player,player_tag,war_attacks,league_attacks,raid_attacks,donations,clan_games_points,capital_coins")
-        .eq("month_key", selectedMonth),
-    ]);
-
-    if (statsResult.error) throw new Error(statsResult.error.message);
-
-    const statsByTag = new Map<string, PerformanceRow>();
-    for (const stat of (statsResult.data ?? []) as PerformanceRow[]) {
-      const tag = (stat.player_tag ?? "").trim().toUpperCase();
-      if (tag) statsByTag.set(tag, stat);
-    }
-
-    const players = (playersResult.data ?? []) as PlayerRow[];
-    const baseRows = players
-      .filter((player) => !activeOnly || player.active !== false)
-      .map((player) => {
-        const tag = (player.player_tag ?? "").trim().toUpperCase();
-        const stat = tag ? statsByTag.get(tag) : undefined;
-        return {
-          id: player.id,
-          player: player.name,
-          tag: player.player_tag ?? "",
-          active: player.active !== false,
-          role: player.role,
-          wars: safeCount(stat?.war_attacks ?? 0),
-          league: safeCount(stat?.league_attacks ?? 0),
-          raid: safeCount(stat?.raid_attacks ?? 0),
-          donations: safeCount(stat?.donations ?? 0),
-          games: safeCount(stat?.clan_games_points ?? 0),
-          capital: safeCount(stat?.capital_coins ?? 0),
-          activityIndex: 0,
-        };
-      });
-
-    const rankedRows = addActivityIndex(baseRows);
-
-    summaryTotals = rankedRows.reduce((acc, row) => ({
-      wars: acc.wars + row.wars,
-      league: acc.league + row.league,
-      raid: acc.raid + row.raid,
-      donations: acc.donations + row.donations,
-      games: acc.games + row.games,
-      capital: acc.capital + row.capital,
-    }), summaryTotals);
-
-    rows = rankedRows
-      .filter((row) => !search
-        || row.player.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"))
-        || row.tag.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR")))
-      .sort((a, b) =>
-        b.activityIndex - a.activityIndex
-        || b.wars - a.wars
-        || b.league - a.league
-        || b.raid - a.raid
-        || b.donations - a.donations
-        || b.games - a.games
-        || b.capital - a.capital
-        || a.player.localeCompare(b.player, "pt-BR"),
-      );
-  } catch (cause) {
-    error = cause instanceof Error ? cause.message : "Não foi possível carregar o desempenho.";
-  }
-
-  const selectedMonth = months.includes(requestedMonth) ? requestedMonth : currentMonth;
-  const totals = summaryTotals;
+  const totals = metrics.map((metric) => ({
+    ...metric,
+    value: activeRows.reduce((sum, row) => sum + row[metric.key as MetricKey], 0),
+  }));
+  const eventCounts = event ? {
+    attacked: eventRows.filter((row) => {
+      const attacks = eventAttacks(row, event);
+      return attacks !== null && attacks > 0;
+    }).length,
+    noAttack: eventRows.filter((row) => eventAttacks(row, event) === 0).length,
+    noData: eventRows.filter((row) => eventAttacks(row, event) === null).length,
+  } : null;
 
   return (
     <main className="app-shell">
@@ -197,50 +143,110 @@ export default async function PerformancePage({
         <section className="admin-content performance-content">
           <span className="auth-kicker">CONSULTA PÚBLICA • INDICADORES DO CLÃ</span>
           <h1>Desempenho <em>mensal</em></h1>
-          <p>Consulte os indicadores de participação, os totais por atividade e a classificação de desempenho dos jogadores do Inglorious.</p>
-          <form className="history-filter performance-filters" action="/performance" method="get">
-            <label><span>Mês de referência</span><select name="month" defaultValue={selectedMonth}>{months.map((month) => <option value={month} key={month}>{monthLabel(month)}</option>)}</select></label>
-            <label><span>Buscar jogador</span><input name="q" type="search" defaultValue={search} placeholder="Nome ou tag do jogador" /></label>
-            <label><span>Exibição</span><select name="scope" defaultValue={activeOnly ? "active" : "all"}><option value="all">Todos os jogadores</option><option value="active">Somente membros ativos</option></select></label>
-            <button type="submit">Aplicar filtros</button>
+          <p>Consulte a participação, os indicadores por atividade, as avaliações dos eventos recentes e as penalidades registradas. A classificação desta aba usa a pontuação oficial e seus critérios de desempate, sem alterar a aba Ranking e Pontos.</p>
+
+          <form className="history-filter performance-filter" action="/performance" method="get">
+            <label htmlFor="month">Mês de referência</label>
+            <select id="month" name="month" defaultValue={selectedMonth}>
+              {data.months.map((month) => <option value={month} key={month}>{monthLabel(month)}</option>)}
+            </select>
+            <label htmlFor="q">Buscar jogador</label>
+            <input id="q" name="q" type="search" placeholder="Nome ou tag" defaultValue={search} />
+            <label htmlFor="event">Evento recente</label>
+            <select id="event" name="event" defaultValue={event}>
+              <option value="">Classificação geral</option>
+              <option value="war">Última Guerra</option>
+              <option value="league">Última batalha da Liga</option>
+              <option value="raid">Última Raide</option>
+            </select>
+            <label htmlFor="situation">Situação</label>
+            <select id="situation" name="situation" defaultValue={situation} disabled={!event}>
+              <option value="">Todas as situações</option>
+              <option value="attacked">Com ataques</option>
+              <option value="no-attack">Sem ataques</option>
+              {event !== "raid" && <option value="no-data">Não Participou</option>}
+            </select>
+            <label htmlFor="order">Ordenação</label>
+            <select id="order" name="order" defaultValue={order}>
+              <option value="desc">Maior para menor</option>
+              <option value="asc">Menor para maior</option>
+            </select>
+            <button type="submit">Consultar</button>
           </form>
-          {error ? <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{error}</span></div> : <>
-            <div className="performance-period">{monthLabel(selectedMonth)}</div>
-            <div className="history-section-title"><h2>Indicadores do clã</h2><span>{number(rows.length)} JOGADORES</span></div>
-            <div className="performance-totals">
-              <article><small>GUERRAS · ATAQUES</small><b>{number(totals.wars)}</b><span>Total no mês</span></article>
-              <article><small>LIGA · ATAQUES</small><b>{number(totals.league)}</b><span>Total no mês</span></article>
-              <article><small>RAIDE · ATAQUES</small><b>{number(totals.raid)}</b><span>Total no mês</span></article>
-              <article><small>DOAÇÕES · TROPAS</small><b>{number(totals.donations)}</b><span>Total no mês</span></article>
-              <article><small>JOGOS · PONTOS</small><b>{number(totals.games)}</b><span>Total no mês</span></article>
-              <article><small>CAPITAL · MOEDAS</small><b>{number(totals.capital)}</b><span>Total no mês</span></article>
-            </div>
-            <div className="history-section-title"><h2>Desempenho dos jogadores</h2><span>{number(rows.length)} JOGADORES</span></div>
-            <div className="performance-list">
-              {rows.map((row, index) => <article className="performance-card" key={row.id}>
-                <div className="performance-card-head">
-                  <b><span className="performance-position-badge">{index + 1}</span><span className="performance-player-name">{row.player}</span>{row.role && <small className="performance-leader-role">{row.role.toLocaleUpperCase("pt-BR")}</small>}</b>
-                  <strong>{row.activityIndex.toFixed(1).replace(".", ",")}<small> / 600</small></strong>
-                </div>
-                <div className="performance-progress" role="img" aria-label={`Índice de atividade: ${row.activityIndex} de 600`}><span style={{ width: `${Math.min(row.activityIndex / 6, 100)}%` }} /></div>
-                <div className="performance-player-stats">
-                  {([
-                    ["⚔", "Guerras", row.wars, "Ataques"],
-                    ["🏆", "Liga", row.league, "Ataques"],
-                    ["🛡", "Raide", row.raid, "Ataques"],
-                    ["🤝", "Doações", row.donations, "Tropas"],
-                    ["🎮", "Jogos do Clã", row.games, "Pontos"],
-                    ["🏰", "Capital", row.capital, "Moedas"],
-                  ] as const).map(([icon, label, value, unit]) => <div className="performance-player-stat-row" key={label}>
-                    <span className="performance-player-stat-label"><i aria-hidden="true">{icon}</i>{label}</span>
-                    <strong className="performance-player-stat-tile"><b>{number(value)}</b><small>{unit}</small></strong>
-                  </div>)}
-                </div>
-                <small className={row.active ? "performance-status active" : "performance-status inactive"}>{row.active ? "ATIVO · NO CLÃ" : "INATIVO · FORA DO CLÃ"}</small>
-              </article>)}
-              {rows.length === 0 && <div className="empty-state"><b>Nenhum jogador encontrado</b><p>Não há jogadores correspondentes aos filtros selecionados.</p></div>}
-            </div>
-          </>}
+
+          {!data.connected ? (
+            <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{data.error ?? "Não foi possível carregar o desempenho."}</span></div>
+          ) : (
+            <>
+              <div className="performance-period">{monthLabel(selectedMonth)}</div>
+              {!event && (
+                <>
+                  <div className="history-section-title"><h2>Indicadores do clã</h2><span>{number(activeRows.length)} JOGADORES ATIVOS</span></div>
+                  <div className="performance-totals">
+                    {totals.map((metric) => <article key={metric.key}><small>{metric.label.toLocaleUpperCase("pt-BR")} · {metric.unit.toLocaleUpperCase("pt-BR")}</small><b>{number(metric.value)}</b><span>Total no mês</span></article>)}
+                  </div>
+                </>
+              )}
+
+              {event && eventCounts && (
+                <>
+                  <div className="history-section-title"><h2>{eventLabel(event)}</h2><span>EVENTO RECENTE</span></div>
+                  <div className={event === "raid" ? "performance-activity-summary performance-activity-summary-raid" : "performance-activity-summary"}>
+                    <article className="activity-summary-attacked"><small>Com ataques</small><b>{number(eventCounts.attacked)}</b><span>Jogadores</span></article>
+                    <article className="activity-summary-no-attack"><small>Sem ataques</small><b>{number(eventCounts.noAttack)}</b><span>Registro confirmado</span></article>
+                    {event !== "raid" && <article className="activity-summary-no-data"><small>Não Participou</small><b>{number(eventCounts.noData)}</b><span>Sem registro de participação</span></article>}
+                  </div>
+                </>
+              )}
+
+              <div className="history-section-title"><h2>{event ? "Avaliação dos jogadores" : "Desempenho dos jogadores"}</h2><span>{number(visibleRows.length)} JOGADORES</span></div>
+              <p className="performance-result-count">{number(visibleRows.length)} de {number(filteredBySituation.length)} jogador(es){event ? ` • ${eventLabel(event)}` : " • Classificação por pontuação oficial"}</p>
+              <div className="performance-list">
+                {visibleRows.map((row) => {
+                  const attacks = event ? eventAttacks(row, event) : null;
+                  return (
+                    <article className={event ? "performance-card performance-card-event" : "performance-card"} key={row.tag || row.player}>
+                      <div className="performance-card-head">
+                        <b>
+                          <span className="performance-position-badge">{row.position}</span>
+                          <span className="performance-player-name">{row.player}</span>
+                          {row.roleLabel && <small className="performance-leader-role">{row.roleLabel}</small>}
+                        </b>
+                        {event ? (
+                          <span className={attacks === null ? "performance-event-inline no-data" : attacks === 0 ? "performance-event-inline no-attack" : "performance-event-inline attacked"}>
+                            {attacks === null ? "Não Participou" : `${number(attacks)} ${attacks === 1 ? "ataque" : "ataques"}`}
+                          </span>
+                        ) : <strong>{number(row.totalPoints)}<small> PTS</small></strong>}
+                      </div>
+                      {!event && (
+                        <>
+                          <div className="performance-progress" role="img" aria-label={`Pontuação: ${row.totalPoints} pontos`}>
+                            <span style={{ width: `${Math.min(100, Math.max(0, row.index))}%` }} />
+                          </div>
+                          <div className="performance-player-stats">
+                            {metrics.map((metric) => {
+                              const value = row[metric.key as MetricKey];
+                              const points = row[metric.points as keyof PerformanceRow] as number;
+                              const percent = row[metric.percent as keyof PerformanceRow] as number;
+                              return (
+                                <div className="performance-player-stat-row" key={metric.key}>
+                                  <span className="performance-player-stat-label"><i aria-hidden="true">{metric.icon}</i>{metric.label}</span>
+                                  <strong className="performance-player-stat-tile"><b>{number(value)}</b><small>{metric.unit} · {number(points)} pts · {number(percent)}%</small></strong>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {row.penalties > 0 && <small className="performance-status penalty">Penalidades: −{number(row.penalties)} pontos</small>}
+                          <small className={row.active ? "performance-status active" : "performance-status inactive"}>{row.active ? "ATIVO · NO CLÃ" : "INATIVO · FORA DO CLÃ"}</small>
+                        </>
+                      )}
+                    </article>
+                  );
+                })}
+                {visibleRows.length === 0 && <div className="empty-state"><b>Nenhum jogador encontrado</b><p>Não há jogadores correspondentes aos filtros selecionados.</p></div>}
+              </div>
+            </>
+          )}
           <a className="back-link" href="/ranking">← Ver ranking oficial</a>
         </section>
         <footer className="footer"><span>INGLORIOUS <b>•</b> DESEMPENHO</span><span>{monthLabel(selectedMonth)}</span></footer>
