@@ -88,6 +88,7 @@ async function fetchMonthEvents(start: string, end: string): Promise<EventRow[]>
       .gte("created_at", start)
       .lt("created_at", end)
       .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
       .range(offset, offset + pageSize - 1);
 
     if (error) throw new Error(`Falha ao consultar eventos: ${error.message}`);
