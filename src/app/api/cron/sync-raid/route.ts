@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { isCronAuthorized } from "@/lib/auth/cron";
+
 import { fetchLatestRaidSeason } from "@/lib/clash-api";
 import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { APP_CONFIG } from "@/lib/config";
@@ -9,11 +11,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-function isAuthorized(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  return Boolean(secret)
-    && request.headers.get("authorization") === `Bearer ${secret}`;
-}
+
 
 function localDate(value: string) {
   const date = new Date(value);
@@ -40,7 +38,7 @@ function getMonth(date: string) {
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Não autorizado." }, { status: 401 });
   }
 
