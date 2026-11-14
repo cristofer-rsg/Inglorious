@@ -18,6 +18,7 @@ type PlayerRow = {
   name: string;
   player_tag: string | null;
   active: boolean | null;
+  role: string | null;
 };
 
 type PerformanceRow = {
@@ -36,6 +37,7 @@ type PlayerPerformance = {
   player: string;
   tag: string;
   active: boolean;
+  role: string | null;
   wars: number;
   league: number;
   raid: number;
@@ -97,7 +99,7 @@ export default async function PerformancePage({
     const supabase = createSupabaseAdmin();
     const [playersResult, monthsResult] = await Promise.all([
       supabase.from("players")
-        .select("id,name,player_tag,active")
+        .select("id,name,player_tag,active,role")
         .order("name", { ascending: true }),
       supabase.from("player_monthly_stats")
         .select("month_key")
@@ -141,6 +143,7 @@ export default async function PerformancePage({
           player: player.name,
           tag: player.player_tag ?? "",
           active: player.active !== false,
+          role: player.role,
           wars: safeCount(stat?.war_attacks ?? 0),
           league: safeCount(stat?.league_attacks ?? 0),
           raid: safeCount(stat?.raid_attacks ?? 0),
@@ -216,7 +219,7 @@ export default async function PerformancePage({
             <div className="performance-list">
               {rows.map((row, index) => <article className="performance-card" key={row.id}>
                 <div className="performance-card-head">
-                  <b><span className="performance-position-badge">{index + 1}</span><span className="performance-player-name">{row.player}</span></b>
+                  <b><span className="performance-position-badge">{index + 1}</span><span className="performance-player-name">{row.player}</span>{row.role && <small className="performance-leader-role">{row.role.toLocaleUpperCase("pt-BR")}</small>}</b>
                   <strong>{row.activityIndex.toFixed(1).replace(".", ",")}<small> / 600</small></strong>
                 </div>
                 <div className="performance-progress" role="img" aria-label={`Índice de atividade: ${row.activityIndex} de 600`}><span style={{ width: `${Math.min(row.activityIndex / 6, 100)}%` }} /></div>
