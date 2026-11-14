@@ -12,6 +12,14 @@ export const metadata: Metadata = {
 };
 
 type Props = { params: Promise<{ tag: string }> };
+function roleLabel(role: string) {
+  const normalized = role.trim().toLocaleLowerCase("pt-BR").replaceAll("-", "_").replaceAll(" ", "_");
+  if (normalized === "leader") return "LÍDER";
+  if (normalized === "co_leader" || normalized === "coleader") return "CO-LÍDER";
+  if (normalized === "member") return "MEMBRO";
+  return role.toLocaleUpperCase("pt-BR");
+}
+
 function fmt(value: number) { return new Intl.NumberFormat("pt-BR").format(value); }
 function date(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -56,7 +64,7 @@ export default async function PlayerProfilePage({ params }: Props) {
               <h1>{profile.name}</h1>
               <p>{profile.tag}</p>
               <span className={profile.eligible ? "player-profile-status eligible" : "player-profile-status"}>{profile.eligible ? "ELEGÍVEL" : "NÃO ELEGÍVEL"}</span>
-              {profile.role && <small className="performance-leader-role">{profile.role.toLocaleUpperCase("pt-BR")}</small>}
+              {profile.role && <small className="performance-leader-role">{roleLabel(profile.role)}</small>}
             </div>
           </div>
           <article className="player-profile-total"><small>PONTUAÇÃO DO MÊS</small><strong>{fmt(profile.total)} <i>pts</i></strong><span>{profile.monthLabel}</span></article>
