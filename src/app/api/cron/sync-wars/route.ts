@@ -69,7 +69,16 @@ export async function GET(request: Request) {
     const warEnd = endedAt?.getTime();
     const playersByTag = new Map<string, (typeof roster)[number]>(roster.map((player): [string, (typeof roster)[number]] => [player.player_tag, player]));
     const enemyPositions = new Map<string, number>(war.opponent.members.map((member): [string, number] => [member.tag, member.mapPosition]));
-    const events = [];
+    const events: Array<{
+      source_key: string;
+      war_key: string;
+      player_tag: string;
+      player: string;
+      category: string;
+      activity: string;
+      points: number;
+      battle_time: string | null;
+    }> = [];
     const statSources = [];
     const missingPlayers = [];
 
