@@ -70,7 +70,7 @@ npm test
 npm run build
 ```
 
-A integração contínua executa as três verificações em cada atualização da branch de desenvolvimento. Os testes automatizados cobrem regras de elegibilidade, cálculo de pontuação, proteção contra origem cruzada e calendário do Raide, incluindo a virada de mês.
+A integração contínua executa as três verificações em cada atualização da branch de desenvolvimento. Os testes automatizados cobrem regras de elegibilidade, cálculo de pontuação, proteção contra origem cruzada, calendário do Raide, limites de concorrência das consultas e períodos mensais com fuso horário e horário de verão.
 
 As rotinas de doações, Jogos do Clã, Capital, Raide, Guerras e Liga usam procedimentos transacionais no Supabase para impedir gravações parciais. Os procedimentos de sincronização possuem execução restrita ao papel `service_role`.
 
