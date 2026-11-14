@@ -28,7 +28,8 @@ export async function GET(request: Request) {
     const rosterByTag = new Map<string, (typeof roster)[number]>(roster.map((member): [string, (typeof roster)[number]] => [member.player_tag, member]));
     const raidWeekend = getRaidWeekend(season.startTime, APP_CONFIG.timeZone);
     const { weekendStart, closingDate, monthKey } = raidWeekend;
-    const seasonDate = season.startTime;
+    const [raidYear, raidMonth, raidDay] = weekendStart.split("-");
+    const weekendLabel = `${raidDay}/${raidMonth}/${raidYear}`;
     const statsAnchor = weekendStart;
 
     const statsSources = [];
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
           weekend_key: weekendStart,
           month_key: monthKey,
           attacks: member.attacks,
-          weekend_label: new Date(seasonDate).toLocaleDateString("pt-BR", { timeZone: APP_CONFIG.timeZone }),
+          weekend_label: weekendLabel,
         });
       }
     }
