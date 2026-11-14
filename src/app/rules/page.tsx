@@ -6,7 +6,7 @@ export default function RulesPage() {
     { title: "Liga dos Clãs", target: "140 pontos de referência", detail: "Cada ataque concluído soma participação, estrelas e bônus de espelho. A conclusão dos sete ataques no mês concede bônus único de 10 pontos." },
     { title: "Raide de Fim de Semana", target: "32 pontos de referência", detail: "O bônus automático é de 5 pontos quando o jogador realiza pelo menos cinco ataques no fim de semana, respeitando o limite mensal de 20 pontos." },
     { title: "Doações", target: "10.000 tropas", detail: "A pontuação acompanha o total mensal acumulado de tropas doadas, tratando corretamente a reinicialização sazonal do contador da API." },
-    { title: "Jogos do Clã", target: "10.000 pontos", detail: "A pontuação automática considera as faixas de 4.000, 6.000, 8.000 e 10.000 pontos, mantendo também o total real obtido pelo jogador." },
+    { title: "Jogos do Clã", target: "10.000 pontos", detail: "A pontuação acompanha proporcionalmente o total mensal obtido, até o limite de 10.000 pontos, que corresponde à pontuação máxima da categoria." },
     { title: "Capital do Clã", target: "250.000 moedas", detail: "A contagem começa após a primeira leitura de referência da API; contribuições anteriores à linha de base não são lançadas retroativamente." },
   ];
 
