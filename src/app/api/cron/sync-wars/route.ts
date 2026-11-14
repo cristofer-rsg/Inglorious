@@ -175,35 +175,30 @@ export async function GET(request: Request) {
     }
 
     const supabase = createSupabaseAdmin();
-    let performanceSync: unknown = null;
-    if (statSources.length > 0) {
-      const { data, error } = await supabase.rpc("sync_player_monthly_stat_sources", {
-        p_sources: statSources,
-      });
-      if (error) throw new Error(`Falha ao atualizar desempenho das guerras: ${error.message}`);
-      performanceSync = Array.isArray(data) ? data[0] : data;
+    if (war.state === "warEnded" && !endedAt) {
+      throw new Error("A API não informou o encerramento da guerra.");
     }
 
-    let completionSync: unknown = null;
-    if (war.state === "warEnded") {
-      if (!endedAt) throw new Error("A API não informou o encerramento da guerra.");
-      const { data, error } = await supabase.rpc("record_clan_war_completion", {
+    const { data: atomicResult, error: atomicError } = await supabase.rpc(
+      "sync_inglorious_wars_atomic",
+      {
+        p_sources: statSources,
+        p_events: events,
         p_war_key: warKey,
         p_started_at: startedAt.toISOString(),
-        p_ended_at: endedAt.toISOString(),
-      });
-      if (error) throw new Error(`Falha ao registrar encerramento da guerra: ${error.message}`);
-      completionSync = Array.isArray(data) ? data[0] : data;
+        p_ended_at: endedAt?.toISOString() ?? null,
+        p_record_completion: war.state === "warEnded",
+      },
+    );
+    if (atomicError) {
+      throw new Error(`Falha na sincronização transacional das guerras: ${atomicError.message}`);
     }
 
-    let scoreSync: unknown = { inserted: 0, skipped: 0 };
-    if (events.length > 0) {
-      const { data, error } = await supabase.rpc("record_clash_war_events", {
-        p_events: events,
-      });
-      if (error) throw new Error(`Falha ao registrar pontuação da guerra: ${error.message}`);
-      scoreSync = Array.isArray(data) ? data[0] : data;
-    }
+    const result = Array.isArray(atomicResult) ? atomicResult[0] : atomicResult;
+    const performanceSync = result?.performance_sync ?? null;
+    const completionSync = result?.completion_sync ?? null;
+    const scoreSync = result?.score_sync ?? { inserted: 0 };
+
 
     return NextResponse.json({
       success: true,
