@@ -224,11 +224,11 @@ export default async function PerformancePage({
                           <span className={attacks === null ? "performance-event-inline no-data" : attacks === 0 ? "performance-event-inline no-attack" : "performance-event-inline attacked"}>
                             {attacks === null ? "Não Participou" : `${number(attacks)} ${attacks === 1 ? "ataque" : "ataques"}`}
                           </span>
-                        ) : <strong>{number(row.totalPoints)}<small> PTS</small></strong>}
+                        ) : <strong>{number(row.index)}<small>%</small></strong>}
                       </div>
                       {!event && (
                         <>
-                          <div className="performance-progress" role="img" aria-label={`Pontuação: ${row.totalPoints} pontos`}>
+                          <div className="performance-progress" role="img" aria-label={`Desempenho geral: ${row.index}%`}>
                             <span style={{ width: `${Math.min(100, Math.max(0, row.index))}%` }} />
                           </div>
                           <div className="performance-player-stats">
