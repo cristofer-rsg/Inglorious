@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getZonedMonthBounds, parseClashApiTimestamp } from "./time";
+import { getClashSeasonMonth, getZonedMonthBounds, parseClashApiTimestamp } from "./time";
 
 describe("getZonedMonthBounds", () => {
   it("uses the configured São Paulo offset for month boundaries", () => {
@@ -21,6 +21,24 @@ describe("getZonedMonthBounds", () => {
     expect(() => getZonedMonthBounds("2026-13", "America/Sao_Paulo"))
       .toThrow("Mês inválido para cálculo do período.");
   });
+});
+
+describe("getClashSeasonMonth", () => {
+  it.each([
+    ["2026-11", "2026-11"],
+    ["202611", "2026-11"],
+    ["2026-01", "2026-01"],
+    ["202612", "2026-12"],
+  ])("normalizes season %s to %s", (season, expected) => {
+    expect(getClashSeasonMonth(season)).toBe(expected);
+  });
+
+  it.each([undefined, "", "2026-13", "2026-1", "invalid"])(
+    "rejects invalid season %s",
+    (season) => {
+      expect(getClashSeasonMonth(season)).toBeNull();
+    },
+  );
 });
 
 describe("parseClashApiTimestamp", () => {
