@@ -91,7 +91,7 @@ export default async function HomePage() {
           <div className="gh-v2-section-head"><div><small>DISPUTA DO MÊS</small><h2>Ranking em destaque</h2></div><a href="/ranking">VER TUDO ↗</a></div>
           <div className="gh-v2-podium">
             {podiumOrder.length ? podiumOrder.map((player) => (
-              <a className={`gh-v2-podium-card rank-${player.position}`} href="/ranking" key={player.id}>
+              <a className={`gh-v2-podium-card rank-${player.position}`} href={player.tag ? `/player/${encodeURIComponent(player.tag)}` : "/ranking"} key={player.id}>
                 <span className="gh-v2-medal">{player.position === 1 ? "👑" : player.position === 2 ? "🥈" : "🥉"}</span>
                 <span className="gh-v2-player-avatar">{player.player.slice(0,1).toUpperCase()}</span>
                 <b>{player.player}</b>{player.role && <small className="performance-leader-role">{player.role.toLocaleUpperCase("pt-BR")}</small>}<strong>{number(player.total)} <small>PTS</small></strong><span className="gh-v2-rank-label">{player.position}º LUGAR</span>
