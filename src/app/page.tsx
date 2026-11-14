@@ -9,7 +9,7 @@ function formatNumber(value: number) {
 export default async function HomePage() {
   const data = await getDashboardData();
   const topThree = data.ranking.slice(0, 3);
-  const podiumOrder = [topThree[1], topThree[0], topThree[2]].filter(Boolean);
+  const podiumOrder = [topThree[1], topThree[0], topThree[2]].filter((player) => player !== undefined);
 
   return (
     <main className="app-shell">
