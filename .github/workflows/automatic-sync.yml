@@ -91,6 +91,7 @@ jobs:
           STATUS="$(curl --silent --show-error --output /tmp/clash-proxy-response.json --write-out '%{http_code}' \
             --max-time 30 \
             -H "Authorization: Bearer ${CLASH_OF_CLANS_API_TOKEN}" \
+            -H "auth: ${CLASH_OF_CLANS_API_TOKEN}" \
             -H "Accept: application/json" \
             "https://cocproxy.royaleapi.dev/v1/clans/%232RVQ9YGRY")"
           printf 'HTTP do proxy Clash: %s\n' "$STATUS"
