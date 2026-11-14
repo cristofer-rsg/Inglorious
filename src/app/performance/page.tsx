@@ -36,7 +36,8 @@ export default async function PerformancePage() {
     const result = await supabase.from("player_monthly_performance")
       .select("player,player_tag,war_attacks,league_attacks,raid_attacks,donations,clan_games_points,capital_coins")
       .eq("month_key", currentMonth)
-      .order("player", { ascending: true });
+      .order("player", { ascending: true })
+      .order("player_tag", { ascending: true });
     if (result.error) throw new Error(result.error.message);
     rows = (result.data ?? []) as PerformanceRow[];
   } catch (cause) {
