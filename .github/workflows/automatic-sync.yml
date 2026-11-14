@@ -60,18 +60,29 @@ jobs:
       - name: Compilar aplicação para execução no runner
         run: npm run build
 
-      - name: Diagnosticar formato da chave Clash (sem revelar o segredo)
+      - name: Diagnosticar formato e validade da chave Clash (sem revelar o segredo)
         shell: bash
         run: |
           set -euo pipefail
-          TOKEN="${CLASH_OF_CLANS_API_TOKEN:-}"
-          NORMALIZED="$(printf '%s' "$TOKEN" | tr -d '[:space:]')"
-          printf 'Token presente: %s\\n' "$([[ -n "$TOKEN" ]] && echo sim || echo nao)"
-          printf 'Comprimento original: %s\\n' "${#TOKEN}"
-          printf 'Comprimento sem espaços: %s\\n' "${#NORMALIZED}"
-          printf 'Prefixo JWT esperado (eyJ): %s\\n' "$( [[ "$NORMALIZED" == eyJ* ]] && echo sim || echo nao )"
-          printf 'Quantidade de separadores de token: %s\\n' "$(printf '%s' "$NORMALIZED" | tr -cd '.' | wc -c)"
-          printf 'Caracteres fora do conjunto JWT: %s\\n' "$(printf '%s' "$NORMALIZED" | LC_ALL=C tr -d 'A-Za-z0-9._-' | wc -c)"
+          node <<'NODE'
+          const token = (process.env.CLASH_OF_CLANS_API_TOKEN ?? "").replace(/\\s+/g, "");
+          const parts = token.split(".");
+          let payload = {};
+          try {
+            if (parts.length !== 3) throw new Error("not-jwt");
+            payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+          } catch {
+            console.log("JWT decodificável: não");
+            process.exit(0);
+          }
+          const exp = typeof payload.exp === "number" ? payload.exp : null;
+          console.log("JWT decodificável: sim");
+          console.log("Claim exp presente: " + (exp !== null ? "sim" : "não"));
+          console.log("Token expirado: " + (exp !== null && exp <= Math.floor(Date.now() / 1000) ? "sim" : "não"));
+          if (exp !== null) console.log("Expiração UTC: " + new Date(exp * 1000).toISOString());
+          console.log("Claim iss presente: " + (typeof payload.iss === "string" ? "sim" : "não"));
+          console.log("Claim sub presente: " + (typeof payload.sub === "string" ? "sim" : "não"));
+          NODE
 
       - name: Testar autenticação diretamente no proxy Clash
         shell: bash
