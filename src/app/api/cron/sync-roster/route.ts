@@ -8,8 +8,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-
-
 export async function GET(request: Request) {
   if (!isCronAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Não autorizado." }, { status: 401 });
