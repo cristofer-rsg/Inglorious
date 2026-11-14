@@ -21,6 +21,12 @@ export type ClashDonationProfile = {
   donations: number;
 };
 
+export type ClashGamesProfile = {
+  tag: string;
+  name: string;
+  achievementValue: number;
+};
+
 type ClashApiMember = {
   name?: unknown;
   tag?: unknown;
@@ -79,6 +85,34 @@ export async function fetchCurrentClanMembers(): Promise<ClashClanMember[]> {
 
     return { name: member.name.trim(), player_tag: playerTag };
   });
+}
+
+export async function fetchPlayerGamesProfile(playerTag: string): Promise<ClashGamesProfile> {
+  const normalizedTag = playerTag.trim().toUpperCase();
+  if (!/^#[A-Z0-9]{3,15}$/.test(normalizedTag)) {
+    throw new Error(`Tag de jogador inválida: ${playerTag}`);
+  }
+
+  const profile = await apiGet<{
+    tag?: unknown;
+    name?: unknown;
+    achievements?: Array<{ name?: unknown; value?: unknown }>;
+  }>(`/players/${encodeURIComponent(normalizedTag)}`);
+
+  const returnedTag = typeof profile.tag === "string" ? profile.tag.trim().toUpperCase() : "";
+  const name = typeof profile.name === "string" ? profile.name.trim() : "";
+  const achievement = profile.achievements?.find(
+    (item) => typeof item.name === "string"
+      && item.name.trim().toLocaleLowerCase("en-US") === "games champion",
+  );
+  const value = achievement?.value;
+
+  if (returnedTag !== normalizedTag || !name
+    || typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`Perfil ou conquista Games Champion inválida para ${normalizedTag}.`);
+  }
+
+  return { tag: returnedTag, name, achievementValue: value };
 }
 
 export async function fetchPlayerDonationProfile(playerTag: string): Promise<ClashDonationProfile> {
