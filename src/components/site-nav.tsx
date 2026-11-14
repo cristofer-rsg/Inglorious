@@ -5,8 +5,8 @@ const links = [
   { href: "/ranking", label: "Ranking", icon: "♛" },
   { href: "/performance", label: "Desempenho", icon: "◈" },
   { href: "/history", label: "Histórico", icon: "▤" },
-  { href: "/clan-time", label: "Tempo de Clã", icon: "◷" },
   { href: "/rules", label: "Regras", icon: "⚖" },
+  { href: "/clan-time", label: "Tempo de Clã", icon: "◷" },
   { href: "/admin", label: "Gerenciar aplicativo", icon: "⚙" },
 ];
 
