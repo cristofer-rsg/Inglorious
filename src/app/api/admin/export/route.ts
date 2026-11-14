@@ -47,10 +47,12 @@ export async function GET() {
       if (page.length < pageSize) break;
     }
 
+    const automaticRows = rows.filter((row) => !row.activity.startsWith("MANUAL:")
+      && !row.activity.startsWith("TROPAS_DOADAS: manual -"));
     const header = ["ID", "Jogador", "TAG", "Categoria", "Atividade", "Pontos ou tropas", "Criado em", "Horário da batalha"];
     const lines = [
       header.map(csvCell).join(";"),
-      ...rows.map((row) => [
+      ...automaticRows.map((row) => [
         row.id,
         row.player,
         row.player_tag,
