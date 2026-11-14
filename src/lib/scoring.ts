@@ -38,13 +38,11 @@ function score(raw: number, target: number, max: number) {
 
 export function isRankingEligible(player: {
   eligible?: string | null;
-  telegram?: string | null;
   role?: string | null;
   active?: boolean | null;
 }) {
   return player.active !== false
     && (player.eligible ?? "Elegível") === "Elegível"
-    && (player.telegram ?? "Não") === "Sim"
     && !EXCLUDED_ROLES.has(normalized(player.role).replaceAll(" ", "_"));
 }
 
