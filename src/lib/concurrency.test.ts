@@ -43,6 +43,24 @@ describe("mapWithConcurrency", () => {
       .rejects.toThrow("A concorrência deve ser um inteiro positivo.");
   });
 
+
+  it("stops scheduling queued tasks after a mapper failure", async () => {
+    let started = 0;
+
+    await expect(mapWithConcurrency(
+      [1, 2, 3, 4, 5, 6],
+      async (value) => {
+        started += 1;
+        if (value === 2) throw new Error("profile request failed");
+        await new Promise((resolve) => setTimeout(resolve, 2));
+        return value;
+      },
+      2,
+    )).rejects.toThrow("profile request failed");
+
+    expect(started).toBe(2);
+  });
+
   it("returns an empty array for empty input", async () => {
     await expect(mapWithConcurrency([], async (value: number) => value)).resolves.toEqual([]);
   });
