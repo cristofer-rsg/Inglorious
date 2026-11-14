@@ -47,6 +47,20 @@ export default function RulesPage() {
           <h1>Regras do <em>ranking</em></h1>
           <p>Consulte os critérios de pontuação e os limites aplicados às atividades do clã Inglorious. As regras abaixo são independentes das regras do Ghost Hunt.</p>
           <article className="rules-highlight"><span>📊</span><div><b>Como funciona a pontuação</b><p>Os pontos são calculados automaticamente a partir dos eventos sincronizados. Penalidades são descontadas conforme as regras de cada categoria.</p></div></article>
+          <section className="rules-card rules-attack-section" aria-labelledby="war-attack-rules">
+            <div className="rules-card-heading"><span className="rules-icon">⚔️</span><div><h2 id="war-attack-rules">Regras de ataques — Guerra do Clã</h2><p>Pontuação e penalidades por participação em cada guerra</p></div></div>
+            <div className="rules-attack-grid">
+              <div className="rules-attack-item"><b>+5 pontos</b><span>Participar da guerra realizando pelo menos um ataque</span></div>
+              <div className="rules-attack-item"><b>+10 pontos</b><span>Realizar os dois ataques disponíveis</span></div>
+              <div className="rules-attack-item"><b>+5 pontos</b><span>Acertar o espelho em cada ataque</span></div>
+              <div className="rules-attack-item"><b>+1 ponto</b><span>Por estrela conquistada em cada ataque</span></div>
+              <div className="rules-attack-item penalty"><b>−10 pontos</b><span>Não realizar nenhum ataque até o encerramento da guerra</span></div>
+              <div className="rules-attack-item penalty"><b>−5 pontos</b><span>Realizar somente um dos dois ataques</span></div>
+              <div className="rules-attack-item penalty"><b>−5 pontos</b><span>Primeiro ataque fora do espelho antes das 12 horas finais</span></div>
+              <div className="rules-attack-item penalty"><b>−5 pontos</b><span>Realizar o segundo ataque antes das 12 horas finais</span></div>
+            </div>
+            <p className="rules-note">As penalidades são aplicadas automaticamente quando a guerra termina. Os critérios de espelho e horário seguem os dados oficiais recebidos da API do Clash of Clans.</p>
+          </section>
           <div className="rules-grid">
             {rules.map((rule, index) => <article className="rules-card" key={rule.title}>
               <div className="rules-card-heading"><span className="rules-icon">{["⚔️","🏆","🛡️","🤝","🎮","🏰"][index]}</span><div><h2>{rule.title}</h2><p>Critério de pontuação do mês</p></div></div>
