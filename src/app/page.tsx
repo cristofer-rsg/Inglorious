@@ -60,7 +60,7 @@ export default async function HomePage() {
         {topThree.length > 0 ? (
           <div className="podium-grid">
             {podiumOrder.map((player) => (
-              <article className={`podium-place podium-rank-${player.position}`} key={player.tag || player.player}>
+              <article className={`podium-place podium-rank-${player.position}`} key={player.id}>
                 <span className="podium-medal">{player.position === 1 ? "♛" : player.position === 2 ? "Ⅱ" : "Ⅲ"}</span>
                 <strong className="podium-player">{player.player}</strong>
                 <small className="podium-tag">{player.tag || "TAG NÃO INFORMADA"}</small>
