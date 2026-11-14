@@ -152,4 +152,75 @@ describe("calculatePlayerScore", () => {
     expect(result.wars).toBe(25);
   });
 
+  it("uses the monthly donation snapshot even when it is zero", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      playerTag: "#2AAAA",
+      donationsTotal: 0,
+      events: [
+        {
+          player: "Jogador",
+          player_tag: "#2AAAA",
+          category: "Doações",
+          activity: "TROPAS_DOADAS: sincronização automática mensal",
+          points: 10000,
+        },
+      ],
+    });
+
+    expect(result.donations).toBe(0);
+  });
+
+  it("ignores monthly donation snapshots belonging to another tag at the caller boundary", () => {
+    const events = [
+      {
+        player: "Alex",
+        player_tag: "#2AAAA",
+        category: "Doações",
+        activity: "TROPAS_DOADAS: sincronização automática mensal",
+        points: 10000,
+      },
+      {
+        player: "Alex",
+        player_tag: "#2BBBB",
+        category: "Doações",
+        activity: "TROPAS_DOADAS: sincronização automática mensal",
+        points: 5000,
+      },
+    ];
+
+    const first = calculatePlayerScore({
+      playerName: "Alex",
+      playerTag: "#2AAAA",
+      events,
+    });
+    const second = calculatePlayerScore({
+      playerName: "Alex",
+      playerTag: "#2BBBB",
+      events,
+    });
+
+    expect(first.donations).toBe(150);
+    expect(second.donations).toBe(75);
+  });
+
+  it("uses monthly donation totals as the authoritative source instead of adding snapshots", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      playerTag: "#2AAAA",
+      donationsTotal: 2500,
+      events: [
+        {
+          player: "Jogador",
+          player_tag: "#2AAAA",
+          category: "Doações",
+          activity: "TROPAS_DOADAS: sincronização automática mensal",
+          points: 2500,
+        },
+      ],
+    });
+
+    expect(result.donations).toBe(38);
+  });
+
 });
