@@ -134,3 +134,25 @@ a { color: inherit; text-decoration: none; }
 .member-status { display:inline-block; padding:5px 8px; border:1px solid var(--line); font-size:9px; font-weight:700; }
 .member-status.active { color:var(--green-strong); border-color:rgba(155,198,107,.3); background:rgba(155,198,107,.08); }
 .member-status.inactive { color:#d58f80; border-color:rgba(181,110,93,.3); background:rgba(181,110,93,.08); }
+
+.podium-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:end; gap:12px; padding:20px 0 8px; }
+.podium-place { min-width:0; min-height:190px; padding:18px 12px 0; display:flex; flex-direction:column; align-items:center; text-align:center; border:1px solid var(--line); background:linear-gradient(180deg,rgba(21,31,25,.96),rgba(13,19,15,.96)); }
+.podium-rank-1 { min-height:225px; border-color:rgba(213,182,110,.55); background:linear-gradient(180deg,rgba(213,182,110,.14),rgba(13,19,15,.98)); }
+.podium-rank-2 { border-color:rgba(190,199,192,.32); }
+.podium-rank-3 { border-color:rgba(189,140,104,.32); }
+.podium-medal { color:var(--muted); font:800 30px "Barlow Condensed",sans-serif; }
+.podium-rank-1 .podium-medal,.podium-rank-1 .podium-points { color:var(--gold); }
+.podium-rank-2 .podium-medal { color:#c1c8c1; }
+.podium-rank-3 .podium-medal { color:#bd8c68; }
+.podium-player { width:100%; margin-top:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+.podium-tag { width:100%; margin-top:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:8px; }
+.podium-points { margin-top:16px; color:var(--green-strong); font:800 25px "Barlow Condensed",sans-serif; }
+.podium-points small { color:var(--muted); font:700 8px Inter,sans-serif; }
+.podium-step { width:100%; margin-top:auto; padding:9px 0; border-top:1px solid var(--line); color:var(--muted); font:800 16px "Barlow Condensed",sans-serif; }
+@media(max-width:600px) {
+  .podium-grid { gap:7px; }
+  .podium-place { min-height:165px; padding:14px 7px 0; }
+  .podium-rank-1 { min-height:195px; }
+  .podium-player { font-size:10px; }
+  .podium-points { font-size:20px; }
+}
