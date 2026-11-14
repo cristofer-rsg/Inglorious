@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 
-import {
-  fetchCurrentClanMembers,
-  fetchPlayerDonationProfile,
-} from "@/lib/clash-api";
+import { fetchPlayerDonationProfile } from "@/lib/clash-api";
+import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { APP_CONFIG } from "@/lib/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -33,7 +31,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const members = await fetchCurrentClanMembers();
+    const { members } = await synchronizeCurrentRoster();
     const snapshot = [];
 
     for (const member of members) {
