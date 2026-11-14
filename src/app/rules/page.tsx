@@ -163,8 +163,8 @@ export default function RulesPage() {
                 title="Penalidades"
                 penalties
                 rows={[
-                  { label: "Não realizar o ataque do dia", value="−5" },
-                  { label: "Atacar fora do espelho", value="−5" },
+                  { label: "Não realizar o ataque do dia", value: "−5" },
+                  { label: "Atacar fora do espelho", value: "−5" },
                 ]}
               />
               <p className="rules-note">
