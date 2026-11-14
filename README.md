@@ -52,5 +52,7 @@ Todas exigem `Authorization: Bearer <CRON_SECRET>` e são executadas exclusivame
 - `GET /api/cron/sync-donations`: acumula doações mensais considerando reinícios do contador sazonal.
 - `GET /api/cron/sync-clan-games`: observa a conquista Games Champion, detecta automaticamente o início dos Jogos do Clã e atualiza o desempenho.
 - `GET /api/cron/sync-raid`: sincroniza ataques do Raide e aplica a pontuação automática de +5 para quem realizou pelo menos cinco ataques, respeitando o limite mensal existente.
+- `GET /api/cron/sync-wars`: sincroniza ataques, estrelas, espelhos, penalidades e conclusão das guerras normais.
+- `GET /api/cron/sync-league`: percorre as guerras da Liga, sincroniza ataques e pontuação, e verifica o bônus de conclusão dos sete ataques.
 
 As rotas não estão agendadas. O agendamento será configurado somente após validação completa e autorização para ativar as automações em ambiente publicado.
