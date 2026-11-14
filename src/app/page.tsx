@@ -9,6 +9,7 @@ function formatNumber(value: number) {
 export default async function HomePage() {
   const data = await getDashboardData();
   const topThree = data.ranking.slice(0, 3);
+  const podiumOrder = [topThree[1], topThree[0], topThree[2]].filter(Boolean);
 
   return (
     <main className="app-shell">
@@ -55,12 +56,14 @@ export default async function HomePage() {
           <span className="month-pill">{data.monthLabel}</span>
         </div>
         {topThree.length > 0 ? (
-          <div className="ranking-list">
-            {topThree.map((player) => (
-              <article className={`ranking-row rank-${player.position}`} key={player.tag || player.player}>
-                <span className="position">{String(player.position).padStart(2, "0")}</span>
-                <div className="player-info"><strong>{player.player}</strong><small>{player.tag || "TAG NÃO INFORMADA"}</small></div>
-                <div className="player-score"><strong>{formatNumber(player.total)}</strong><small>PTS</small></div>
+          <div className="podium-grid">
+            {podiumOrder.map((player) => (
+              <article className={`podium-place podium-rank-${player.position}`} key={player.tag || player.player}>
+                <span className="podium-medal">{player.position === 1 ? "♛" : player.position === 2 ? "Ⅱ" : "Ⅲ"}</span>
+                <strong className="podium-player">{player.player}</strong>
+                <small className="podium-tag">{player.tag || "TAG NÃO INFORMADA"}</small>
+                <strong className="podium-points">{formatNumber(player.total)} <small>PTS</small></strong>
+                <span className="podium-step">{String(player.position).padStart(2, "0")}</span>
               </article>
             ))}
           </div>
