@@ -3,6 +3,7 @@ import "server-only";
 import SiteNav from "@/components/site-nav";
 import { APP_CONFIG } from "@/lib/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { addActivityIndex } from "@/lib/performance";
 
 export const dynamic = "force-dynamic";
 
@@ -150,18 +151,7 @@ export default async function PerformancePage({
         };
       });
 
-    const metrics = ["wars", "league", "raid", "donations", "games", "capital"] as const;
-    const maxima = Object.fromEntries(
-      metrics.map((metric) => [metric, Math.max(0, ...baseRows.map((row) => row[metric]) )]),
-    ) as Record<(typeof metrics)[number], number>;
-
-    const rankedRows = baseRows.map((row) => {
-      const index = metrics.reduce((total, metric) => {
-        const maximum = maxima[metric];
-        return total + (maximum > 0 ? (row[metric] / maximum) * 100 : 0);
-      }, 0);
-      return { ...row, activityIndex: Math.round(index * 10) / 10 };
-    });
+    const rankedRows = addActivityIndex(baseRows);
 
     summaryTotals = rankedRows.reduce((acc, row) => ({
       wars: acc.wars + row.wars,
