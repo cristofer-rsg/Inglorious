@@ -336,3 +336,55 @@ a { color: inherit; text-decoration: none; }
   .history-filter select { width: 100%; }
   .history-filter button { width: 100%; }
 }
+
+
+.clan-time-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 18px 0; }
+.clan-time-metrics article { display: grid; gap: 8px; min-width: 0; padding: 16px; border: 1px solid var(--line); background: var(--panel); }
+.clan-time-metrics article span { color: var(--muted); font-size: 8px; font-weight: 800; letter-spacing: .09em; }
+.clan-time-metrics article strong { color: var(--gold); font: 700 30px "Barlow Condensed",sans-serif; font-variant-numeric: tabular-nums; }
+.clan-time-notice { display: grid; gap: 7px; margin: 16px 0 30px; padding: 15px; border: 1px solid rgba(213,182,110,.25); background: rgba(213,182,110,.06); }
+.clan-time-notice strong { color: var(--gold); font-size: 11px; }
+.clan-time-notice span { color: var(--muted); font-size: 10px; line-height: 1.65; }
+.clan-time-heading { margin-top: 28px; }
+.clan-time-list { display: grid; gap: 12px; margin-bottom: 50px; }
+.clan-time-card { min-width: 0; padding: 16px; border: 1px solid var(--line); background: var(--panel); }
+.clan-time-card-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.clan-time-position { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid var(--line); color: var(--muted); font: 700 17px "Barlow Condensed",sans-serif; }
+.clan-time-position.position-1 { border-color: rgba(213,182,110,.6); color: var(--gold); }
+.clan-time-position.position-2 { border-color: rgba(190,198,205,.45); color: #c4ccd2; }
+.clan-time-position.position-3 { border-color: rgba(181,125,87,.45); color: #c18b65; }
+.clan-time-player { min-width: 0; flex: 1; }
+.clan-time-player strong,.clan-time-player small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clan-time-player strong { font-size: 12px; }
+.clan-time-player small { margin-top: 4px; color: var(--muted); font-size: 9px; }
+.clan-time-total { text-align: right; white-space: nowrap; }
+.clan-time-total strong,.clan-time-total small { display: block; }
+.clan-time-total strong { color: var(--gold); font: 700 20px "Barlow Condensed",sans-serif; }
+.clan-time-total small { margin-top: 3px; color: var(--muted); font-size: 7px; letter-spacing: .08em; }
+.clan-time-status { flex: 0 0 auto; padding: 6px 8px; border: 1px solid var(--line); font-size: 8px; font-weight: 800; letter-spacing: .06em; }
+.clan-time-status.active { border-color: rgba(155,198,107,.3); background: rgba(155,198,107,.08); color: var(--green-strong); }
+.clan-time-status.inactive { color: var(--muted); }
+.clan-time-details { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.clan-time-details div { min-width: 0; }
+.clan-time-details small,.clan-time-details strong { display: block; }
+.clan-time-details small { color: var(--muted); font-size: 8px; line-height: 1.4; }
+.clan-time-details strong { margin-top: 5px; font-size: 9px; line-height: 1.4; overflow-wrap: anywhere; }
+.clan-time-history { margin-top: 14px; border-top: 1px solid var(--line); }
+.clan-time-history summary { padding: 12px 0 0; color: var(--gold); font-size: 9px; font-weight: 800; cursor: pointer; }
+.clan-time-history ol { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.clan-time-history li { display: flex; justify-content: space-between; gap: 12px; padding: 10px; background: rgba(0,0,0,.18); }
+.clan-time-history li span:last-child { text-align: right; }
+.clan-time-history li strong,.clan-time-history li small { display: block; }
+.clan-time-history li strong { font-size: 9px; }
+.clan-time-history li small { margin-top: 4px; color: var(--muted); font-size: 8px; }
+@media(max-width:600px) {
+  .clan-time-metrics { gap: 6px; }
+  .clan-time-metrics article { padding: 11px 9px; }
+  .clan-time-metrics article span { font-size: 7px; }
+  .clan-time-metrics article strong { font-size: 24px; }
+  .clan-time-card { padding: 12px; }
+  .clan-time-card-head { flex-wrap: wrap; gap: 8px; }
+  .clan-time-total { margin-left: auto; }
+  .clan-time-status { font-size: 7px; }
+  .clan-time-details { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
