@@ -388,3 +388,9 @@ a { color: inherit; text-decoration: none; }
   .clan-time-status { font-size: 7px; }
   .clan-time-details { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
+
+
+/* Cores dos selos de cargo na aba Desempenho */
+.performance-leader-role.role-leadership{color:#9bd6a5;background:rgba(38,128,65,.18);border:1px solid rgba(92,190,112,.62)}
+.performance-leader-role.role-elder{color:#f2cc68;background:rgba(184,137,31,.18);border:1px solid rgba(232,188,72,.68)}
+.performance-leader-role.role-member{color:#ff9292;background:rgba(166,42,42,.18);border:1px solid rgba(222,85,85,.68)}
