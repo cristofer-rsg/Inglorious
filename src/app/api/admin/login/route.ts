@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     const origin = request.headers.get("origin");
     const requestUrl = new URL(request.url);
-    if (origin && new URL(origin).origin !== requestUrl.origin) {
+    if (!origin || new URL(origin).origin !== requestUrl.origin) {
       return NextResponse.json({ success: false, error: "Origem não autorizada." }, { status: 403 });
     }
 
