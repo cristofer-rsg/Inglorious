@@ -34,11 +34,6 @@ function hashIp(ip: string) {
 
 export async function POST(request: Request) {
   try {
-    const contentLength = Number(request.headers.get("content-length") ?? 0);
-    if (Number.isFinite(contentLength) && contentLength > 8192) {
-      return jsonResponse({ success: false, error: "Requisição muito grande." }, 413);
-    }
-
     const contentType = request.headers.get("content-type") ?? "";
     if (!contentType.toLowerCase().includes("application/json")) {
       return jsonResponse({ success: false, error: "Formato inválido." }, 415);
@@ -52,9 +47,19 @@ export async function POST(request: Request) {
       return jsonResponse({ success: false, error: "A autenticação administrativa ainda não foi configurada." }, 503);
     }
 
+    let rawBody: string;
+    try {
+      rawBody = await request.text();
+    } catch {
+      return jsonResponse({ success: false, error: "Corpo da requisição inválido." }, 400);
+    }
+    if (new TextEncoder().encode(rawBody).byteLength > 8192) {
+      return jsonResponse({ success: false, error: "Requisição muito grande." }, 413);
+    }
+
     let body: unknown;
     try {
-      body = await request.json();
+      body = JSON.parse(rawBody) as unknown;
     } catch {
       return jsonResponse({ success: false, error: "Corpo da requisição inválido." }, 400);
     }
