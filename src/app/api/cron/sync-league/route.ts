@@ -5,7 +5,7 @@ import { isCronAuthorized } from "@/lib/auth/cron";
 import { fetchCurrentLeagueGroup, fetchLeagueWar } from "@/lib/clash-api";
 import { APP_CONFIG } from "@/lib/config";
 import { mapWithConcurrency } from "@/lib/concurrency";
-import { synchronizeCurrentRoster } from "@/lib/clan-sync";
+import { getKnownPlayersByTags, synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -37,11 +37,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [{ members: roster }, group] = await Promise.all([
+    const [, group] = await Promise.all([
       synchronizeCurrentRoster(),
       fetchCurrentLeagueGroup(),
     ]);
-    const playersByTag = new Map<string, (typeof roster)[number]>(roster.map((player): [string, (typeof roster)[number]] => [player.player_tag, player]));
     const supabase = createSupabaseAdmin();
     const seasonMonth = group?.season && /^\d{4}(?:0[1-9]|1[0-2])$/.test(group.season)
       ? `${group.season.slice(0, 4)}-${group.season.slice(4, 6)}`
@@ -57,6 +56,10 @@ export async function GET(request: Request) {
     if (monthlyError) {
       throw new Error(`Falha ao consultar conclusão da Liga: ${monthlyError.message}`);
     }
+
+    const playersByTag = await getKnownPlayersByTags(
+      (monthlyRows ?? []).map((row) => String(row.player_tag ?? "")),
+    );
 
     const bonusEvents = (monthlyRows ?? []).flatMap((row) => {
       const tag = String(row.player_tag ?? "").toUpperCase();
@@ -120,6 +123,11 @@ export async function GET(request: Request) {
       },
       5,
     );
+
+    const historicalPlayers = await getKnownPlayersByTags(
+      fetchedWars.flatMap((entry) => entry.war?.clan.members.map((member) => member.tag) ?? []),
+    );
+    for (const [tag, player] of historicalPlayers) playersByTag.set(tag, player);
 
     const allEvents: Array<{
       source_key: string;
