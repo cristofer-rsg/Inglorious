@@ -184,25 +184,22 @@ export async function GET(request: Request) {
       );
     }
 
-    let performanceSync: unknown = null;
-    if (allStatSources.length > 0) {
-      const { data, error } = await supabase.rpc("sync_player_monthly_stat_sources", {
+    const { data: atomicResult, error: atomicError } = await supabase.rpc(
+      "sync_inglorious_league_atomic",
+      {
         p_sources: allStatSources,
-      });
-      if (error) throw new Error(`Falha ao sincronizar desempenho da Liga: ${error.message}`);
-      performanceSync = Array.isArray(data) ? data[0] : data;
-    }
-
-    let scoreSync: unknown = { inserted: 0, skipped: 0 };
-    if (allEvents.length > 0) {
-      const { data, error } = await supabase.rpc("record_clash_league_events", {
         p_events: allEvents,
-      });
-      if (error) throw new Error(`Falha ao registrar pontuação da Liga: ${error.message}`);
-      scoreSync = Array.isArray(data) ? data[0] : data;
+        p_bonus_events: bonusEvents,
+      },
+    );
+    if (atomicError) {
+      throw new Error(`Falha na sincronização transacional da Liga: ${atomicError.message}`);
     }
 
-    const bonusSync = await syncLeagueBonus();
+    const result = Array.isArray(atomicResult) ? atomicResult[0] : atomicResult;
+    const performanceSync = result?.performance_sync ?? null;
+    const scoreSync = result?.score_sync ?? { inserted: 0, skipped: 0 };
+    const bonusSync = result?.bonus_sync ?? { inserted: 0, skipped: 0 };
 
     return NextResponse.json({
       success: true,
