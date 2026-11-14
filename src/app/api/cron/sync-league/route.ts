@@ -101,7 +101,14 @@ export async function GET(request: Request) {
       });
     }
 
-    const allEvents = [];
+    const allEvents: Array<{
+      source_key: string;
+      war_key: string;
+      player_tag: string;
+      player: string;
+      activity: string;
+      points: number;
+    }> = [];
     const allStatSources = [];
     const failedWars = [];
 
@@ -111,7 +118,7 @@ export async function GET(request: Request) {
         if (war.state !== "inWar" && war.state !== "warEnded") continue;
         const startedAt = parseClashTime(war.startTime);
         const warTime = war.startTime;
-        const warKey = warTime;
+        const warKey = `league:${warTag.toUpperCase()}`;
         const enemyPositions = new Map(
           war.opponent.members.map((member) => [member.tag, member.mapPosition]),
         );
@@ -123,7 +130,7 @@ export async function GET(request: Request) {
 
           allStatSources.push({
             month_key: getMonthKey(startedAt),
-            source_key: `league:${warTime}:${member.tag}`,
+            source_key: `league:${warTag.toUpperCase()}:${member.tag}`,
             player_tag: member.tag,
             player: player.name,
             war_attacks: 0,
@@ -133,7 +140,7 @@ export async function GET(request: Request) {
 
           const add = (suffix: string, activity: string, points: number) => {
             allEvents.push({
-              source_key: `${warTime}:${member.tag}:${suffix}`,
+              source_key: `${warTag.toUpperCase()}:${member.tag}:${suffix}`,
               war_key: warKey,
               player_tag: member.tag,
               player: player.name,
