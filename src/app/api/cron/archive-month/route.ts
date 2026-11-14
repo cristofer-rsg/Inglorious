@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { isCronAuthorized } from "@/lib/auth/cron";
 import { APP_CONFIG } from "@/lib/config";
 import { getDashboardData } from "@/lib/dashboard";
+import { getZonedMonthBounds } from "@/lib/time";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -42,6 +43,27 @@ export async function GET(request: Request) {
         month: monthKey,
         archived_players: existing.count,
         already_archived: true,
+      });
+    }
+
+    const bounds = getZonedMonthBounds(monthKey, APP_CONFIG.timeZone);
+    const [eventCount, statsCount] = await Promise.all([
+      supabase.from("events").select("id", { count: "exact", head: true })
+        .gte("created_at", bounds.start).lt("created_at", bounds.end),
+      supabase.from("player_monthly_stats").select("player_tag", { count: "exact", head: true })
+        .eq("month_key", monthKey),
+    ]);
+
+    if (eventCount.error || statsCount.error) {
+      throw new Error("Não foi possível verificar os dados disponíveis para arquivamento.");
+    }
+
+    if ((eventCount.count ?? 0) === 0 && (statsCount.count ?? 0) === 0) {
+      return NextResponse.json({
+        success: true,
+        month: monthKey,
+        archived_players: 0,
+        message: "O mês não possui dados de atividade; nenhum ranking vazio foi arquivado.",
       });
     }
 
