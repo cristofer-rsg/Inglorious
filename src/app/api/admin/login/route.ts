@@ -8,10 +8,21 @@ export const dynamic = "force-dynamic";
 
 const WINDOW_MINUTES = 15;
 const MAX_FAILED_ATTEMPTS = 5;
+const ATTEMPT_RETENTION_HOURS = 24;
+
+function jsonResponse(
+  body: { success: boolean; error?: string },
+  status = 200,
+  extraHeaders: Record<string, string> = {},
+) {
+  return NextResponse.json(body, {
+    status,
+    headers: { "Cache-Control": "no-store, max-age=0", ...extraHeaders },
+  });
+}
 
 function getClientIp(request: Request) {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return request.headers.get("x-real-ip") ?? forwarded ?? "unknown";
+  return request.headers.get("x-real-ip")?.trim() || "unknown";
 }
 
 function hashIp(ip: string) {
@@ -23,22 +34,41 @@ function hashIp(ip: string) {
 export async function POST(request: Request) {
   try {
     const contentType = request.headers.get("content-type") ?? "";
-    if (!contentType.includes("application/json")) {
-      return NextResponse.json({ success: false, error: "Formato inválido." }, { status: 415 });
+    if (!contentType.toLowerCase().includes("application/json")) {
+      return jsonResponse({ success: false, error: "Formato inválido." }, 415);
     }
 
     const origin = request.headers.get("origin");
     const requestUrl = new URL(request.url);
     if (!origin || new URL(origin).origin !== requestUrl.origin) {
-      return NextResponse.json({ success: false, error: "Origem não autorizada." }, { status: 403 });
+      return jsonResponse({ success: false, error: "Origem não autorizada." }, 403);
     }
 
     if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
-      return NextResponse.json({ success: false, error: "A autenticação administrativa ainda não foi configurada." }, { status: 503 });
+      return jsonResponse({ success: false, error: "A autenticação administrativa ainda não foi configurada." }, 503);
+    }
+
+    const body: unknown = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return jsonResponse({ success: false, error: "Credenciais inválidas." }, 400);
+    }
+
+    const payload = body as Record<string, unknown>;
+    const username = typeof payload.username === "string" ? payload.username : "";
+    const password = typeof payload.password === "string" ? payload.password : "";
+    if (!username || !password || username.length > 120 || password.length > 256) {
+      return jsonResponse({ success: false, error: "Usuário ou senha incorretos." }, 401);
     }
 
     const supabase = createSupabaseAdmin();
     const ipHash = hashIp(getClientIp(request));
+    const retentionStart = new Date(Date.now() - ATTEMPT_RETENTION_HOURS * 60 * 60 * 1000).toISOString();
+    const { error: cleanupError } = await supabase
+      .from("admin_login_attempts")
+      .delete()
+      .lt("attempted_at", retentionStart);
+    if (cleanupError) throw new Error("Não foi possível limpar o histórico antigo de autenticação.");
+
     const windowStart = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
     const { count, error: countError } = await supabase
       .from("admin_login_attempts")
@@ -49,22 +79,11 @@ export async function POST(request: Request) {
 
     if (countError) throw new Error("Não foi possível validar o limite de tentativas.");
     if ((count ?? 0) >= MAX_FAILED_ATTEMPTS) {
-      return NextResponse.json(
+      return jsonResponse(
         { success: false, error: "Muitas tentativas. Aguarde 15 minutos antes de tentar novamente." },
-        { status: 429, headers: { "Retry-After": String(WINDOW_MINUTES * 60) } },
+        429,
+        { "Retry-After": String(WINDOW_MINUTES * 60) },
       );
-    }
-
-    const body: unknown = await request.json();
-    if (!body || typeof body !== "object") {
-      return NextResponse.json({ success: false, error: "Credenciais inválidas." }, { status: 400 });
-    }
-
-    const payload = body as Record<string, unknown>;
-    const username = typeof payload.username === "string" ? payload.username : "";
-    const password = typeof payload.password === "string" ? payload.password : "";
-    if (!username || !password || username.length > 120 || password.length > 256) {
-      return NextResponse.json({ success: false, error: "Usuário ou senha incorretos." }, { status: 401 });
     }
 
     if (!verifyAdminCredentials(username, password)) {
@@ -73,7 +92,7 @@ export async function POST(request: Request) {
         succeeded: false,
       });
       if (attemptError) throw new Error("Não foi possível registrar a tentativa de autenticação.");
-      return NextResponse.json({ success: false, error: "Usuário ou senha incorretos." }, { status: 401 });
+      return jsonResponse({ success: false, error: "Usuário ou senha incorretos." }, 401);
     }
 
     const { error: successError } = await supabase.from("admin_login_attempts").insert({
@@ -83,13 +102,9 @@ export async function POST(request: Request) {
     if (successError) throw new Error("Não foi possível registrar a autenticação.");
     await createAdminSession();
 
-    await supabase.from("admin_login_attempts")
-      .delete()
-      .lt("attempted_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-
-    return NextResponse.json({ success: true });
+    return jsonResponse({ success: true });
   } catch (error) {
     console.error("Inglorious admin login failed:", error);
-    return NextResponse.json({ success: false, error: "Não foi possível iniciar a sessão." }, { status: 500 });
+    return jsonResponse({ success: false, error: "Não foi possível iniciar a sessão." }, 500);
   }
 }
