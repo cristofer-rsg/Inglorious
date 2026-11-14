@@ -20,7 +20,7 @@ describe("isRankingEligible", () => {
 });
 
 describe("calculatePlayerScore", () => {
-  it("applies category targets, caps and penalties", () => {
+  it("applies the official category rules, caps and penalties", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
       events: [
@@ -36,14 +36,14 @@ describe("calculatePlayerScore", () => {
 
     expect(result).toEqual({
       wars: 200,
-      league: 200,
-      donations: 150,
-      games: 100,
-      raid: 150,
+      league: 140,
+      donations: 50,
+      games: 25,
+      raid: 32,
       capitalCoins: 250000,
-      capitalPoints: 200,
+      capitalPoints: 100,
       penalties: 15,
-      total: 985,
+      total: 532,
     });
   });
 
@@ -64,37 +64,69 @@ describe("calculatePlayerScore", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
       donationsTotal: 5000,
-      clanGamesPoints: 8000,
+      clanGamesPoints: 20,
       events: [
         { player: "Jogador", category: "Doações", activity: "TROPAS_DOADAS:9000", points: 9000 },
-        { player: "Jogador", category: "Jogos do Clã", points: 6000 },
+        { player: "Jogador", category: "Jogos do Clã", points: 18 },
       ],
     });
 
-    expect(result.donations).toBe(75);
-    expect(result.games).toBe(80);
+    expect(result.donations).toBe(50);
+    expect(result.games).toBe(20);
   });
 
-  it("caps each category at its configured maximum", () => {
+  it("does not cap war, league or raid points", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
       events: [
         { player: "Jogador", category: "Guerras", points: 500 },
         { player: "Jogador", category: "Liga dos Clãs", points: 500 },
-        { player: "Jogador", category: "Doações", activity: "TROPAS_DOADAS:30000", points: 30000 },
-        { player: "Jogador", category: "Jogos do Clã", points: 30000 },
         { player: "Jogador", category: "Raide de Fim de Semana", points: 100 },
-        { player: "Jogador", category: "Capital do Clã", activity: "Doação automática de Ouro da Capital", points: 500000 },
       ],
     });
 
-    expect(result.wars).toBe(200);
-    expect(result.league).toBe(200);
-    expect(result.donations).toBe(150);
-    expect(result.games).toBe(100);
-    expect(result.raid).toBe(150);
-    expect(result.capitalPoints).toBe(200);
-    expect(result.total).toBe(1000);
+    expect(result.wars).toBe(500);
+    expect(result.league).toBe(500);
+    expect(result.raid).toBe(100);
+    expect(result.total).toBe(1100);
+  });
+
+  it("converts donations by 100 troops per point and caps them at 50", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      events: [
+        { player: "Jogador", category: "Doações", activity: "TROPAS_DOADAS:50", points: 50 },
+        { player: "Jogador", category: "Doações", activity: "TROPAS_DOADAS:250", points: 250 },
+      ],
+    });
+
+    expect(result.donations).toBe(3);
+  });
+
+  it("uses the maximum clan-games band and caps it at 25 points", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      clanGamesPoints: 10000,
+      events: [{ player: "Jogador", category: "Jogos do Clã", points: 20 }],
+    });
+
+    expect(result.games).toBe(25);
+  });
+
+  it("converts capital contributions at 2,500 coins per point", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      events: [{
+        player: "Jogador",
+        category: "Capital do Clã",
+        activity: "Doação automática de Ouro da Capital",
+        points: 7499,
+      }],
+    });
+
+    expect(result.capitalCoins).toBe(7499);
+    expect(result.capitalPoints).toBe(2);
+    expect(result.total).toBe(2);
   });
 
   it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
@@ -111,10 +143,10 @@ describe("calculatePlayerScore", () => {
     },
   );
 
-  it("rounds category scores to the nearest integer", () => {
+  it("uses integer donation conversion without rounding up", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
-      events: [{ player: "Jogador", category: "Doações", activity: "TROPAS_DOADAS:33", points: 33 }],
+      events: [{ player: "Jogador", category: "Doações", activity: "TROPAS_DOADAS:99", points: 99 }],
     });
     expect(result.donations).toBe(0);
   });
@@ -152,7 +184,6 @@ describe("calculatePlayerScore", () => {
     expect(result.wars).toBe(75);
   });
 
-
   it("does not assign untagged legacy events to duplicate-name players", () => {
     const result = calculatePlayerScore({
       playerName: "Alex",
@@ -180,7 +211,7 @@ describe("calculatePlayerScore", () => {
       }],
     });
 
-    expect(result.donations).toBe(38);
+    expect(result.donations).toBe(25);
   });
 
   it("uses the monthly donation snapshot even when it is zero", () => {
@@ -202,56 +233,22 @@ describe("calculatePlayerScore", () => {
     expect(result.donations).toBe(0);
   });
 
-  it("ignores monthly donation snapshots belonging to another tag at the caller boundary", () => {
-    const events = [
-      {
-        player: "Alex",
-        player_tag: "#2AAAA",
-        category: "Doações",
-        activity: "TROPAS_DOADAS: sincronização automática mensal",
-        points: 10000,
-      },
-      {
-        player: "Alex",
-        player_tag: "#2BBBB",
-        category: "Doações",
-        activity: "TROPAS_DOADAS: sincronização automática mensal",
-        points: 5000,
-      },
-    ];
-
-    const first = calculatePlayerScore({
-      playerName: "Alex",
-      playerTag: "#2AAAA",
-      events,
-    });
-    const second = calculatePlayerScore({
-      playerName: "Alex",
-      playerTag: "#2BBBB",
-      events,
-    });
-
-    expect(first.donations).toBe(150);
-    expect(second.donations).toBe(75);
-  });
-
-  it("uses monthly donation totals as the authoritative source instead of adding snapshots", () => {
+  it("keeps legacy donation points when the monthly troop snapshot is present", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
       playerTag: "#2AAAA",
-      donationsTotal: 2500,
+      donationsTotal: 5000,
       events: [
         {
           player: "Jogador",
           player_tag: "#2AAAA",
           category: "Doações",
-          activity: "TROPAS_DOADAS: sincronização automática mensal",
-          points: 2500,
+          activity: "Lançamento manual antigo",
+          points: 4,
         },
       ],
     });
 
-    expect(result.donations).toBe(38);
+    expect(result.donations).toBe(50);
   });
-
 });
