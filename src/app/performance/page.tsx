@@ -33,6 +33,7 @@ function roleLabel(role: string) {
   if (normalized === "leader") return "LÍDER";
   if (normalized === "co_leader" || normalized === "coleader") return "CO-LÍDER";
   if (normalized === "member") return "MEMBRO";
+  if (normalized === "elder") return "ANCIÃO";
   return role.toLocaleUpperCase("pt-BR");
 }
 
