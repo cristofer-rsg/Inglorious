@@ -11,8 +11,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-
-
 function getMonthKey() {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: APP_CONFIG.timeZone,
