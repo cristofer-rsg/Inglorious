@@ -45,7 +45,7 @@ export default function RulesPage() {
       <section className="rules-list">
         {rules.map((rule, index) => <article className="rule-card" key={rule.title}><span className="rule-index">{String(index + 1).padStart(2, "0")}</span><div><h2>{rule.title}</h2><p>{rule.detail}</p></div><strong>{rule.target}</strong></article>)}
       </section>
-      <section className="eligibility-note"><h2>Elegibilidade e classificação</h2><p>O ranking considera jogadores ativos e elegíveis. Líderes e vice-líderes não participam da classificação. Guerras, Liga e Raide não possuem teto geral além dos limites específicos descritos; penalidades são descontadas e o total nunca fica abaixo de zero.</p></section>
+      <section className="eligibility-note"><h2>Elegibilidade e classificação</h2><p>O ranking considera jogadores elegíveis. Líderes e vice-líderes não participam da classificação. Quem sair do clã depois de conquistar pontos mantém a pontuação obtida no mês; jogadores fora do clã sem atividade no período não aparecem no ranking. Guerras, Liga e Raide não possuem teto geral além dos limites específicos descritos; penalidades são descontadas e o total nunca fica abaixo de zero.</p></section>
     </main>
   );
 }
