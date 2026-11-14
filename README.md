@@ -35,7 +35,7 @@ A rota exige o cabeçalho:
 Authorization: Bearer <CRON_SECRET>
 ```
 
-A rotina valida a fotografia completa antes de gravar, não aceita listas vazias ou tags duplicadas e mantém o histórico de entradas, saídas e períodos de permanência no banco independente do Inglorious.
+A rotina valida a fotografia completa antes de gravar, não aceita listas vazias ou tags duplicadas e mantém o histórico de entradas, saídas e períodos de permanência no banco independente do Inglorious. As rotinas de guerra e Liga resolvem os participantes pelo histórico de tags, preservando os lançamentos mesmo quando um jogador deixa o roster atual.
 
 A rota está implementada, mas não foi agendada nem ativada em produção. Nenhum deploy foi realizado.
 
@@ -74,7 +74,7 @@ npm test
 npm run build
 ```
 
-A integração contínua executa as três verificações em cada atualização da branch de desenvolvimento. Os testes automatizados cobrem regras de elegibilidade, cálculo de pontuação, proteção contra origem cruzada, calendário do Raide, limites de concorrência das consultas e períodos mensais com fuso horário e horário de verão.
+A integração contínua executa as três verificações em cada atualização da branch de desenvolvimento. Os testes automatizados cobrem regras de elegibilidade, cálculo de pontuação, proteção contra origem cruzada, calendário do Raide, limites de concorrência das consultas, snapshots mensais sem ambiguidade, períodos com fuso horário e horário de verão e validação estrita dos horários retornados pela API do Clash.
 
 As rotinas de doações, Jogos do Clã, Capital, Raide, Guerras e Liga usam procedimentos transacionais no Supabase para impedir gravações parciais. Os procedimentos de sincronização possuem execução restrita ao papel `service_role`.
 
