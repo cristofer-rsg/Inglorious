@@ -4,7 +4,7 @@ import { isCronAuthorized } from "@/lib/auth/cron";
 
 import { fetchCurrentWar } from "@/lib/clash-api";
 import { APP_CONFIG } from "@/lib/config";
-import { synchronizeCurrentRoster } from "@/lib/clan-sync";
+import { getKnownPlayersByTags, synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [{ members: roster }, war] = await Promise.all([
+    const [, war] = await Promise.all([
       synchronizeCurrentRoster(),
       fetchCurrentWar(),
     ]);
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
     const endedAt = parseClashTime(war.endTime);
     const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
     const warEnd = endedAt?.getTime();
-    const playersByTag = new Map<string, (typeof roster)[number]>(roster.map((player): [string, (typeof roster)[number]] => [player.player_tag, player]));
+    const playersByTag = await getKnownPlayersByTags(war.clan.members.map((member) => member.tag));
     const enemyPositions = new Map<string, number>(war.opponent.members.map((member): [string, number] => [member.tag, member.mapPosition]));
     const events: Array<{
       source_key: string;
