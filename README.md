@@ -42,8 +42,7 @@ A rota está implementada, mas não foi agendada nem ativada em produção. Nenh
 
 ## Recursos administrativos e análise
 
-- O painel administrativo permite criar, editar e excluir lançamentos manuais. Os registros automáticos ficam protegidos contra edição/exclusão por esse fluxo para preservar a idempotência das sincronizações.
-- Guerras, Liga, doações e Jogos do Clã podem receber lançamentos manuais identificados; Raide e Capital permanecem automáticos para evitar duplicidade.
+- O painel administrativo exibe somente lançamentos automáticos e exporta o histórico completo de eventos em CSV. Lançamentos manuais não são oferecidos, evitando divergências com os dados oficiais da API.
 - A aba Desempenho permite selecionar o mês, pesquisar por nome/tag e comparar seis categorias com índice independente de até 600 pontos (100 por categoria), sem alterar o ranking oficial.
 - A página inicial destaca novas entradas identificadas pela sincronização, sem confundir o roster inicial de referência com novos membros.
 - O histórico mensal possui página pública e rota protegida `GET /api/cron/archive-month`; a rota arquiva o mês anterior somente quando existem dados e não cria temporadas vazias.
