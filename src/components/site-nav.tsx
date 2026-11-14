@@ -14,7 +14,7 @@ export default function SiteNav({ active }: { active: string }) {
   return (
     <aside className="sidebar">
       <div className="side-label">MENU PRINCIPAL</div>
-      {links.filter((link) => link.href !== "/admin").map((link) => (
+      {links.filter((link) => link.href !== "/admin" && link.href !== "/history").map((link) => (
         <Link className={active === link.href ? "nav-item active" : "nav-item"} href={link.href} key={link.href}>
           <span className="nav-icon">{link.icon}</span><span>{link.label}</span>
           {active === link.href ? <span className="active-bar" /> : null}
@@ -22,6 +22,10 @@ export default function SiteNav({ active }: { active: string }) {
       ))}
       <div className="side-divider" />
       <div className="side-label">ADMINISTRAÇÃO</div>
+      <Link className={active === "/history" ? "nav-item active" : "nav-item"} href="/history">
+        <span className="nav-icon">▤</span><span>Histórico</span>
+        {active === "/history" ? <span className="active-bar" /> : null}
+      </Link>
       <Link className={active === "/admin" ? "nav-item active" : "nav-item"} href="/admin">
         <span className="nav-icon">⚙</span><span>Gerenciar aplicativo</span>
         {active === "/admin" ? <span className="active-bar" /> : null}
