@@ -96,7 +96,10 @@ export function calculatePlayerScore(input: {
   if (input.donationsTotal != null && Number.isFinite(Number(input.donationsTotal))) {
     donatedTroops = Math.max(0, Number(input.donationsTotal));
   }
-  gamesRaw = Math.max(gamesRaw, Number(input.clanGamesPoints ?? 0));
+  const monthlyGames = Number(input.clanGamesPoints ?? 0);
+  if (Number.isFinite(monthlyGames)) {
+    gamesRaw = Math.max(gamesRaw, Math.max(0, monthlyGames));
+  }
 
   const wars = score(warsRaw, WEIGHTS.wars.target, WEIGHTS.wars.max);
   const league = score(leagueRaw, WEIGHTS.league.target, WEIGHTS.league.max);
