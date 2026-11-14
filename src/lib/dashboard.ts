@@ -110,7 +110,7 @@ async function fetchMonthEvents(start: string, end: string): Promise<EventRow[]>
 
 export async function getDashboardData(monthOverride?: string): Promise<DashboardData> {
   const currentMonth = getCurrentMonthKey();
-  const monthKey = monthOverride && /^\\d{4}-(0[1-9]|1[0-2])$/.test(monthOverride)
+  const monthKey = monthOverride && /^\d{4}-(0[1-9]|1[0-2])$/.test(monthOverride)
     ? monthOverride
     : currentMonth;
   const monthLabel = getMonthLabel(monthKey);
