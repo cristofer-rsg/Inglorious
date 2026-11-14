@@ -186,71 +186,62 @@ export default async function PerformancePage({
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
-        <span className="connection">DESEMPENHO MENSAL</span>
+        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+        <span className="status"><span className="status-dot online" />DESEMPENHO MENSAL</span>
       </header>
       <SiteNav active="/performance" />
-      <section className="page-heading">
-        <span className="eyebrow">ATIVIDADE DOS JOGADORES</span>
-        <h1>Desempenho <em>mensal</em></h1>
-        <p>Índice de atividade independente do ranking oficial. Cada uma das seis categorias contribui com até 100 pontos.</p>
+      <section className="content gh-content">
+        <section className="admin-content performance-content">
+          <span className="auth-kicker">CONSULTA PÚBLICA • INDICADORES DO CLÃ</span>
+          <h1>Desempenho <em>mensal</em></h1>
+          <p>Consulte os indicadores de participação, os totais por atividade e a classificação de desempenho dos jogadores do Inglorious.</p>
+          <form className="history-filter performance-filters" action="/performance" method="get">
+            <label><span>Mês de referência</span><select name="month" defaultValue={selectedMonth}>{months.map((month) => <option value={month} key={month}>{monthLabel(month)}</option>)}</select></label>
+            <label><span>Buscar jogador</span><input name="q" type="search" defaultValue={search} placeholder="Nome ou tag do jogador" /></label>
+            <label><span>Exibição</span><select name="scope" defaultValue={activeOnly ? "active" : "all"}><option value="all">Todos os jogadores</option><option value="active">Somente membros ativos</option></select></label>
+            <button type="submit">Aplicar filtros</button>
+          </form>
+          {error ? <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{error}</span></div> : <>
+            <div className="performance-period">{monthLabel(selectedMonth)}</div>
+            <div className="history-section-title"><h2>Indicadores do clã</h2><span>{number(rows.length)} JOGADORES</span></div>
+            <div className="performance-totals">
+              <article><small>GUERRAS · ATAQUES</small><b>{number(totals.wars)}</b><span>Total no mês</span></article>
+              <article><small>LIGA · ATAQUES</small><b>{number(totals.league)}</b><span>Total no mês</span></article>
+              <article><small>RAIDE · ATAQUES</small><b>{number(totals.raid)}</b><span>Total no mês</span></article>
+              <article><small>DOAÇÕES · TROPAS</small><b>{number(totals.donations)}</b><span>Total no mês</span></article>
+              <article><small>JOGOS · PONTOS</small><b>{number(totals.games)}</b><span>Total no mês</span></article>
+              <article><small>CAPITAL · MOEDAS</small><b>{number(totals.capital)}</b><span>Total no mês</span></article>
+            </div>
+            <div className="history-section-title"><h2>Desempenho dos jogadores</h2><span>{number(rows.length)} JOGADORES</span></div>
+            <div className="performance-list">
+              {rows.map((row, index) => <article className="performance-card" key={row.id}>
+                <div className="performance-card-head">
+                  <b><span className="performance-position-badge">{index + 1}</span><span className="performance-player-name">{row.player}</span></b>
+                  <strong>{row.activityIndex.toFixed(1).replace(".", ",")}<small> / 600</small></strong>
+                </div>
+                <div className="performance-progress" role="img" aria-label={`Índice de atividade: ${row.activityIndex} de 600`}><span style={{ width: `${Math.min(row.activityIndex / 6, 100)}%` }} /></div>
+                <div className="performance-player-stats">
+                  {([
+                    ["⚔", "Guerras", row.wars, "Ataques"],
+                    ["🏆", "Liga", row.league, "Ataques"],
+                    ["🛡", "Raide", row.raid, "Ataques"],
+                    ["🤝", "Doações", row.donations, "Tropas"],
+                    ["🎮", "Jogos do Clã", row.games, "Pontos"],
+                    ["🏰", "Capital", row.capital, "Moedas"],
+                  ] as const).map(([icon, label, value, unit]) => <div className="performance-player-stat-row" key={label}>
+                    <span className="performance-player-stat-label"><i aria-hidden="true">{icon}</i>{label}</span>
+                    <strong className="performance-player-stat-tile"><b>{number(value)}</b><small>{unit}</small></strong>
+                  </div>)}
+                </div>
+                <small className={row.active ? "performance-status active" : "performance-status inactive"}>{row.active ? "ATIVO · NO CLÃ" : "INATIVO · FORA DO CLÃ"}</small>
+              </article>)}
+              {rows.length === 0 && <div className="empty-state"><b>Nenhum jogador encontrado</b><p>Não há jogadores correspondentes aos filtros selecionados.</p></div>}
+            </div>
+          </>}
+          <a className="back-link" href="/ranking">← Ver ranking oficial</a>
+        </section>
+        <footer className="footer"><span>INGLORIOUS <b>•</b> DESEMPENHO</span><span>{monthLabel(selectedMonth)}</span></footer>
       </section>
-
-      <form className="performance-filters" action="/performance" method="get">
-        <label>
-          <span>Mês de referência</span>
-          <select name="month" defaultValue={selectedMonth}>
-            {months.map((month) => <option value={month} key={month}>{monthLabel(month)}</option>)}
-          </select>
-        </label>
-        <label>
-          <span>Buscar jogador</span>
-          <input name="q" type="search" defaultValue={search} placeholder="Nome ou tag do jogador" />
-        </label>
-        <label>
-          <span>Exibição</span>
-          <select name="scope" defaultValue={activeOnly ? "active" : "all"}>
-            <option value="all">Todos os jogadores</option>
-            <option value="active">Somente membros ativos</option>
-          </select>
-        </label>
-        <button type="submit">Aplicar filtros</button>
-      </form>
-
-      {error ? (
-        <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{error}</span></div>
-      ) : (
-        <>
-          <section className="metrics performance-summary" aria-label="Totais de atividade do clã">
-            <article className="metric-card"><span>⚔</span><small>GUERRAS · ATAQUES</small><strong>{number(totals.wars)}</strong><i>TOTAL NO MÊS</i></article>
-            <article className="metric-card"><span>🛡</span><small>LIGA · ATAQUES</small><strong>{number(totals.league)}</strong><i>TOTAL NO MÊS</i></article>
-            <article className="metric-card"><span>⛰</span><small>RAIDE · ATAQUES</small><strong>{number(totals.raid)}</strong><i>TOTAL NO MÊS</i></article>
-            <article className="metric-card"><span>✦</span><small>DOAÇÕES · TROPAS</small><strong>{number(totals.donations)}</strong><i>TOTAL NO MÊS</i></article>
-            <article className="metric-card"><span>🏆</span><small>JOGOS · PONTOS</small><strong>{number(totals.games)}</strong><i>TOTAL NO MÊS</i></article>
-            <article className="metric-card"><span>🏰</span><small>CAPITAL · MOEDAS</small><strong>{number(totals.capital)}</strong><i>TOTAL NO MÊS</i></article>
-          </section>
-
-          <div className="section-heading">
-            <div><span className="eyebrow">{monthLabel(selectedMonth).toUpperCase()}</span><h2>Ranking de desempenho</h2></div>
-            <span className="month-pill">{number(rows.length)} jogadores</span>
-          </div>
-
-          <div className="performance-table-wrap">
-            <table className="performance-table">
-              <thead><tr><th>Pos.</th><th>Jogador</th><th>Índice / 600</th><th>Guerras</th><th>Liga</th><th>Raide</th><th>Doações</th><th>Jogos</th><th>Capital</th></tr></thead>
-              <tbody>
-                {rows.map((row, index) => <tr key={row.id}>
-                  <td>{number(index + 1)}</td>
-                  <th scope="row"><strong>{row.player}</strong><small>{row.tag}{row.active ? "" : " · Fora do clã"}</small></th>
-                  <td><strong>{row.activityIndex.toFixed(1).replace(".", ",")}</strong></td>
-                  <td>{number(row.wars)}</td><td>{number(row.league)}</td><td>{number(row.raid)}</td><td>{number(row.donations)}</td><td>{number(row.games)}</td><td>{number(row.capital)}</td>
-                </tr>)}
-                {rows.length === 0 && <tr><td colSpan={9} className="table-empty">Nenhum jogador encontrado para os filtros selecionados.</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
     </main>
   );
 }
