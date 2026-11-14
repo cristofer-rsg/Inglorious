@@ -115,7 +115,7 @@ export async function GET(request: Request) {
       members_in_season: season.members.length,
       members_matched: statsSources.length,
       eligible_for_points: awards.length,
-      performance_sync: Array.isArray(statsData) ? statsData[0] : statsData,
+      performance_sync: performanceSync,
       awards: awardsData,
       synchronized_at: new Date().toISOString(),
     });
