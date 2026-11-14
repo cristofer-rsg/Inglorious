@@ -96,7 +96,7 @@ export default async function HomePage() {
               <a className={`gh-v2-podium-card rank-${player.position}`} href="/ranking" key={player.id}>
                 <span className="gh-v2-medal">{player.position === 1 ? "👑" : player.position === 2 ? "🥈" : "🥉"}</span>
                 <span className="gh-v2-player-avatar">{player.player.slice(0,1).toUpperCase()}</span>
-                <b>{player.player}</b>{player.role && <small className="performance-leader-role">{player.role.toLocaleUpperCase("pt-BR")}</small>}<strong>{number(player.total)} <small>PTS</small></strong><span className="gh-v2-rank-label">{player.position}º LUGAR</span>
+                <b>{player.player}</b><strong>{number(player.total)} <small>PTS</small></strong><span className="gh-v2-rank-label">{player.position}º LUGAR</span>
               </a>
             )) : <p className="recent-members-empty">{data.connected ? "O pódio aparecerá quando houver jogadores classificados." : "Aguardando conexão para carregar o ranking."}</p>}
           </div>
