@@ -71,14 +71,11 @@ export default async function HistoryPage({
 
   try {
     const supabase = createSupabaseAdmin();
-    const [monthsResult, eventsResult] = await Promise.all([
-      supabase.from("monthly_rankings")
-        .select("month_key")
-        .is("archived_at", null)
-        .order("month_key", { ascending: false })
-        .limit(1000),
-      Promise.resolve(null),
-    ]);
+    const monthsResult = await supabase.from("monthly_rankings")
+      .select("month_key")
+      .is("archived_at", null)
+      .order("month_key", { ascending: false })
+      .limit(1000);
 
     if (monthsResult.error) throw new Error(monthsResult.error.message);
     months = [...new Set((monthsResult.data ?? [])
