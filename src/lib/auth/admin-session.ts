@@ -28,6 +28,13 @@ export async function createAdminSession() {
   const token = randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + SESSION_DURATION_SECONDS * 1000);
   const supabase = createSupabaseAdmin();
+  const { error: cleanupError } = await supabase
+    .from("device_sessions")
+    .delete()
+    .eq("role", "admin")
+    .lte("expires_at", new Date().toISOString());
+  if (cleanupError) throw new Error("Não foi possível limpar sessões administrativas expiradas.");
+
   const { error } = await supabase.from("device_sessions").insert({
     token_hash: digest(token),
     role: "admin",
