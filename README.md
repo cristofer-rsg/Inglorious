@@ -35,7 +35,7 @@ A rota exige o cabeçalho:
 Authorization: Bearer <CRON_SECRET>
 ```
 
-A rotina valida a fotografia completa antes de gravar, não aceita listas vazias ou tags duplicadas e mantém o histórico de entradas, saídas e períodos de permanência no banco independente do Inglorious. As rotinas de guerra e Liga resolvem os participantes pelo histórico de tags, preservando os lançamentos mesmo quando um jogador deixa o roster atual.
+A rotina valida a fotografia completa antes de gravar, não aceita listas vazias ou tags duplicadas e mantém o histórico de entradas, saídas e períodos de permanência no banco independente do Inglorious. As rotinas de guerra, Liga e Raide resolvem os participantes pelo histórico de tags, preservando a pontuação conquistada mesmo quando um jogador deixa o roster atual.
 
 A rota está implementada, mas não foi agendada nem ativada em produção. Nenhum deploy foi realizado.
 
@@ -62,7 +62,7 @@ As rotas não estão agendadas. O agendamento será configurado somente após va
 
 ## Banco de dados e migrations
 
-O projeto Supabase independente já possui 42 migrations aplicadas no ambiente remoto. Os arquivos SQL históricos ainda não estão versionados nesta branch. Até que o histórico completo seja recuperado e sincronizado, não execute `supabase db reset`, recriação do projeto ou sincronização de schema que possa sobrescrever o banco existente.
+O projeto Supabase independente já possui 43 migrations aplicadas no ambiente remoto. Os arquivos SQL históricos ainda não estão versionados nesta branch. Até que o histórico completo seja recuperado e sincronizado, não execute `supabase db reset`, recriação do projeto ou sincronização de schema que possa sobrescrever o banco existente.
 
 ## Validação
 
