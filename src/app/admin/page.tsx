@@ -13,8 +13,7 @@ type SearchParams = {
 
 type AdminOverview = {
   activePlayers: number | null;
-  pendingAccounts: number | null;
-  approvedAccounts: number | null;
+  eventCount: number | null;
   lastRosterSync: string | null;
   error: boolean;
 };
@@ -45,23 +44,21 @@ type AdminEvent = {
 async function getAdminOverview(): Promise<AdminOverview> {
   try {
     const supabase = createSupabaseAdmin();
-    const [players, pending, approved, sync] = await Promise.all([
+    const [players, events, sync] = await Promise.all([
       supabase.from("players").select("name", { count: "exact", head: true }).eq("active", true),
-      supabase.from("player_accounts").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      supabase.from("player_accounts").select("id", { count: "exact", head: true }).eq("status", "approved"),
+      supabase.from("events").select("id", { count: "exact", head: true }),
       supabase.from("clan_sync_state").select("synced_at").order("synced_at", { ascending: false }).limit(1).maybeSingle(),
     ]);
 
-    const failed = Boolean(players.error || pending.error || approved.error || sync.error);
+    const failed = Boolean(players.error || events.error || sync.error);
     return {
       activePlayers: players.error ? null : players.count ?? 0,
-      pendingAccounts: pending.error ? null : pending.count ?? 0,
-      approvedAccounts: approved.error ? null : approved.count ?? 0,
+      eventCount: events.error ? null : events.count ?? 0,
       lastRosterSync: sync.error ? null : sync.data?.synced_at ?? null,
       error: failed,
     };
   } catch {
-    return { activePlayers: null, pendingAccounts: null, approvedAccounts: null, lastRosterSync: null, error: true };
+    return { activePlayers: null, eventCount: null, lastRosterSync: null, error: true };
   }
 }
 
@@ -169,8 +166,7 @@ export default async function AdminPage({
           <div className="admin-section-heading"><h2>Visão geral do clã</h2><span>CONSULTA SOMENTE LEITURA</span></div>
           <div className="admin-cards admin-overview-grid">
             <article><strong>Jogadores ativos</strong><b>{overview?.activePlayers ?? "—"}</b><span>Cadastro atual de jogadores marcados como ativos.</span></article>
-            <article><strong>Contas pendentes</strong><b>{overview?.pendingAccounts ?? "—"}</b><span>Solicitações aguardando aprovação administrativa.</span></article>
-            <article><strong>Contas aprovadas</strong><b>{overview?.approvedAccounts ?? "—"}</b><span>Contas de jogadores liberadas para acesso.</span></article>
+            <article><strong>Eventos registrados</strong><b>{overview?.eventCount ?? "—"}</b><span>Lançamentos automáticos e manuais no banco independente.</span></article>
             <article><strong>Última sincronização</strong><b className="admin-sync-value">{formatSyncDate(overview?.lastRosterSync ?? null)}</b><span>Último registro de sincronização do roster.</span></article>
           </div>
           {overview?.error || adminData?.error ? <div className="connection-alert"><strong>Leitura parcial</strong><span>Não foi possível consultar todos os indicadores e lançamentos. Verifique a conexão com o Supabase.</span></div> : null}
