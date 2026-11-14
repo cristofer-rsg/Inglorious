@@ -1,5 +1,6 @@
 export type ScoringEvent = {
   player?: string | null;
+  player_tag?: string | null;
   category?: string | null;
   activity?: string | null;
   points?: number | null;
@@ -48,11 +49,13 @@ export function isRankingEligible(player: {
 
 export function calculatePlayerScore(input: {
   playerName: string;
+  playerTag?: string | null;
   events: ScoringEvent[];
   clanGamesPoints?: number | null;
   donationsTotal?: number | null;
 }): PlayerScoringResult {
   const playerKey = normalized(input.playerName);
+  const playerTag = normalized(input.playerTag).toUpperCase();
   let warsRaw = 0;
   let leagueRaw = 0;
   let donatedTroops = 0;
@@ -62,7 +65,8 @@ export function calculatePlayerScore(input: {
   let penalties = 0;
 
   for (const event of input.events) {
-    if (normalized(event.player) !== playerKey) continue;
+    const eventTag = normalized(event.player_tag).toUpperCase();
+    if (playerTag && eventTag ? eventTag !== playerTag : normalized(event.player) !== playerKey) continue;
 
     const points = Number(event.points ?? 0);
     if (!Number.isFinite(points) || points === 0) continue;
