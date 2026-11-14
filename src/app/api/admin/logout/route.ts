@@ -12,5 +12,5 @@ export async function POST(request: Request) {
   }
 
   await destroyAdminSession();
-  return NextResponse.json({ success: true });
+  return NextResponse.redirect(new URL("/admin", requestUrl.origin), { status: 303 });
 }
