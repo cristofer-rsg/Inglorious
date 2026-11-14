@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { calculatePlayerScore, isRankingEligible } from "./scoring";
 
 describe("isRankingEligible", () => {
-  it("keeps active eligible members without Telegram dependency", () => {
+  it("keeps active eligible members", () => {
     expect(isRankingEligible({ active: true, eligible: "Elegível", role: "member" })).toBe(true);
   });
 
