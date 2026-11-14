@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isCronAuthorized } from "@/lib/auth/cron";
 
-import { fetchPlayerGamesProfile } from "@/lib/clash-api";
+import { fetchPlayerGamesProfile, mapWithConcurrency } from "@/lib/clash-api";
 import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { APP_CONFIG } from "@/lib/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -28,17 +28,18 @@ export async function GET(request: Request) {
 
   try {
     const { members } = await synchronizeCurrentRoster();
-    const snapshot = [];
-
-    for (const member of members) {
-      const profile = await fetchPlayerGamesProfile(member.player_tag);
-      snapshot.push({
-        player_tag: profile.tag,
-        player: profile.name,
-        achievement_value: profile.achievementValue,
-      });
-      await new Promise((resolve) => setTimeout(resolve, 120));
-    }
+    const snapshot = await mapWithConcurrency(
+      members,
+      async (member) => {
+        const profile = await fetchPlayerGamesProfile(member.player_tag);
+        return {
+          player_tag: profile.tag,
+          player: profile.name,
+          achievement_value: profile.achievementValue,
+        };
+      },
+      5,
+    );
 
     const monthKey = getMonthKey();
     const supabase = createSupabaseAdmin();
