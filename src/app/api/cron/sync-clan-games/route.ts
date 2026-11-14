@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 import { isCronAuthorized } from "@/lib/auth/cron";
 
-import { fetchPlayerGamesProfile, mapWithConcurrency } from "@/lib/clash-api";
+import { fetchPlayerGamesProfile } from "@/lib/clash-api";
+import { mapWithConcurrency } from "@/lib/concurrency";
 import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { APP_CONFIG } from "@/lib/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
