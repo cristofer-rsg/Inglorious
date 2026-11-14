@@ -25,41 +25,27 @@ export async function GET(request: Request) {
     }
 
     const supabase = createSupabaseAdmin();
-    const results = [];
+    const { data, error } = await supabase.rpc("sync_inglorious_capital_atomic", {
+      p_snapshot: profiles,
+    });
 
-    for (const profile of profiles) {
-      const { data, error } = await supabase.rpc("sync_capital_gold_contribution", {
-        p_player_tag: profile.tag,
-        p_player: profile.name,
-        p_total: profile.clanCapitalContributions,
-      });
+    if (error) {
+      throw new Error(`Falha ao sincronizar snapshot de Capital: ${error.message}`);
+    }
 
-      if (error) {
-        throw new Error(`Falha ao sincronizar Capital de ${profile.name}: ${error.message}`);
-      }
-
-      const result = Array.isArray(data) ? data[0] : data;
-      if (!result || typeof result !== "object"
-        || !["baseline", "synced"].includes(result.status)) {
-        throw new Error(`Retorno inesperado ao sincronizar Capital de ${profile.name}.`);
-      }
-
-      results.push({
-        player: profile.name,
-        tag: profile.tag,
-        status: result.status,
-        points: Number(result.points ?? 0),
-      });
+    const result = Array.isArray(data) ? data[0] : data;
+    if (!result || typeof result !== "object" || result.success !== true) {
+      throw new Error("Retorno inesperado na sincronização de Capital.");
     }
 
     return NextResponse.json({
       success: true,
       clan: "Inglorious",
-      profiles_received: profiles.length,
-      baselines: results.filter((item) => item.status === "baseline").length,
-      synchronized: results.filter((item) => item.status === "synced").length,
-      points_added: results.reduce((total, item) => total + item.points, 0),
-      results,
+      profiles_received: result.profiles_received,
+      baselines: result.baselines,
+      synchronized: result.synchronized,
+      points_added: result.points_added,
+      results: result.results,
       synchronized_at: new Date().toISOString(),
     });
   } catch (error) {
