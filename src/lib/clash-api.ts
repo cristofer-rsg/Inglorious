@@ -39,6 +39,28 @@ export type ClashRaidSeason = {
   members: ClashRaidMember[];
 };
 
+export type ClashWarAttack = {
+  order: number;
+  defenderTag?: string;
+  stars: number;
+  battleTime?: string;
+};
+
+export type ClashWarMember = {
+  tag: string;
+  name: string;
+  mapPosition: number;
+  attacks: ClashWarAttack[];
+};
+
+export type ClashWar = {
+  state: string;
+  startTime: string;
+  endTime?: string;
+  clan: { tag: string; members: ClashWarMember[] };
+  opponent: { tag: string; members: Array<{ tag: string; mapPosition: number }> };
+};
+
 type ClashApiMember = {
   name?: unknown;
   tag?: unknown;
@@ -97,6 +119,74 @@ export async function fetchCurrentClanMembers(): Promise<ClashClanMember[]> {
 
     return { name: member.name.trim(), player_tag: playerTag };
   });
+}
+
+export async function fetchCurrentWar(): Promise<ClashWar> {
+  const encodedTag = encodeURIComponent(APP_CONFIG.clanTag);
+  const war = await apiGet<{
+    state?: unknown;
+    startTime?: unknown;
+    endTime?: unknown;
+    clan?: { tag?: unknown; members?: Array<{
+      tag?: unknown; name?: unknown; mapPosition?: unknown;
+      attacks?: Array<{ order?: unknown; defenderTag?: unknown; stars?: unknown; battleTime?: unknown }>;
+    }> };
+    opponent?: { tag?: unknown; members?: Array<{ tag?: unknown; mapPosition?: unknown }> };
+  }>(`/clans/${encodedTag}/currentwar`);
+
+  if (war.state === "notInWar") {
+    return {
+      state: "notInWar",
+      startTime: "",
+      clan: { tag: APP_CONFIG.clanTag, members: [] },
+      opponent: { tag: "", members: [] },
+    };
+  }
+
+  if (typeof war.state !== "string" || !["preparation", "inWar", "warEnded"].includes(war.state)
+    || typeof war.startTime !== "string" || !war.startTime
+    || typeof war.clan?.tag !== "string" || typeof war.opponent?.tag !== "string"
+    || !Array.isArray(war.clan.members) || !Array.isArray(war.opponent.members)) {
+    throw new Error("A API retornou uma guerra incompleta ou em formato inesperado.");
+  }
+
+  const ownClan = war.clan.tag.toUpperCase() === APP_CONFIG.clanTag.toUpperCase()
+    ? war.clan : war.opponent;
+  const enemyClan = ownClan === war.clan ? war.opponent : war.clan;
+
+  const members = (ownClan.members ?? []).map((member) => {
+    if (typeof member.tag !== "string" || typeof member.name !== "string"
+      || typeof member.mapPosition !== "number" || !Number.isInteger(member.mapPosition)) {
+      throw new Error("A guerra contém um membro do clã em formato inválido.");
+    }
+    const attacks = (member.attacks ?? []).map((attack) => ({
+      order: typeof attack.order === "number" ? attack.order : 0,
+      defenderTag: typeof attack.defenderTag === "string" ? attack.defenderTag : undefined,
+      stars: typeof attack.stars === "number" ? attack.stars : 0,
+      battleTime: typeof attack.battleTime === "string" ? attack.battleTime : undefined,
+    }));
+    return {
+      tag: member.tag.toUpperCase(),
+      name: member.name,
+      mapPosition: member.mapPosition,
+      attacks,
+    };
+  });
+
+  const opponents = (enemyClan.members ?? []).map((member) => {
+    if (typeof member.tag !== "string" || typeof member.mapPosition !== "number") {
+      throw new Error("A guerra contém um adversário em formato inválido.");
+    }
+    return { tag: member.tag.toUpperCase(), mapPosition: member.mapPosition };
+  });
+
+  return {
+    state: war.state,
+    startTime: war.startTime,
+    endTime: typeof war.endTime === "string" ? war.endTime : undefined,
+    clan: { tag: APP_CONFIG.clanTag, members },
+    opponent: { tag: String(enemyClan.tag), members: opponents },
+  };
 }
 
 export async function fetchLatestRaidSeason(): Promise<ClashRaidSeason> {
