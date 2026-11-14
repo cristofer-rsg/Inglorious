@@ -1,6 +1,7 @@
 import "server-only";
 
 import SiteNav from "@/components/site-nav";
+import PerformanceFilters from "@/components/performance-filters";
 import { APP_CONFIG } from "@/lib/config";
 import { getPerformanceData, type PerformanceRow } from "@/lib/ghost-hunt/performance";
 
@@ -32,6 +33,7 @@ function roleLabel(role: string) {
   if (normalized === "leader") return "LÍDER";
   if (normalized === "co_leader" || normalized === "coleader") return "CO-LÍDER";
   if (normalized === "member") return "MEMBRO";
+  if (normalized === "elder") return "ANCIÃO";
   return role.toLocaleUpperCase("pt-BR");
 }
 
@@ -153,34 +155,15 @@ export default async function PerformancePage({
           <h1>Desempenho <em>mensal</em></h1>
           <p>Consulte a participação, os indicadores por atividade, as avaliações dos eventos recentes e as penalidades registradas. A classificação desta aba usa a pontuação oficial e seus critérios de desempate, sem alterar a aba Ranking e Pontos.</p>
 
-          <form className="history-filter performance-filter" action="/performance" method="get">
-            <label htmlFor="month">Mês de referência</label>
-            <select id="month" name="month" defaultValue={selectedMonth}>
-              {data.months.map((month) => <option value={month} key={month}>{monthLabel(month)}</option>)}
-            </select>
-            <label htmlFor="q">Buscar jogador</label>
-            <input id="q" name="q" type="search" placeholder="Nome ou tag" defaultValue={search} />
-            <label htmlFor="event">Evento recente</label>
-            <select id="event" name="event" defaultValue={event}>
-              <option value="">Classificação geral</option>
-              <option value="war">Última Guerra</option>
-              <option value="league">Última batalha da Liga</option>
-              <option value="raid">Última Raide</option>
-            </select>
-            <label htmlFor="situation">Situação</label>
-            <select id="situation" name="situation" defaultValue={situation} disabled={!event}>
-              <option value="">Todas as situações</option>
-              <option value="attacked">Com ataques</option>
-              <option value="no-attack">Sem ataques</option>
-              {event !== "raid" && <option value="no-data">Não Participou</option>}
-            </select>
-            <label htmlFor="order">Ordenação</label>
-            <select id="order" name="order" defaultValue={order}>
-              <option value="desc">Maior para menor</option>
-              <option value="asc">Menor para maior</option>
-            </select>
-            <button type="submit">Consultar</button>
-          </form>
+          <PerformanceFilters
+            months={data.months}
+            selectedMonth={selectedMonth}
+            search={search}
+            selectedEvent={event}
+            selectedSituation={situation}
+            order={order}
+            monthLabels={Object.fromEntries(data.months.map((month) => [month, monthLabel(month)]))}
+          />
 
           {!data.connected ? (
             <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{data.error ?? "Não foi possível carregar o desempenho."}</span></div>
