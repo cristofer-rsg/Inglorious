@@ -3,7 +3,6 @@ import "server-only";
 import SiteNav from "@/components/site-nav";
 import { APP_CONFIG } from "@/lib/config";
 import { getPerformanceData, type PerformanceRow } from "@/lib/ghost-hunt/performance";
-import { countEventSituations, filterEventSituation, type EventSituation } from "@/lib/ghost-hunt/performance-filter";
 
 export const dynamic = "force-dynamic";
 
@@ -82,12 +81,8 @@ export default async function PerformancePage({
     : "";
   const search = typeof params.q === "string" ? params.q.trim().slice(0, 80) : "";
   const event = ["war", "league", "raid"].includes(params.event ?? "") ? params.event as EventKey : "";
-  const allowedSituations: readonly EventSituation[] = event === "raid"
-    ? ["attacked", "no-attack"]
-    : ["attacked", "no-attack", "no-data"];
-  const situation = event && allowedSituations.includes(params.situation as EventSituation)
-    ? params.situation as EventSituation
-    : "";
+  const allowedSituations = event === "raid" ? ["attacked", "no-attack"] : ["attacked", "no-attack", "no-data"];
+  const situation = event && allowedSituations.includes(params.situation ?? "") ? params.situation ?? "" : "";
   const order = params.order === "asc" ? "asc" : "desc";
 
   const data = await getPerformanceData(requestedMonth || undefined, true);
@@ -118,8 +113,13 @@ export default async function PerformancePage({
     })
     : leadershipRows;
 
-  const filteredBySituation = filterEventSituation(eventRows, event, situation, eventAttacks);
-  const eventCounts = event ? countEventSituations(eventRows, event, eventAttacks) : null;
+  const filteredBySituation = eventRows.filter((row) => {
+    if (!event || !situation) return true;
+    const attacks = eventAttacks(row, event);
+    if (situation === "attacked") return attacks !== null && attacks > 0;
+    if (situation === "no-attack") return attacks === 0;
+    return attacks === null;
+  });
   const normalizedSearch = search.toLocaleLowerCase("pt-BR");
   const visibleRows = filteredBySituation.filter((row) =>
     !normalizedSearch
@@ -131,6 +131,15 @@ export default async function PerformancePage({
     ...metric,
     value: activeRows.reduce((sum, row) => sum + row[metric.key as MetricKey], 0),
   }));
+  const eventCounts = event ? {
+    attacked: eventRows.filter((row) => {
+      const attacks = eventAttacks(row, event);
+      return attacks !== null && attacks > 0;
+    }).length,
+    noAttack: eventRows.filter((row) => eventAttacks(row, event) === 0).length,
+    noData: eventRows.filter((row) => eventAttacks(row, event) === null).length,
+  } : null;
+
   return (
     <main className="app-shell">
       <header className="topbar">
