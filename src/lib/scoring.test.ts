@@ -137,4 +137,19 @@ describe("calculatePlayerScore", () => {
     expect(result.wars).toBe(75);
   });
 
+
+  it("does not assign untagged legacy events to duplicate-name players", () => {
+    const result = calculatePlayerScore({
+      playerName: "Alex",
+      playerTag: "#2AAAA",
+      allowLegacyNameFallback: false,
+      events: [
+        { player: "Alex", category: "Guerras", points: 100 },
+        { player: "Alex", player_tag: "#2AAAA", category: "Guerras", points: 25 },
+      ],
+    });
+
+    expect(result.wars).toBe(25);
+  });
+
 });
