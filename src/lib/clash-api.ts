@@ -27,6 +27,18 @@ export type ClashGamesProfile = {
   achievementValue: number;
 };
 
+export type ClashRaidMember = {
+  tag: string;
+  name: string;
+  attacks: number;
+};
+
+export type ClashRaidSeason = {
+  startTime: string;
+  state: string;
+  members: ClashRaidMember[];
+};
+
 type ClashApiMember = {
   name?: unknown;
   tag?: unknown;
@@ -85,6 +97,42 @@ export async function fetchCurrentClanMembers(): Promise<ClashClanMember[]> {
 
     return { name: member.name.trim(), player_tag: playerTag };
   });
+}
+
+export async function fetchLatestRaidSeason(): Promise<ClashRaidSeason> {
+  const encodedTag = encodeURIComponent(APP_CONFIG.clanTag);
+  const data = await apiGet<{ items?: Array<{
+    startTime?: unknown;
+    state?: unknown;
+    members?: Array<{ tag?: unknown; name?: unknown; attacks?: unknown }>;
+  }> }>(`/clans/${encodedTag}/capitalraidseasons?limit=1`);
+
+  const season = data.items?.[0];
+  if (!season || typeof season.startTime !== "string" || !season.startTime
+    || !Array.isArray(season.members) || season.members.length === 0) {
+    throw new Error("A API não retornou uma temporada válida do Raide. Nenhum dado foi alterado.");
+  }
+
+  const seen = new Set<string>();
+  const members = season.members.map((member) => {
+    if (typeof member.tag !== "string" || !member.tag.trim()
+      || typeof member.name !== "string" || !member.name.trim()
+      || typeof member.attacks !== "number" || !Number.isSafeInteger(member.attacks)
+      || member.attacks < 0) {
+      throw new Error("A temporada do Raide contém um membro inválido.");
+    }
+
+    const tag = member.tag.trim().toUpperCase();
+    if (seen.has(tag)) throw new Error(`Tag duplicada no Raide: ${tag}`);
+    seen.add(tag);
+    return { tag, name: member.name.trim(), attacks: member.attacks };
+  });
+
+  return {
+    startTime: season.startTime,
+    state: typeof season.state === "string" ? season.state : "unknown",
+    members,
+  };
 }
 
 export async function fetchPlayerGamesProfile(playerTag: string): Promise<ClashGamesProfile> {
