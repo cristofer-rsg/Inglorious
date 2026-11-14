@@ -3,6 +3,7 @@ import "server-only";
 import { APP_CONFIG } from "@/lib/config";
 import { calculatePlayerScore, isRankingEligible, type ScoringEvent } from "@/lib/scoring";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { getZonedMonthBounds } from "@/lib/time";
 
 type PlayerRow = {
   id: string;
@@ -65,16 +66,6 @@ function getCurrentMonthKey() {
   return `${year}-${month}`;
 }
 
-function getMonthBounds(monthKey: string) {
-  const [year, month] = monthKey.split("-").map(Number);
-  const nextYear = month === 12 ? year + 1 : year;
-  const nextMonth = month === 12 ? 1 : month + 1;
-  return {
-    start: new Date(`${monthKey}-01T00:00:00-03:00`).toISOString(),
-    end: new Date(`${nextYear}-${String(nextMonth).padStart(2, "0")}-01T00:00:00-03:00`).toISOString(),
-  };
-}
-
 function getMonthLabel(monthKey: string) {
   const label = new Intl.DateTimeFormat("pt-BR", {
     month: "long",
@@ -113,7 +104,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   try {
     const supabase = createSupabaseAdmin();
-    const bounds = getMonthBounds(monthKey);
+    const bounds = getZonedMonthBounds(monthKey, APP_CONFIG.timeZone);
 
     const [playersResult, events, statsResult] = await Promise.all([
       supabase
