@@ -36,6 +36,27 @@ describe("getRaidWeekend", () => {
     });
   });
 
+  it("parses the compact UTC timestamp format returned by the Clash API", () => {
+    expect(getRaidWeekend("20261113T070000.000Z", "America/Sao_Paulo")).toEqual({
+      weekendStart: "2026-11-13",
+      closingDate: "2026-11-16",
+      monthKey: "2026-11",
+    });
+  });
+
+  it("uses the local date when a compact API timestamp crosses midnight in UTC", () => {
+    expect(getRaidWeekend("20261114T020000.000Z", "America/Sao_Paulo")).toEqual({
+      weekendStart: "2026-11-13",
+      closingDate: "2026-11-16",
+      monthKey: "2026-11",
+    });
+  });
+
+  it("rejects malformed compact Clash API timestamps", () => {
+    expect(() => getRaidWeekend("20261199T070000.000Z", "America/Sao_Paulo"))
+      .toThrow("Data inicial do Raide inválida.");
+  });
+
   it("rejects an invalid API timestamp", () => {
     expect(() => getRaidWeekend("invalid", "America/Sao_Paulo")).toThrow("Data inicial do Raide inválida.");
   });
