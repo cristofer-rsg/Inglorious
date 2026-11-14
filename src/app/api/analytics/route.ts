@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
     const ip = request.headers.get("x-real-ip")?.trim() || forwardedFor || "unknown";
     const userAgent = request.headers.get("user-agent") ?? "";
-    const visitorHash = createHmac("sha256", secret).update(`${ip}| ${userAgent}`).digest("hex");
+    const visitorHash = createHmac("sha256", secret).update(`${ip}|${userAgent}`).digest("hex");
     const supabase = createSupabaseAdmin();
     const { error } = await supabase.from("site_analytics_events").insert({
       visitor_hash: visitorHash,
