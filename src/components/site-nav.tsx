@@ -6,6 +6,7 @@ const links = [
   { href: "/performance", label: "Desempenho" },
   { href: "/members", label: "Membros" },
   { href: "/history", label: "Histórico" },
+  { href: "/clan-time", label: "Tempo de Clã" },
   { href: "/rules", label: "Regras" },
   { href: "/admin", label: "Admin" },
 ];
