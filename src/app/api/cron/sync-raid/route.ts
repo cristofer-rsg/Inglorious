@@ -49,7 +49,7 @@ export async function GET(request: Request) {
         raid_attacks: member.attacks,
       });
 
-      if (member.attacks >= 5) {
+      if (player.active && member.attacks >= 5) {
         awards.push({
           player: player.name,
           player_tag: member.tag,
