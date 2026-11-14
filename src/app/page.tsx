@@ -1,5 +1,6 @@
 import { getDashboardData } from "@/lib/dashboard";
 import SiteNav from "@/components/site-nav";
+import RankingList from "@/components/ranking-list";
 import { APP_CONFIG } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
@@ -100,12 +101,7 @@ export default async function HomePage() {
           <div className="gh-v2-full-ranking-head"><div><small>CLASSIFICAÇÃO GERAL</small><h3>Todos os jogadores</h3></div><span>{data.monthLabel.toUpperCase()}</span></div>
           <section className="ranking-panel">
             <div className="ranking-head"><span>JOGADOR</span><span>PONTUAÇÃO</span></div>
-            {data.ranking.length ? data.ranking.slice(0, 10).map((player) => (
-              <article className="ranking-row" key={player.id}>
-                <div className="ranking-player"><span className="ranking-position">{String(player.position).padStart(2, "0")}</span><span>{player.player}<small>{player.tag || "TAG NÃO INFORMADA"}</small></span></div>
-                <strong>{number(player.total)} PTS</strong>
-              </article>
-            )) : <div className="empty-state"><span className="empty-icon">♜</span><b>{data.connected ? "Ainda não há jogadores classificados" : "Conectando os dados do clã"}</b><p>O ranking será exibido assim que houver dados sincronizados.</p></div>}
+            {data.ranking.length ? <RankingList players={data.ranking} /> : <div className="empty-state"><span className="empty-icon">♜</span><b>{data.connected ? "Ainda não há jogadores classificados" : "Conectando os dados do clã"}</b><p>O ranking será exibido assim que houver dados sincronizados.</p></div>}
           </section>
         </section>
 
