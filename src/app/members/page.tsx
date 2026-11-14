@@ -52,36 +52,32 @@ export default async function MembersPage() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
-        <span className="connection">HISTÓRICO DO CLÃ</span>
+        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+        <span className="status"><span className="status-dot online" />MEMBROS DO CLÃ</span>
       </header>
-      <SiteNav active="/members" />
-      <section className="page-heading">
-        <span className="eyebrow">TEMPO DE CASA</span>
-        <h1>Histórico de <em>membros</em></h1>
-        <p>O tempo de permanência é acumulado por períodos: pausa quando o jogador sai e continua quando retorna.</p>
+      <SiteNav active="/clan-time" />
+      <section className="content gh-content">
+        <section className="admin-content history-content">
+          <span className="auth-kicker">CADASTRO E SITUAÇÃO DOS JOGADORES</span>
+          <h1>Jogadores <em>do clã</em></h1>
+          <p>Consulte o status atual e os períodos de permanência registrados para cada jogador.</p>
+          {error ? <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{error}</span></div> : <>
+            <div className="history-section-title"><h2>Lista de membros</h2><span>{number(rows.length)} JOGADORES</span></div>
+            <div className="history-ranking">
+              {rows.map((row, index) => <article key={row.player_tag}>
+                <b className="history-position">{index + 1}</b>
+                <div className="history-player"><strong>{row.player_name}</strong><small>{row.player_tag}</small>
+                  <small>{row.membership_periods} período(s) registrado(s) · Primeira entrada: {date(row.first_joined_at)}</small>
+                </div>
+                <strong className={row.currently_in_clan ? "member-status active" : "member-status inactive"}>{row.currently_in_clan ? "NO CLÃ" : "FORA DO CLÃ"}</strong>
+              </article>)}
+              {rows.length === 0 && <div className="empty-state"><b>Nenhum jogador registrado</b><p>O histórico será preenchido pela sincronização automática do roster.</p></div>}
+            </div>
+          </>}
+          <a className="back-link" href="/clan-time">← Ver tempo de clã</a>
+        </section>
+        <footer className="footer"><span>INGLORIOUS <b>•</b> MEMBROS</span><span>Cadastro automático</span></footer>
       </section>
-      {error ? (
-        <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{error}</span></div>
-      ) : (
-        <div className="performance-table-wrap">
-          <table className="performance-table">
-            <thead><tr><th>Jogador</th><th>Status</th><th>Dias no clã</th><th>Entradas</th><th>Primeira entrada</th></tr></thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.player_tag}>
-                  <th scope="row"><strong>{row.player_name}</strong><small>{row.player_tag}</small></th>
-                  <td><span className={row.currently_in_clan ? "member-status active" : "member-status inactive"}>{row.currently_in_clan ? "No clã" : "Fora do clã"}</span></td>
-                  <td>{number(row.total_days)}</td>
-                  <td>{number(row.membership_periods)}</td>
-                  <td>{date(row.first_joined_at)}</td>
-                </tr>
-              ))}
-              {rows.length === 0 && <tr><td colSpan={5} className="table-empty">O histórico será preenchido após a primeira sincronização automática do clã.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      )}
     </main>
   );
 }
