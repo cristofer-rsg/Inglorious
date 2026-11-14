@@ -1,6 +1,7 @@
 import "server-only";
 
 import SiteNav from "@/components/site-nav";
+import { APP_CONFIG } from "@/lib/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ function date(value: string | null) {
   if (!value) return "—";
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
-    timeZone: "America/Sao_Paulo",
+    timeZone: APP_CONFIG.timeZone,
   }).format(new Date(value));
 }
 
