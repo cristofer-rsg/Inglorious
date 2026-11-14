@@ -207,27 +207,21 @@ export default async function PerformancePage({
                           <span className={attacks === null ? "performance-event-inline no-data" : attacks === 0 ? "performance-event-inline no-attack" : "performance-event-inline attacked"}>
                             {attacks === null ? "Não Participou" : `${number(attacks)} ${attacks === 1 ? "ataque" : "ataques"}`}
                           </span>
-                        ) : <strong>{number(row.index)}<small>%</small></strong>}
+                        ) : null}
                       </div>
                       {!event && (
                         <>
-                          <div className="performance-progress" role="img" aria-label={`Desempenho geral: ${row.index}%`}>
-                            <span style={{ width: `${Math.min(100, Math.max(0, row.index))}%` }} />
-                          </div>
                           <div className="performance-player-stats">
                             {metrics.map((metric) => {
                               const value = row[metric.key as MetricKey];
-                              const points = row[metric.points as keyof PerformanceRow] as number;
-                              const percent = row[metric.percent as keyof PerformanceRow] as number;
                               return (
                                 <div className="performance-player-stat-row" key={metric.key}>
                                   <span className="performance-player-stat-label"><i aria-hidden="true">{metric.icon}</i>{metric.label}</span>
-                                  <strong className="performance-player-stat-tile"><b>{number(value)}</b><small>{metric.unit} · {number(points)} pts · {number(percent)}%</small></strong>
+                                  <strong className="performance-player-stat-tile"><b>{number(value)}</b><small>{metric.unit}</small></strong>
                                 </div>
                               );
                             })}
                           </div>
-                          {row.penalties > 0 && <small className="performance-status penalty">Penalidades: −{number(row.penalties)} pontos</small>}
                           <small className={row.active ? "performance-status active" : "performance-status inactive"}>{row.active ? "ATIVO · NO CLÃ" : "INATIVO · FORA DO CLÃ"}</small>
                         </>
                       )}
