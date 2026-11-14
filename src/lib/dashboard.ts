@@ -140,15 +140,23 @@ export async function getDashboardData(): Promise<DashboardData> {
         .map((row): [string, number] => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.clan_games_points ?? 0)]),
     );
 
+    const playerNameCounts = new Map<string, number>();
+    for (const player of players) {
+      const key = player.name.trim().toLocaleLowerCase("pt-BR");
+      playerNameCounts.set(key, (playerNameCounts.get(key) ?? 0) + 1);
+    }
+
     const ranking = players
       .filter(isRankingEligible)
       .map((player) => {
+        const normalizedName = player.name.trim().toLocaleLowerCase("pt-BR");
         const games = player.player_tag
           ? gamesByTag.get(player.player_tag.trim().toUpperCase()) ?? 0
-          : gamesByName.get(player.name.trim().toLocaleLowerCase("pt-BR")) ?? 0;
+          : gamesByName.get(normalizedName) ?? 0;
         const score = calculatePlayerScore({
           playerName: player.name,
           playerTag: player.player_tag,
+          allowLegacyNameFallback: playerNameCounts.get(normalizedName) === 1,
           events,
           clanGamesPoints: games,
         });
