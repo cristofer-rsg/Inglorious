@@ -33,7 +33,7 @@ function zonedMidnightIso(year: number, month: number, timeZone: string): string
 }
 
 export function getZonedMonthBounds(monthKey: string, timeZone: string) {
-  if (!/^\\d{4}-(0[1-9]|1[0-2])$/.test(monthKey)) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(monthKey)) {
     throw new Error("Mês inválido para cálculo do período.");
   }
 
