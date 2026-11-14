@@ -158,8 +158,14 @@ export async function getDashboardData(monthOverride?: string): Promise<Dashboar
         .limit(5);
 
       if (!newMembersResult.error) {
+        const seenTags = new Set<string>();
         newMembers = ((newMembersResult.data ?? []) as NewMemberRow[])
-          .filter((member) => activeTags.has(member.player_tag.trim().toUpperCase()))
+          .filter((member) => {
+            const tag = member.player_tag.trim().toUpperCase();
+            if (!activeTags.has(tag) || seenTags.has(tag)) return false;
+            seenTags.add(tag);
+            return true;
+          })
           .map((member) => ({
             playerName: member.player_name,
             playerTag: member.player_tag,
