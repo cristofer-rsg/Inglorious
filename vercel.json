@@ -11,19 +11,19 @@
     },
     {
       "path": "/api/cron/sync-league",
-      "schedule": "15 */6 * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/sync-raid",
-      "schedule": "30 */6 * * *"
+      "schedule": "17 * * * *"
     },
     {
       "path": "/api/cron/sync-donations",
-      "schedule": "45 */6 * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/sync-clan-games",
-      "schedule": "0 3,9,15,21 * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/sync-capital",
