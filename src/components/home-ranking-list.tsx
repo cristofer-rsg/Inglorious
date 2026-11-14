@@ -13,6 +13,14 @@ const categories = [
   { key: "capitalPoints", label: "Capital" },
 ] as const;
 
+function roleLabel(role: string) {
+  const normalized = role.trim().toLocaleLowerCase("pt-BR").replaceAll("-", "_").replaceAll(" ", "_");
+  if (normalized === "leader") return "LÍDER";
+  if (normalized === "co_leader" || normalized === "coleader") return "CO-LÍDER";
+  if (normalized === "member") return "MEMBRO";
+  return role.toLocaleUpperCase("pt-BR");
+}
+
 function number(value: number) {
   return new Intl.NumberFormat("pt-BR").format(value);
 }
@@ -43,7 +51,7 @@ export default function HomeRankingList({ players }: { players: RankingRow[] }) 
             <b className="ranking-position">{player.position === 1 ? "🥇" : player.position === 2 ? "🥈" : player.position === 3 ? "🥉" : number(player.position)}</b>
             <span>
               <Link className="ranking-profile-link" href={player.tag ? `/player/${encodeURIComponent(player.tag)}` : "/ranking"}>{player.player}</Link>
-              {player.role && <small className="performance-leader-role">{player.role.toLocaleUpperCase("pt-BR")}</small>}
+              {player.role && <small className="performance-leader-role">{roleLabel(player.role)}</small>}
               <small>{player.active ? "NO CLÃ" : "FORA DO CLÃ"}{player.tag ? " · " + player.tag : ""}</small>
             </span>
           </span>
