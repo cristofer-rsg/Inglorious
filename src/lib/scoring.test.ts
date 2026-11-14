@@ -97,6 +97,20 @@ describe("calculatePlayerScore", () => {
     expect(result.total).toBe(1000);
   });
 
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "ignores invalid monthly clan-games snapshot values (%s)",
+    (clanGamesPoints) => {
+      const result = calculatePlayerScore({
+        playerName: "Jogador",
+        clanGamesPoints,
+        events: [{ player: "Jogador", category: "Guerras", points: 50 }],
+      });
+
+      expect(result.games).toBe(0);
+      expect(result.wars).toBe(50);
+    },
+  );
+
   it("rounds category scores to the nearest integer", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
