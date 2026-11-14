@@ -4,6 +4,7 @@ import { isCronAuthorized } from "@/lib/auth/cron";
 
 import { fetchCurrentLeagueGroup, fetchLeagueWar } from "@/lib/clash-api";
 import { APP_CONFIG } from "@/lib/config";
+import { mapWithConcurrency } from "@/lib/concurrency";
 import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -102,6 +103,22 @@ export async function GET(request: Request) {
       });
     }
 
+    const fetchedWars = await mapWithConcurrency(
+      warTags,
+      async (warTag) => {
+        try {
+          return { warTag, war: await fetchLeagueWar(warTag), error: null };
+        } catch (error) {
+          return {
+            warTag,
+            war: null,
+            error: error instanceof Error ? error.message : "erro desconhecido",
+          };
+        }
+      },
+      5,
+    );
+
     const allEvents: Array<{
       source_key: string;
       war_key: string;
@@ -113,9 +130,14 @@ export async function GET(request: Request) {
     const allStatSources = [];
     const failedWars = [];
 
-    for (const warTag of warTags) {
+    for (const fetched of fetchedWars) {
+      const { warTag, war, error } = fetched;
+      if (error || !war) {
+        failedWars.push(`${warTag}: ${error ?? "guerra não retornada"}`);
+        continue;
+      }
+
       try {
-        const war = await fetchLeagueWar(warTag);
         if (war.state !== "inWar" && war.state !== "warEnded") continue;
         parseClashTime(war.startTime);
         const warKey = `league:${warTag.toUpperCase()}`;
