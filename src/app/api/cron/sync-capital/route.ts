@@ -26,7 +26,11 @@ export async function GET(request: Request) {
 
     const supabase = createSupabaseAdmin();
     const { data, error } = await supabase.rpc("sync_inglorious_capital_atomic", {
-      p_snapshot: profiles,
+      p_snapshot: profiles.map(({ tag, name, clanCapitalContributions }) => ({
+        tag,
+        name,
+        clancapitalcontributions: clanCapitalContributions,
+      })),
     });
 
     if (error) {
