@@ -21,7 +21,7 @@ export default async function RankingPage() {
       {!data.connected && <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{data.error}</span></div>}
       <section className="ranking-list full-ranking">
         {data.ranking.map((player) => (
-          <article className={`ranking-row rank-${player.position}`} key={player.tag || player.player}>
+          <article className={`ranking-row rank-${player.position}`} key={player.id}>
             <span className="position">{String(player.position).padStart(2, "0")}</span>
             <div className="player-info"><strong>{player.player}</strong><small>{player.tag || "TAG NÃO INFORMADA"}</small></div>
             <div className="player-score"><strong>{number(player.total)}</strong><small>PTS</small></div>
