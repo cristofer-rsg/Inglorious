@@ -55,7 +55,7 @@ export default async function PerformancePage() {
           <table className="performance-table">
             <thead><tr><th>Jogador</th><th>Guerras</th><th>Liga</th><th>Raide</th><th>Doações</th><th>Jogos</th><th>Ouro</th></tr></thead>
             <tbody>
-              {rows.map((row) => <tr key={row.player_tag ?? row.player ?? Math.random().toString(36)}>
+              {rows.map((row, index) => <tr key={row.player_tag ?? row.player ?? index}>
                 <th scope="row"><strong>{row.player ?? "Jogador"}</strong><small>{row.player_tag ?? ""}</small></th>
                 <td>{number(row.war_attacks)}</td><td>{number(row.league_attacks)}</td><td>{number(row.raid_attacks)}</td><td>{number(row.donations)}</td><td>{number(row.clan_games_points)}</td><td>{number(row.capital_coins)}</td>
               </tr>)}
