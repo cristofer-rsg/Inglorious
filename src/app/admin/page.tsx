@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import SiteNav from "@/components/site-nav";
 import AdminLoginForm from "./login-form";
 import { getAdminSession } from "@/lib/auth/admin-session";
