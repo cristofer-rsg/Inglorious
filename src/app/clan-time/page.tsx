@@ -48,52 +48,53 @@ export default async function ClanTimePage() {
   const activeCount = players.filter((player) => player.isActive).length;
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
+    <main className="admin-shell">
+      <header className="admin-header">
         <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
-        <span className="status"><span className="status-dot online" />TEMPO DE CLÃ</span>
+        <a className="back-link" href="/">← Início</a>
       </header>
       <SiteNav active="/clan-time" />
-      <section className="content gh-content">
-        <section className="admin-content history-content tenure-content">
-          <span className="auth-kicker">HISTÓRICO DE PERMANÊNCIA</span>
-          <h1>Tempo <em>de Clã</em></h1>
-          <p className="tenure-intro">Acompanhe quanto tempo cada jogador acumulou no Inglorious. Quando alguém sai, o período é encerrado; quando retorna, um novo período começa e o tempo anterior continua somando.</p>
-          {error && <div className="connection-alert"><b>Não foi possível carregar o Tempo de Clã.</b><span>{error}</span></div>}
-          <div className="tenure-summary">
-            <article className="tenure-summary-registered"><small>Jogadores registrados</small><strong>{players.length}</strong></article>
-            <article className="tenure-summary-active"><small>No clã agora</small><strong>{activeCount}</strong></article>
-            <article className="tenure-summary-inactive"><small>Períodos registrados</small><strong>{totalPeriods}</strong></article>
-          </div>
-          {firstRecordedAt && <div className="tenure-notice">Base histórica disponível a partir de <b>{formatDate(firstRecordedAt)}</b>. O tempo anterior a esse primeiro registro não é estimado.</div>}
-          <div className="history-section-title"><h2>Ranking de permanência</h2><span>{players.length} JOGADORES</span></div>
-          <div className="tenure-list">
-            {players.map((player, index) => <article className="tenure-player-card" key={player.tag}>
-              <div className="tenure-player-top">
-                <div className="tenure-player-heading">
-                  <span className="tenure-position">{index + 1}</span>
-                  <div className="tenure-identity"><strong>{player.name}</strong><small>{player.tag}</small></div>
-                </div>
-                <span className={player.isActive ? "tenure-status" : "tenure-status inactive"}>{player.isActive ? "● NO CLÃ" : "○ FORA DO CLÃ"}</span>
-                <div className="tenure-duration"><strong>{formatDuration(player.accumulatedMs)}</strong><small>TEMPO ACUMULADO</small></div>
+      <section className="admin-content history-content tenure-content">
+        <span className="auth-kicker">HISTÓRICO DE PERMANÊNCIA</span>
+        <h1>Tempo <em>de Clã</em></h1>
+        <p className="tenure-intro">Acompanhe quanto tempo cada jogador acumulou no Inglorious. Quando alguém sai, o período é encerrado; quando retorna, um novo período começa e o tempo anterior continua somando.</p>
+
+        {error && <div className="connection-alert"><b>Não foi possível carregar o Tempo de Clã.</b><span>{error}</span></div>}
+
+        <div className="tenure-summary">
+          <article className="tenure-summary-registered"><small>Jogadores registrados</small><strong>{players.length}</strong></article>
+          <article className="tenure-summary-active"><small>No clã agora</small><strong>{activeCount}</strong></article>
+          <article className="tenure-summary-inactive"><small>Fora do clã (saíram)</small><strong>{Math.max(0, players.length - activeCount)}</strong></article>
+        </div>
+
+        {firstRecordedAt && <div className="tenure-notice">Base histórica disponível a partir de <b>{formatDate(firstRecordedAt)}</b>. O tempo anterior a esse primeiro registro não é estimado. As entradas e saídas passam a ser contabilizadas pelas sincronizações automáticas do clã.</div>}
+
+        <div className="history-section-title"><h2>Ranking de permanência</h2><span>{players.length} JOGADORES</span></div>
+        <div className="tenure-list">
+          {players.map((player, index) => <article className="tenure-player-card" key={player.tag}>
+            <div className="tenure-player-top">
+              <div className="tenure-player-heading">
+                <span className="tenure-position">{index + 1}</span>
+                <div className="tenure-identity"><strong>{player.name}</strong><small>{player.tag}</small></div>
               </div>
-              <div className="tenure-meta">
-                <span><b>Primeira entrada</b><strong>{formatDate(player.firstEntry)}</strong></span>
-                <span><b>Entrada mais recente</b><strong>{formatDate(player.latestEntry)}</strong></span>
-                <span><b>Períodos registrados</b><strong>{player.periods.length}</strong></span>
-                <span><b>Última saída</b><strong>{formatDate(player.lastExit)}</strong></span>
-              </div>
-              <details className="tenure-history"><summary>Ver histórico de permanência ({player.periods.length})</summary>
-                <div className="tenure-history-list">{player.periods.map((period) => <div className="tenure-history-item" key={period.id}>
-                  <span>Entrada: {formatDate(period.joined_at)}</span><strong>{period.left_at ? `Saída: ${formatDate(period.left_at)}` : "Em andamento"}</strong>
-                </div>)}</div>
-              </details>
-            </article>)}
-            {players.length === 0 && <div className="tenure-empty">Ainda não há períodos de permanência registrados.</div>}
-          </div>
-          <a className="back-link" href="/">← Voltar ao início</a>
-        </section>
-        <footer className="footer"><span>INGLORIOUS <b>•</b> TEMPO DE CLÃ</span><span>Histórico automático de permanência</span></footer>
+              <span className={player.isActive ? "tenure-status" : "tenure-status inactive"}>{player.isActive ? "● NO CLÃ" : "○ FORA DO CLÃ"}</span>
+              <div className="tenure-duration"><strong>{formatDuration(player.accumulatedMs)}</strong><small>TEMPO ACUMULADO</small></div>
+            </div>
+            <div className="tenure-meta">
+              <span><b>Primeira entrada</b><strong>{formatDate(player.firstEntry)}</strong></span>
+              <span><b>Entrada mais recente</b><strong>{formatDate(player.latestEntry)}</strong></span>
+              <span><b>Períodos registrados</b><strong>{player.periods.length}</strong></span>
+              <span><b>Última saída</b><strong>{formatDate(player.lastExit)}</strong></span>
+            </div>
+            <details className="tenure-history"><summary>Ver histórico de permanência ({player.periods.length})</summary>
+              <div className="tenure-history-list">{player.periods.map((period) => <div className="tenure-history-item" key={period.id}>
+                <span>Entrada: {formatDate(period.joined_at)}</span><strong>{period.left_at ? `Saída: ${formatDate(period.left_at)}` : "Em andamento"}</strong>
+              </div>)}</div>
+            </details>
+          </article>)}
+          {players.length === 0 && <div className="tenure-empty">Ainda não há períodos de permanência registrados.</div>}
+        </div>
+        <a className="back-link" href="/">← Voltar ao início</a>
       </section>
     </main>
   );
