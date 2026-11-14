@@ -5,6 +5,7 @@ const links = [
   { href: "/ranking", label: "Ranking" },
   { href: "/performance", label: "Desempenho" },
   { href: "/members", label: "Membros" },
+  { href: "/history", label: "Histórico" },
   { href: "/rules", label: "Regras" },
   { href: "/admin", label: "Admin" },
 ];
