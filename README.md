@@ -45,6 +45,7 @@ A rota está implementada, mas não foi agendada nem ativada em produção. Nenh
 - O painel administrativo exibe somente lançamentos automáticos e exporta o histórico completo de eventos em CSV. Lançamentos manuais não são oferecidos, evitando divergências com os dados oficiais da API.
 - A aba Desempenho permite selecionar o mês, pesquisar por nome/tag e comparar seis categorias com índice independente de até 600 pontos (100 por categoria), sem alterar o ranking oficial.
 - A página inicial destaca novas entradas identificadas pela sincronização, sem confundir o roster inicial de referência com novos membros.
+- A página Tempo de Clã consolida os períodos de entrada e saída, calcula o tempo acumulado com pausas fora do roster e exibe o histórico individual de permanência. A base inicial começa na primeira sincronização registrada; períodos anteriores não são estimados.
 - O histórico mensal possui página pública e rota protegida `GET /api/cron/archive-month`; a rota arquiva o mês anterior somente quando existem dados e não cria temporadas vazias.
 - O painel administrativo exporta o histórico de eventos em CSV e apresenta visualizações, visitantes distintos, páginas mais acessadas e tipos de dispositivo nos últimos 30 dias.
 - A análise registra somente caminho da página, host de referência, tipo de dispositivo e hash HMAC do visitante. Endereços IP não são armazenados e dados geográficos não são coletados.
