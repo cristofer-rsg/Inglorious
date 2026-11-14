@@ -6,6 +6,7 @@ const links = [
   { href: "/performance", label: "Desempenho" },
   { href: "/members", label: "Membros" },
   { href: "/rules", label: "Regras" },
+  { href: "/admin", label: "Admin" },
 ];
 
 export default function SiteNav({ active }: { active: string }) {
