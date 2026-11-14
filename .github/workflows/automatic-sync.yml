@@ -73,6 +73,23 @@ jobs:
           printf 'Quantidade de separadores de token: %s\\n' "$(printf '%s' "$NORMALIZED" | tr -cd '.' | wc -c)"
           printf 'Caracteres fora do conjunto JWT: %s\\n' "$(printf '%s' "$NORMALIZED" | LC_ALL=C tr -d 'A-Za-z0-9._-' | wc -c)"
 
+      - name: Testar autenticação diretamente no proxy Clash
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATUS="$(curl --silent --show-error --output /tmp/clash-proxy-response.json --write-out '%{http_code}' \\
+            --max-time 30 \\
+            -H "Authorization: Bearer ${CLASH_OF_CLANS_API_TOKEN}" \\
+            -H "Accept: application/json" \\
+            "https://cocproxy.royaleapi.dev/v1/clans/%232RVQ9YGRY")"
+          printf 'HTTP do proxy Clash: %s\\n' "$STATUS"
+          if [[ "$STATUS" == "200" ]]; then
+            echo 'Autenticação direta no proxy: sucesso.'
+          else
+            printf 'Resposta do proxy (sem credencial): '
+            jq -c '{reason, message}' /tmp/clash-proxy-response.json 2>/dev/null || echo 'corpo não JSON'
+          fi
+
       - name: Iniciar servidor local no runner
         shell: bash
         run: |
