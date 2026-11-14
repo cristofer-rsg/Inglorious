@@ -7,7 +7,7 @@ import { APP_CONFIG } from "@/lib/config";
 import { mapWithConcurrency } from "@/lib/concurrency";
 import { getKnownPlayersByTags, synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { parseClashApiTimestamp } from "@/lib/time";
+import { getClashSeasonMonth, parseClashApiTimestamp } from "@/lib/time";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,9 +33,7 @@ export async function GET(request: Request) {
       fetchCurrentLeagueGroup(),
     ]);
     const supabase = createSupabaseAdmin();
-    const seasonMonth = group?.season && /^\d{4}(?:0[1-9]|1[0-2])$/.test(group.season)
-      ? `${group.season.slice(0, 4)}-${group.season.slice(4, 6)}`
-      : getMonthKey();
+    const seasonMonth = getClashSeasonMonth(group?.season) ?? getMonthKey();
     const monthKey = seasonMonth;
 
     const { data: monthlyRows, error: monthlyError } = await supabase
