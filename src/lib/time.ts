@@ -48,7 +48,7 @@ export function getZonedMonthBounds(monthKey: string, timeZone: string) {
 }
 
 export function parseClashApiTimestamp(value: string): Date | null {
-  const match = value.match(/^(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})(\\d{2})(?:\\.(\\d{1,3}))?Z$/);
+  const match = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?Z$/);
   if (!match) return null;
 
   const [, year, month, day, hour, minute, second, milliseconds = "0"] = match;
