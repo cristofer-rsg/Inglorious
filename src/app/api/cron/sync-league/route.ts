@@ -69,17 +69,18 @@ export async function GET(request: Request) {
       }];
     });
 
-    let bonusSync: unknown = { inserted: 0, skipped: 0 };
-    if (bonusEvents.length > 0) {
+    const syncLeagueBonus = async (): Promise<unknown> => {
+      if (bonusEvents.length === 0) return { inserted: 0, skipped: 0 };
       const { data, error } = await supabase.rpc("record_clash_league_events", {
         p_events: bonusEvents,
       });
       if (error) throw new Error(`Falha ao lançar bônus de conclusão da Liga: ${error.message}`);
-      bonusSync = Array.isArray(data) ? data[0] : data;
-    }
+      return Array.isArray(data) ? data[0] : data;
+    };
 
     const group = await fetchCurrentLeagueGroup();
     if (!group || group.state === "notInWar") {
+      const bonusSync = await syncLeagueBonus();
       return NextResponse.json({
         success: true,
         month: monthKey,
@@ -92,6 +93,7 @@ export async function GET(request: Request) {
     const warTags = [...new Set(group.rounds.flatMap((round) => round.warTags))]
       .filter((tag) => tag && tag !== "#0");
     if (warTags.length === 0) {
+      const bonusSync = await syncLeagueBonus();
       return NextResponse.json({
         success: true,
         month: monthKey,
@@ -185,6 +187,8 @@ export async function GET(request: Request) {
         `Sincronização incompleta da Liga; nenhuma estatística ou pontuação da rodada foi gravada. ${failedWars.join(" | ")}`,
       );
     }
+
+    const bonusSync = await syncLeagueBonus();
 
     let performanceSync: unknown = null;
     if (allStatSources.length > 0) {
