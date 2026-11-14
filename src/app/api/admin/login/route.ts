@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createAdminSession, verifyAdminCredentials } from "@/lib/auth/admin-session";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { hasSameOrigin } from "@/lib/auth/request-origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,14 +34,17 @@ function hashIp(ip: string) {
 
 export async function POST(request: Request) {
   try {
+    const contentLength = Number(request.headers.get("content-length") ?? 0);
+    if (Number.isFinite(contentLength) && contentLength > 8192) {
+      return jsonResponse({ success: false, error: "Requisição muito grande." }, 413);
+    }
+
     const contentType = request.headers.get("content-type") ?? "";
     if (!contentType.toLowerCase().includes("application/json")) {
       return jsonResponse({ success: false, error: "Formato inválido." }, 415);
     }
 
-    const origin = request.headers.get("origin");
-    const requestUrl = new URL(request.url);
-    if (!origin || new URL(origin).origin !== requestUrl.origin) {
+    if (!hasSameOrigin(request)) {
       return jsonResponse({ success: false, error: "Origem não autorizada." }, 403);
     }
 
@@ -48,7 +52,12 @@ export async function POST(request: Request) {
       return jsonResponse({ success: false, error: "A autenticação administrativa ainda não foi configurada." }, 503);
     }
 
-    const body: unknown = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return jsonResponse({ success: false, error: "Corpo da requisição inválido." }, 400);
+    }
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return jsonResponse({ success: false, error: "Credenciais inválidas." }, 400);
     }
