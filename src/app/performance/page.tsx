@@ -88,6 +88,7 @@ export default async function PerformancePage({
   const currentMonth = monthKey();
 
   let rows: PlayerPerformance[] = [];
+  let summaryTotals = { wars: 0, league: 0, raid: 0, donations: 0, games: 0, capital: 0 };
   let months = [currentMonth];
   let error = "";
 
@@ -131,11 +132,6 @@ export default async function PerformancePage({
     const players = (playersResult.data ?? []) as PlayerRow[];
     const baseRows = players
       .filter((player) => !activeOnly || player.active !== false)
-      .filter((player) => {
-        if (!search) return true;
-        return player.name.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"))
-          || (player.player_tag ?? "").toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"));
-      })
       .map((player) => {
         const tag = (player.player_tag ?? "").trim().toUpperCase();
         const stat = tag ? statsByTag.get(tag) : undefined;
@@ -159,35 +155,43 @@ export default async function PerformancePage({
       metrics.map((metric) => [metric, Math.max(0, ...baseRows.map((row) => row[metric]) )]),
     ) as Record<(typeof metrics)[number], number>;
 
-    rows = baseRows.map((row) => {
+    const rankedRows = baseRows.map((row) => {
       const index = metrics.reduce((total, metric) => {
         const maximum = maxima[metric];
         return total + (maximum > 0 ? (row[metric] / maximum) * 100 : 0);
       }, 0);
       return { ...row, activityIndex: Math.round(index * 10) / 10 };
-    }).sort((a, b) =>
-      b.activityIndex - a.activityIndex
-      || b.wars - a.wars
-      || b.league - a.league
-      || b.raid - a.raid
-      || b.donations - a.donations
-      || b.games - a.games
-      || b.capital - a.capital
-      || a.player.localeCompare(b.player, "pt-BR"),
-    );
+    });
+
+    summaryTotals = rankedRows.reduce((acc, row) => ({
+      wars: acc.wars + row.wars,
+      league: acc.league + row.league,
+      raid: acc.raid + row.raid,
+      donations: acc.donations + row.donations,
+      games: acc.games + row.games,
+      capital: acc.capital + row.capital,
+    }), summaryTotals);
+
+    rows = rankedRows
+      .filter((row) => !search
+        || row.player.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"))
+        || row.tag.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR")))
+      .sort((a, b) =>
+        b.activityIndex - a.activityIndex
+        || b.wars - a.wars
+        || b.league - a.league
+        || b.raid - a.raid
+        || b.donations - a.donations
+        || b.games - a.games
+        || b.capital - a.capital
+        || a.player.localeCompare(b.player, "pt-BR"),
+      );
   } catch (cause) {
     error = cause instanceof Error ? cause.message : "Não foi possível carregar o desempenho.";
   }
 
   const selectedMonth = months.includes(requestedMonth) ? requestedMonth : currentMonth;
-  const totals = rows.reduce((acc, row) => ({
-    wars: acc.wars + row.wars,
-    league: acc.league + row.league,
-    raid: acc.raid + row.raid,
-    donations: acc.donations + row.donations,
-    games: acc.games + row.games,
-    capital: acc.capital + row.capital,
-  }), { wars: 0, league: 0, raid: 0, donations: 0, games: 0, capital: 0 });
+  const totals = summaryTotals;
 
   return (
     <main className="app-shell">
