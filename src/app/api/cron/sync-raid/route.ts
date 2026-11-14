@@ -5,35 +5,13 @@ import { isCronAuthorized } from "@/lib/auth/cron";
 import { fetchLatestRaidSeason } from "@/lib/clash-api";
 import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { APP_CONFIG } from "@/lib/config";
+import { getRaidWeekend } from "@/lib/raid-calendar";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-function localDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) throw new Error("Data inicial do Raide inválida.");
-
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: APP_CONFIG.timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-
-  return `${parts.find((part) => part.type === "year")?.value}-${parts.find((part) => part.type === "month")?.value}-${parts.find((part) => part.type === "day")?.value}`;
-}
-
-function shiftDate(date: string, days: number) {
-  const value = new Date(`${date}T12:00:00Z`);
-  value.setUTCDate(value.getUTCDate() + days);
-  return value.toISOString().slice(0, 10);
-}
-
-function getMonth(date: string) {
-  return date.slice(0, 7);
-}
 
 export async function GET(request: Request) {
   if (!isCronAuthorized(request)) {
@@ -48,12 +26,9 @@ export async function GET(request: Request) {
     const roster = rosterResult.members;
 
     const rosterByTag = new Map<string, (typeof roster)[number]>(roster.map((member): [string, (typeof roster)[number]] => [member.player_tag, member]));
-    const seasonDate = localDate(season.startTime);
-    const weekday = new Date(`${seasonDate}T12:00:00Z`).getUTCDay();
-    const daysSinceFriday = (weekday + 2) % 7;
-    const weekendStart = shiftDate(seasonDate, -daysSinceFriday);
-    const closingDate = shiftDate(weekendStart, 3);
-    const monthKey = getMonth(closingDate);
+    const raidWeekend = getRaidWeekend(season.startTime, APP_CONFIG.timeZone);
+    const { weekendStart, closingDate, monthKey } = raidWeekend;
+    const seasonDate = season.startTime;
     const statsAnchor = weekendStart;
 
     const statsSources = [];
@@ -80,7 +55,7 @@ export async function GET(request: Request) {
           weekend_key: weekendStart,
           month_key: monthKey,
           attacks: member.attacks,
-          weekend_label: new Date(`${seasonDate}T12:00:00Z`).toLocaleDateString("pt-BR", { timeZone: "UTC" }),
+          weekend_label: new Date(seasonDate).toLocaleDateString("pt-BR", { timeZone: APP_CONFIG.timeZone }),
         });
       }
     }
