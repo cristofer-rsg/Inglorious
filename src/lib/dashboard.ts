@@ -28,6 +28,12 @@ type MonthlyStatRow = {
   donations: number | null;
 };
 
+type NewMemberRow = {
+  player_name: string;
+  player_tag: string;
+  entered_at: string;
+};
+
 export type RankingRow = {
   id: string;
   position: number;
@@ -51,6 +57,7 @@ export type DashboardData = {
   activePlayers: number;
   eventCount: number;
   ranking: RankingRow[];
+  newMembers: Array<{ playerName: string; playerTag: string; enteredAt: string }>;
   connected: boolean;
   error?: string;
 };
@@ -129,6 +136,32 @@ export async function getDashboardData(): Promise<DashboardData> {
     const { byTag: gamesByTag, byName: gamesByName } = monthlyMaps.clanGames;
     const { byTag: donationsByTag, byName: donationsByName } = monthlyMaps.donations;
 
+    const activeTags = new Set(
+      players
+        .filter((player) => player.active !== false && player.player_tag)
+        .map((player) => player.player_tag!.trim().toUpperCase()),
+    );
+
+    let newMembers: DashboardData["newMembers"] = [];
+    const recentThreshold = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const newMembersResult = await supabase
+      .from("clan_member_entry_history")
+      .select("player_name,player_tag,entered_at")
+      .eq("is_baseline", false)
+      .gte("entered_at", recentThreshold)
+      .order("entered_at", { ascending: false })
+      .limit(5);
+
+    if (!newMembersResult.error) {
+      newMembers = ((newMembersResult.data ?? []) as NewMemberRow[])
+        .filter((member) => activeTags.has(member.player_tag.trim().toUpperCase()))
+        .map((member) => ({
+          playerName: member.player_name,
+          playerTag: member.player_tag,
+          enteredAt: member.entered_at,
+        }));
+    }
+
     const playerNameCounts = new Map<string, number>();
     for (const player of players) {
       const key = player.name.trim().toLocaleLowerCase("pt-BR");
@@ -195,6 +228,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       activePlayers: players.filter((player) => player.active !== false).length,
       eventCount: events.length,
       ranking,
+      newMembers,
       connected: true,
     };
   } catch (error) {
@@ -205,6 +239,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       activePlayers: 0,
       eventCount: 0,
       ranking: [],
+      newMembers: [],
       connected: false,
       error: error instanceof Error ? error.message : "Não foi possível carregar os dados do clã.",
     };
