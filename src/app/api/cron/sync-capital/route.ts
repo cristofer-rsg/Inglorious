@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isCronAuthorized } from "@/lib/auth/cron";
 
-import { fetchPlayerCapitalProfile } from "@/lib/clash-api";
+import { fetchPlayerCapitalProfile, mapWithConcurrency } from "@/lib/clash-api";
 import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -17,12 +17,11 @@ export async function GET(request: Request) {
 
   try {
     const { members } = await synchronizeCurrentRoster();
-    const profiles = [];
-
-    for (const member of members) {
-      profiles.push(await fetchPlayerCapitalProfile(member.player_tag));
-      await new Promise((resolve) => setTimeout(resolve, 120));
-    }
+    const profiles = await mapWithConcurrency(
+      members,
+      (member) => fetchPlayerCapitalProfile(member.player_tag),
+      5,
+    );
 
     const supabase = createSupabaseAdmin();
     const { data, error } = await supabase.rpc("sync_inglorious_capital_atomic", {
