@@ -29,7 +29,7 @@ describe("createMonthlyDonationMaps", () => {
 
     expect(maps.byTag.get("#2AAAA")).toBe(2500);
     expect(maps.byTag.get("#2BBBB")).toBe(5000);
-    expect(maps.byName.get("alex")).toBe(5000);
+    expect(maps.byName.has("alex")).toBe(false);
   });
 
   it("ignores non-finite snapshot values", () => {
