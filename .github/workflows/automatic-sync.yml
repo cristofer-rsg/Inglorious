@@ -60,6 +60,19 @@ jobs:
       - name: Compilar aplicação para execução no runner
         run: npm run build
 
+      - name: Diagnosticar formato da chave Clash (sem revelar o segredo)
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN="${CLASH_OF_CLANS_API_TOKEN:-}"
+          NORMALIZED="$(printf '%s' "$TOKEN" | tr -d '[:space:]')"
+          printf 'Token presente: %s\\n' "$([[ -n "$TOKEN" ]] && echo sim || echo nao)"
+          printf 'Comprimento original: %s\\n' "${#TOKEN}"
+          printf 'Comprimento sem espaços: %s\\n' "${#NORMALIZED}"
+          printf 'Prefixo JWT esperado (eyJ): %s\\n' "$( [[ "$NORMALIZED" == eyJ* ]] && echo sim || echo nao )"
+          printf 'Quantidade de separadores de token: %s\\n' "$(printf '%s' "$NORMALIZED" | tr -cd '.' | wc -c)"
+          printf 'Caracteres fora do conjunto JWT: %s\\n' "$(printf '%s' "$NORMALIZED" | LC_ALL=C tr -d 'A-Za-z0-9._-' | wc -c)"
+
       - name: Iniciar servidor local no runner
         shell: bash
         run: |
