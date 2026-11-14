@@ -9,6 +9,12 @@ export type ClashClanMember = {
   player_tag: string;
 };
 
+export type ClashPlayerProfile = {
+  tag: string;
+  name: string;
+  clanCapitalContributions: number;
+};
+
 type ClashApiMember = {
   name?: unknown;
   tag?: unknown;
@@ -67,4 +73,28 @@ export async function fetchCurrentClanMembers(): Promise<ClashClanMember[]> {
 
     return { name: member.name.trim(), player_tag: playerTag };
   });
+}
+
+export async function fetchPlayerCapitalProfile(playerTag: string): Promise<ClashPlayerProfile> {
+  const normalizedTag = playerTag.trim().toUpperCase();
+  if (!/^#[A-Z0-9]{3,15}$/.test(normalizedTag)) {
+    throw new Error(`Tag de jogador inválida: ${playerTag}`);
+  }
+
+  const profile = await apiGet<{
+    tag?: unknown;
+    name?: unknown;
+    clanCapitalContributions?: unknown;
+  }>(`/players/${encodeURIComponent(normalizedTag)}`);
+
+  const returnedTag = typeof profile.tag === "string" ? profile.tag.trim().toUpperCase() : "";
+  const name = typeof profile.name === "string" ? profile.name.trim() : "";
+  const total = profile.clanCapitalContributions;
+
+  if (returnedTag !== normalizedTag || !name
+    || typeof total !== "number" || !Number.isSafeInteger(total) || total < 0) {
+    throw new Error(`Perfil ou total de Capital inválido para ${normalizedTag}. Nenhum lançamento foi feito.`);
+  }
+
+  return { tag: returnedTag, name, clanCapitalContributions: total };
 }
