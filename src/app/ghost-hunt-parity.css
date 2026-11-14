@@ -155,14 +155,3 @@
  .player-profile-total{padding:17px}
 }
 
-
-.history-events{display:grid;gap:9px;margin:14px 0 24px}
-.history-events article{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:14px 16px;border:1px solid rgba(214,166,76,.2);border-radius:10px;background:linear-gradient(145deg,#292219,#17130f)}
-.history-events article>div{min-width:0}
-.history-events article b,.history-events article small{display:block}
-.history-events article b{color:#f0e4cd;font-size:12px}
-.history-events article small{margin-top:4px;color:#b7a78a;font-size:10px}
-.history-events article p{margin:7px 0 0;color:#d9cfbd;font-size:11px;line-height:1.55;overflow-wrap:anywhere}
-.history-events article>strong{color:#f0ca78;white-space:nowrap;font-size:12px}
-.history-events article>strong.negative{color:#ff9b8c}
-@media(max-width:560px){.history-events article{flex-direction:column}}
