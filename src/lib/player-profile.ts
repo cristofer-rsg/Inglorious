@@ -115,7 +115,7 @@ export async function getPlayerProfile(tag: string): Promise<PlayerProfile | nul
     playerName: player.name,
     playerTag: normalizedTag,
     events: monthEvents,
-    donationsTotal: monthlyStat?.donations ?? 0,
+    donationsTotal: monthlyStat?.donations ?? undefined,
     clanGamesPoints: monthlyStat?.clan_games_points ?? 0,
   });
 
