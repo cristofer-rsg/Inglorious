@@ -19,6 +19,7 @@ type Stats = {
   clan_games_points: number | null;
 };
 type ActivitySource = {
+  month_key: string;
   source_key: string;
   player_tag: string | null;
   war_attacks: number | null;
@@ -136,7 +137,7 @@ export async function getPerformanceData(
         .select("month_key,player_tag,player,war_attacks,donations,clan_games_points")
         .order("month_key", { ascending: false }) as unknown as RangeQuery<Stats>),
       allRows<ActivitySource>(db.from("player_monthly_stat_sources")
-        .select("source_key,player_tag,war_attacks,league_attacks,raid_attacks,updated_at")
+        .select("month_key,source_key,player_tag,war_attacks,league_attacks,raid_attacks,updated_at")
         .order("updated_at", { ascending: false }) as unknown as RangeQuery<ActivitySource>),
     ]);
     if (playersResult.error) throw new Error(playersResult.error.message);
@@ -151,6 +152,7 @@ export async function getPerformanceData(
       ? requestedMonth
       : fallbackMonth;
     const stats = allStats.filter((row) => row.month_key === monthKey);
+    const monthActivitySources = activitySources.filter((row) => row.month_key === monthKey);
 
     const { data: completedWars, error: completedWarsError } = await db
       .from("clan_war_completions")
@@ -160,7 +162,7 @@ export async function getPerformanceData(
     if (completedWarsError) throw new Error(completedWarsError.message);
     const latestWarKey = completedWars?.[0]?.war_key || "";
 
-    const latestLeagueDay = activitySources
+    const latestLeagueDay = monthActivitySources
       .map((row) => row.source_key.match(/^league:(\d{8})T\d{6}\.\d+Z:/)?.[1] || "")
       .sort()
       .at(-1) || "";
@@ -172,7 +174,7 @@ export async function getPerformanceData(
       )).toISOString().slice(0, 10).replace(/-/g, "")
       : "";
 
-    const raidSources = activitySources.filter((row) => /^raid:\d{4}-\d{2}-\d{2}:/.test(row.source_key));
+    const raidSources = monthActivitySources.filter((row) => /^raid:\d{4}-\d{2}-\d{2}:/.test(row.source_key));
     const latestRaidSync = raidSources.reduce(
       (latest, row) => row.updated_at && row.updated_at > latest ? row.updated_at : latest,
       "",
@@ -185,7 +187,7 @@ export async function getPerformanceData(
       league: number | null;
       raid: number | null;
     }>();
-    for (const source of activitySources) {
+    for (const source of monthActivitySources) {
       const tag = (source.player_tag || "").trim().toUpperCase();
       if (!tag) continue;
       const current = lastActivityByTag.get(tag) || { war: null, league: null, raid: null };
