@@ -13,8 +13,8 @@ describe("isRankingEligible", () => {
     },
   );
 
-  it("excludes inactive or explicitly ineligible members", () => {
-    expect(isRankingEligible({ active: false, eligible: "Elegível", role: "member" })).toBe(false);
+  it("keeps eligibility independent from current roster status", () => {
+    expect(isRankingEligible({ active: false, eligible: "Elegível", role: "member" })).toBe(true);
     expect(isRankingEligible({ active: true, eligible: "Inelegível", role: "member" })).toBe(false);
   });
 });
