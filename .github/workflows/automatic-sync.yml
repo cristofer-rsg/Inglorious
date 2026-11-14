@@ -60,47 +60,40 @@ jobs:
       - name: Compilar aplicação para execução no runner
         run: npm run build
 
-      - name: Diagnosticar formato e validade da chave Clash (sem revelar o segredo)
+      - name: Validar formato da chave Clash sem revelar o segredo
         shell: bash
         run: |
           set -euo pipefail
-          node <<'NODE'
-          const token = (process.env.CLASH_OF_CLANS_API_TOKEN ?? "").replace(/\\s+/g, "");
-          const parts = token.split(".");
-          let payload = {};
-          try {
-            if (parts.length !== 3) throw new Error("not-jwt");
-            payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
-          } catch {
-            console.log("JWT decodificável: não");
-            process.exit(0);
-          }
-          const exp = typeof payload.exp === "number" ? payload.exp : null;
-          console.log("JWT decodificável: sim");
-          console.log("Claim exp presente: " + (exp !== null ? "sim" : "não"));
-          console.log("Token expirado: " + (exp !== null && exp <= Math.floor(Date.now() / 1000) ? "sim" : "não"));
-          if (exp !== null) console.log("Expiração UTC: " + new Date(exp * 1000).toISOString());
-          console.log("Claim iss presente: " + (typeof payload.iss === "string" ? "sim" : "não"));
-          console.log("Claim sub presente: " + (typeof payload.sub === "string" ? "sim" : "não"));
-          NODE
+          TOKEN="$(printf '%s' "$CLASH_OF_CLANS_API_TOKEN" | tr -d '[:space:]')"
+          if [[ -z "$TOKEN" ]]; then
+            echo "::error::A chave Clash está vazia."
+            exit 1
+          fi
+          printf 'Caracteres da chave após remover espaços: %s\\n' "${#TOKEN}"
+          if [[ "$TOKEN" != "$CLASH_OF_CLANS_API_TOKEN" ]]; then
+            echo "A chave contém espaços ou quebras de linha; será usada sem esses caracteres."
+          fi
+          echo "A chave foi carregada no runner sem exibir seu conteúdo."
 
       - name: Testar autenticação diretamente no proxy Clash
         shell: bash
         run: |
           set -euo pipefail
-          STATUS="$(curl --silent --show-error --output /tmp/clash-proxy-response.json --write-out '%{http_code}' \
-            --max-time 30 \
-            -H "Authorization: Bearer ${CLASH_OF_CLANS_API_TOKEN}" \
-            -H "auth: ${CLASH_OF_CLANS_API_TOKEN}" \
-            -H "Accept: application/json" \
+          TOKEN="$(printf '%s' "$CLASH_OF_CLANS_API_TOKEN" | tr -d '[:space:]')"
+          STATUS="$(curl --silent --show-error --output /tmp/clash-proxy-response.json --write-out '%{http_code}' \\
+            --max-time 30 \\
+            -H "Authorization: Bearer $TOKEN" \\
+            -H "auth: $TOKEN" \\
+            -H "Accept: application/json" \\
             "https://cocproxy.royaleapi.dev/v1/clans/%232RVQ9YGRY")"
-          printf 'HTTP do proxy Clash: %s\n' "$STATUS"
-          if [[ "$STATUS" == "200" ]]; then
-            echo 'Autenticação direta no proxy: sucesso.'
-          else
+          printf 'HTTP do proxy Clash: %s\\n' "$STATUS"
+          if [[ "$STATUS" != "200" ]]; then
             printf 'Resposta do proxy (sem credencial): '
             jq -c '{reason, message}' /tmp/clash-proxy-response.json 2>/dev/null || echo 'corpo não JSON'
+            echo "::error::A autenticação Clash foi recusada. Confirme no portal Supercell se a chave está ativa e se o IP 45.79.218.79 está autorizado."
+            exit 1
           fi
+          echo "Autenticação direta no proxy: sucesso."
 
       - name: Iniciar servidor local no runner
         shell: bash
