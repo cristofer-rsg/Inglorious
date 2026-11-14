@@ -163,7 +163,7 @@ export async function getPerformanceData(
     const latestWarKey = completedWars?.[0]?.war_key || "";
 
     const latestLeagueDay = activitySources
-      .map((row) => row.source_key.match(/^league:(\d{8})T\d{6}\.\d+Z:/)?.[1] || "")
+      .map((row) => row.source_key.match(/^league:(\d{8})T\d{6}(?:\.\d+)?Z:/)?.[1] || "")
       .sort()
       .at(-1) || "";
     const latestLeagueStartDay = latestLeagueDay
@@ -194,7 +194,7 @@ export async function getPerformanceData(
       if (latestWarKey && source.source_key.startsWith(`war:${latestWarKey}:`)) {
         current.war = source.war_attacks == null ? null : safeCount(source.war_attacks);
       }
-      const leagueDay = source.source_key.match(/^league:(\d{8})T\d{6}\.\d+Z:/)?.[1] || "";
+      const leagueDay = source.source_key.match(/^league:(\d{8})T\d{6}(?:\.\d+)?Z:/)?.[1] || "";
       if (latestLeagueDay && leagueDay >= latestLeagueStartDay && leagueDay <= latestLeagueDay) {
         current.league = (current.league ?? 0) + safeCount(source.league_attacks);
       }
