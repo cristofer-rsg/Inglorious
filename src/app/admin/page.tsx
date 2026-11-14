@@ -189,6 +189,7 @@ export default async function AdminPage({
               <p className="admin-help">O sistema registra caminho da página, domínio de referência e tipo de dispositivo. O endereço IP não é armazenado; o identificador do visitante é gerado por hash HMAC.</p>
             </>
           ) : <div className="admin-empty">A análise de acessos ficará disponível após a configuração do segredo de hash e o primeiro acesso ao aplicativo.</div>}
+          <a className="admin-export-link" href="/api/admin/export">Exportar histórico completo de eventos (CSV)</a>
 
           <div className="admin-section-heading"><h2>Lançar pontuação manual</h2><span>ADMINISTRADOR</span></div>
           <p className="admin-help">Os lançamentos manuais ficam identificados e podem ser editados ou excluídos nesta tela. Raide e Capital continuam sob sincronização automática para evitar duplicidade.</p>
