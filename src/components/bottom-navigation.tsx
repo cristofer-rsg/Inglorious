@@ -28,7 +28,7 @@ export default function BottomNavigation() {
   useEffect(() => {
     items.forEach((item) => router.prefetch(item.href));
     const onStart = (event: TouchEvent) => {
-      if (currentPath.current.startsWith("/admin") || currentPath.current === "/login" || event.touches.length !== 1 || pending.current) {
+      if (currentPath.current.startsWith("/admin") || currentPath.current === "/login" || currentPath.current.startsWith("/history") || event.touches.length !== 1 || pending.current) {
         touchStart.current = null;
         return;
       }
@@ -44,7 +44,7 @@ export default function BottomNavigation() {
       touchStart.current = null;
       if (!start || event.changedTouches.length !== 1 || pending.current) return;
       const path = currentPath.current;
-      if (path.startsWith("/admin") || path === "/login") return;
+      if (path.startsWith("/admin") || path === "/login" || path.startsWith("/history")) return;
       const dx = event.changedTouches[0].clientX - start.x;
       const dy = event.changedTouches[0].clientY - start.y;
       if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
