@@ -75,6 +75,35 @@ describe("calculatePlayerScore", () => {
     expect(result.games).toBe(80);
   });
 
+  it("caps each category at its configured maximum", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      events: [
+        { player: "Jogador", category: "Guerras", points: 500 },
+        { player: "Jogador", category: "Liga dos Clãs", points: 500 },
+        { player: "Jogador", category: "Doações", activity: "TROPAS_DOADAS:30000", points: 30000 },
+        { player: "Jogador", category: "Jogos do Clã", points: 30000 },
+        { player: "Jogador", category: "Raide de Fim de Semana", points: 100 },
+        { player: "Jogador", category: "Capital do Clã", activity: "Doação automática de Ouro da Capital", points: 500000 },
+      ],
+    });
+
+    expect(result.wars).toBe(200);
+    expect(result.league).toBe(200);
+    expect(result.donations).toBe(150);
+    expect(result.games).toBe(100);
+    expect(result.raid).toBe(150);
+    expect(result.capitalPoints).toBe(200);
+  });
+
+  it("rounds category scores to the nearest integer", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      events: [{ player: "Jogador", category: "Doações", activity: "TROPAS_DOADAS:33", points: 33 }],
+    });
+    expect(result.donations).toBe(0);
+  });
+
   it("never returns a negative total after penalties", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
