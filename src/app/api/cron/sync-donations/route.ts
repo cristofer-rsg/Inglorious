@@ -43,33 +43,23 @@ export async function GET(request: Request) {
     const monthKey = getMonthKey();
     const supabase = createSupabaseAdmin();
 
-    const { data: donationData, error: donationError } = await supabase.rpc(
-      "sync_clash_donations",
-      { p_month_key: monthKey, p_snapshot: snapshot },
-    );
+    const { data, error } = await supabase.rpc("sync_inglorious_donations_atomic", {
+      p_month_key: monthKey,
+      p_snapshot: snapshot,
+    });
 
-    if (donationError) {
-      throw new Error(`Falha ao atualizar totais de doações: ${donationError.message}`);
+    if (error) {
+      throw new Error(`Falha ao sincronizar doações e desempenho mensal: ${error.message}`);
     }
 
-    const { data: statsData, error: statsError } = await supabase.rpc(
-      "sync_player_monthly_donations",
-      { p_month_key: monthKey, p_snapshot: snapshot },
-    );
-
-    if (statsError) {
-      throw new Error(`Falha ao atualizar desempenho mensal de doações: ${statsError.message}`);
-    }
-
-    const donationResult = Array.isArray(donationData) ? donationData[0] : donationData;
-    const statsResult = Array.isArray(statsData) ? statsData[0] : statsData;
+    const result = Array.isArray(data) ? data[0] : data;
 
     return NextResponse.json({
       success: true,
       month: monthKey,
       members_received: snapshot.length,
-      donation_sync: donationResult,
-      performance_sync: statsResult,
+      donation_sync: result?.donation_sync ?? null,
+      performance_sync: result?.performance_sync ?? null,
       synchronized_at: new Date().toISOString(),
     });
   } catch (error) {
