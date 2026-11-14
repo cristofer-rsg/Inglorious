@@ -43,33 +43,23 @@ export async function GET(request: Request) {
     const monthKey = getMonthKey();
     const supabase = createSupabaseAdmin();
 
-    const { data, error } = await supabase.rpc("auto_sync_clash_games", {
+    const { data, error } = await supabase.rpc("sync_inglorious_clan_games_atomic", {
       p_month_key: monthKey,
       p_snapshot: snapshot,
     });
 
     if (error) {
-      throw new Error(`Falha ao sincronizar Jogos do Clã: ${error.message}`);
-    }
-
-    const { data: performanceData, error: performanceError } = await supabase.rpc(
-      "sync_player_monthly_clan_games",
-      { p_month_key: monthKey },
-    );
-
-    if (performanceError) {
-      throw new Error(`Falha ao atualizar desempenho dos Jogos do Clã: ${performanceError.message}`);
+      throw new Error(`Falha ao sincronizar Jogos do Clã e desempenho: ${error.message}`);
     }
 
     const result = Array.isArray(data) ? data[0] : data;
-    const performance = Array.isArray(performanceData) ? performanceData[0] : performanceData;
 
     return NextResponse.json({
       success: true,
       month: monthKey,
       players_received: snapshot.length,
-      games_sync: result,
-      performance_sync: performance,
+      games_sync: result?.games_sync ?? null,
+      performance_sync: result?.performance_sync ?? null,
       synchronized_at: new Date().toISOString(),
     });
   } catch (error) {
