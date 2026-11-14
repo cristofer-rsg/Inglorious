@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { isCronAuthorized } from "@/lib/auth/cron";
 
 import { fetchLatestRaidSeason } from "@/lib/clash-api";
-import { synchronizeCurrentRoster } from "@/lib/clan-sync";
+import { getKnownPlayersByTags, synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { APP_CONFIG } from "@/lib/config";
 import { getRaidWeekend } from "@/lib/raid-calendar";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -19,13 +19,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [season, rosterResult] = await Promise.all([
+    const [season] = await Promise.all([
       fetchLatestRaidSeason(),
       synchronizeCurrentRoster(),
     ]);
-    const roster = rosterResult.members;
-
-    const rosterByTag = new Map<string, (typeof roster)[number]>(roster.map((member): [string, (typeof roster)[number]] => [member.player_tag, member]));
+    const rosterByTag = await getKnownPlayersByTags(
+      season.members.map((member) => member.tag),
+    );
     const raidWeekend = getRaidWeekend(season.startTime, APP_CONFIG.timeZone);
     const { weekendStart, closingDate, monthKey } = raidWeekend;
     const [raidYear, raidMonth, raidDay] = weekendStart.split("-");
