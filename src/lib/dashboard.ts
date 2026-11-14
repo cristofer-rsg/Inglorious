@@ -163,12 +163,17 @@ export async function getDashboardData(): Promise<DashboardData> {
       .filter(isRankingEligible)
       .map((player) => {
         const normalizedName = player.name.trim().toLocaleLowerCase("pt-BR");
+        const hasUniqueLegacyName = playerNameCounts.get(normalizedName) === 1;
         const games = player.player_tag
           ? gamesByTag.get(player.player_tag.trim().toUpperCase()) ?? 0
-          : gamesByName.get(normalizedName) ?? 0;
+          : hasUniqueLegacyName
+            ? gamesByName.get(normalizedName) ?? 0
+            : 0;
         const donations = player.player_tag
           ? donationsByTag.get(player.player_tag.trim().toUpperCase())
-          : donationsByName.get(normalizedName);
+          : hasUniqueLegacyName
+            ? donationsByName.get(normalizedName)
+            : undefined;
         const score = calculatePlayerScore({
           playerName: player.name,
           playerTag: player.player_tag,
