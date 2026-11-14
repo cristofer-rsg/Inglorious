@@ -35,6 +35,7 @@ begin
     v_label := coalesce(a.weekend_label, '');
 
     if v_tag = '' or v_weekend is null
+      or v_month is null
       or v_month !~ '^[0-9]{4}-(0[1-9]|1[0-2])$'
       or v_attacks < 5 then
       raise exception 'Dados inválidos para pontuação do Raide';
