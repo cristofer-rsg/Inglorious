@@ -41,7 +41,7 @@ export async function GET(request: Request) {
 
   try {
     const { members: roster } = await synchronizeCurrentRoster();
-    const playersByTag = new Map(roster.map((player) => [player.player_tag, player]));
+    const playersByTag = new Map<string, (typeof roster)[number]>(roster.map((player): [string, (typeof roster)[number]] => [player.player_tag, player]));
     const supabase = createSupabaseAdmin();
     const monthKey = getMonthKey();
 
