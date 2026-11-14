@@ -113,4 +113,28 @@ describe("calculatePlayerScore", () => {
     expect(result.total).toBe(0);
     expect(result.penalties).toBe(500);
   });
+
+  it("isolates players with identical names by their Clash tags", () => {
+    const events = [
+      { player: "Alex", player_tag: "#2AAAA", category: "Guerras", points: 100 },
+      { player: "Alex", player_tag: "#2BBBB", category: "Guerras", points: 50 },
+    ];
+
+    const first = calculatePlayerScore({ playerName: "Alex", playerTag: "#2AAAA", events });
+    const second = calculatePlayerScore({ playerName: "Alex", playerTag: "#2BBBB", events });
+
+    expect(first.wars).toBe(100);
+    expect(second.wars).toBe(50);
+  });
+
+  it("keeps legacy events without tags compatible by player name", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      playerTag: "#2AAAA",
+      events: [{ player: "Jogador", category: "Guerras", points: 75 }],
+    });
+
+    expect(result.wars).toBe(75);
+  });
+
 });
