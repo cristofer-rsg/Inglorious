@@ -153,6 +153,22 @@ describe("calculatePlayerScore", () => {
     expect(result.wars).toBe(25);
   });
 
+  it("falls back to tagged donation events when no monthly snapshot exists", () => {
+    const result = calculatePlayerScore({
+      playerName: "Jogador",
+      playerTag: "#2AAAA",
+      events: [{
+        player: "Jogador",
+        player_tag: "#2AAAA",
+        category: "Doações",
+        activity: "TROPAS_DOADAS: sincronização automática mensal",
+        points: 2500,
+      }],
+    });
+
+    expect(result.donations).toBe(38);
+  });
+
   it("uses the monthly donation snapshot even when it is zero", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
