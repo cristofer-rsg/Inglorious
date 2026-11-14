@@ -94,6 +94,7 @@ describe("calculatePlayerScore", () => {
     expect(result.games).toBe(100);
     expect(result.raid).toBe(150);
     expect(result.capitalPoints).toBe(200);
+    expect(result.total).toBe(1000);
   });
 
   it("rounds category scores to the nearest integer", () => {
