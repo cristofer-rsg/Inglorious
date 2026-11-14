@@ -130,15 +130,15 @@ export async function getDashboardData(): Promise<DashboardData> {
 
     const players = (playersResult.data ?? []) as PlayerRow[];
     const stats = (statsResult.data ?? []) as MonthlyStatRow[];
-    const gamesByTag = new Map(
+    const gamesByTag = new Map<string, number>(
       stats
         .filter((row) => row.player_tag)
-        .map((row) => [String(row.player_tag).trim().toUpperCase(), Number(row.clan_games_points ?? 0)]),
+        .map((row): [string, number] => [String(row.player_tag).trim().toUpperCase(), Number(row.clan_games_points ?? 0)]),
     );
-    const gamesByName = new Map(
+    const gamesByName = new Map<string, number>(
       stats
         .filter((row) => row.player)
-        .map((row) => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.clan_games_points ?? 0)]),
+        .map((row): [string, number] => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.clan_games_points ?? 0)]),
     );
 
     const ranking = players
