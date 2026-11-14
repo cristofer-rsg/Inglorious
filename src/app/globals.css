@@ -270,3 +270,25 @@ a { color: inherit; text-decoration: none; }
 .new-member-row small { margin-top: 4px; color: var(--muted); font-size: 9px; }
 .new-member-badge { padding: 5px 7px; border: 1px solid rgba(155,198,107,.28); color: var(--green-strong); font-size: 8px; font-weight: 800; letter-spacing: .08em; }
 .new-members-empty { padding: 18px; border: 1px dashed var(--line); color: var(--muted); font-size: 11px; text-align: center; }
+
+
+.ranking-search { display: grid; gap: 8px; margin: 18px 0 18px; }
+.ranking-search label { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.ranking-search > div { display: flex; gap: 8px; }
+.ranking-search input { flex: 1; min-width: 0; min-height: 44px; padding: 12px; border: 1px solid var(--line); outline: none; background: var(--panel); color: var(--text); font: 11px Inter,sans-serif; }
+.ranking-search input:focus { border-color: rgba(184,223,130,.65); }
+.ranking-search button,.ranking-expand {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 16px;
+  border: 1px solid rgba(184,223,130,.4);
+  background: rgba(155,198,107,.1);
+  color: var(--green-strong);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  cursor: pointer;
+}
+.ranking-expand { width: 100%; margin: -34px 0 55px; }
