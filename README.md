@@ -20,6 +20,9 @@ Aplicação independente para gestão e acompanhamento do clã Inglorious.
    - `CRON_SECRET`: segredo aleatório usado para proteger as rotas de automação.
    - `CLAN_TAG`: tag do clã.
    - `APP_TIME_ZONE`: fuso horário da aplicação.
+   - `ADMIN_USERNAME`: usuário administrativo, configurado somente em variável privada do servidor.
+   - `ADMIN_PASSWORD`: senha administrativa forte, configurada somente em variável privada do servidor.
+   - `AUTH_RATE_LIMIT_SECRET`: segredo aleatório exclusivo para proteger o identificador das tentativas de login; se ausente, a aplicação usa `CRON_SECRET` como alternativa.
 4. Execute `npm run dev`.
 
 ## Sincronização automática de membros
