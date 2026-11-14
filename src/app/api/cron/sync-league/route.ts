@@ -153,7 +153,7 @@ export async function GET(request: Request) {
 
           allStatSources.push({
             month_key: monthKey,
-            source_key: `league:${warTag.toUpperCase()}:${member.tag}`,
+            source_key: `league:${war.startTime}:${warTag.toUpperCase()}:${member.tag}`,
             player_tag: member.tag,
             player: player.name,
             war_attacks: 0,
