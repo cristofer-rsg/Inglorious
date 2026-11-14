@@ -37,10 +37,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { members: roster } = await synchronizeCurrentRoster();
+    const [{ members: roster }, group] = await Promise.all([
+      synchronizeCurrentRoster(),
+      fetchCurrentLeagueGroup(),
+    ]);
     const playersByTag = new Map<string, (typeof roster)[number]>(roster.map((player): [string, (typeof roster)[number]] => [player.player_tag, player]));
     const supabase = createSupabaseAdmin();
-    const group = await fetchCurrentLeagueGroup();
     const seasonMonth = group?.season && /^\d{4}(?:0[1-9]|1[0-2])$/.test(group.season)
       ? `${group.season.slice(0, 4)}-${group.season.slice(4, 6)}`
       : getMonthKey();
