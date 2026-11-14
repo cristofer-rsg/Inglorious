@@ -108,8 +108,11 @@ async function fetchMonthEvents(start: string, end: string): Promise<EventRow[]>
   return rows;
 }
 
-export async function getDashboardData(): Promise<DashboardData> {
-  const monthKey = getCurrentMonthKey();
+export async function getDashboardData(monthOverride?: string): Promise<DashboardData> {
+  const currentMonth = getCurrentMonthKey();
+  const monthKey = monthOverride && /^\\d{4}-(0[1-9]|1[0-2])$/.test(monthOverride)
+    ? monthOverride
+    : currentMonth;
   const monthLabel = getMonthLabel(monthKey);
 
   try {
@@ -145,22 +148,24 @@ export async function getDashboardData(): Promise<DashboardData> {
 
     let newMembers: DashboardData["newMembers"] = [];
     const recentThreshold = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const newMembersResult = await supabase
-      .from("clan_member_entry_history")
-      .select("player_name,player_tag,entered_at")
-      .eq("is_baseline", false)
-      .gte("entered_at", recentThreshold)
-      .order("entered_at", { ascending: false })
-      .limit(5);
+    if (monthKey === currentMonth) {
+      const newMembersResult = await supabase
+        .from("clan_member_entry_history")
+        .select("player_name,player_tag,entered_at")
+        .eq("is_baseline", false)
+        .gte("entered_at", recentThreshold)
+        .order("entered_at", { ascending: false })
+        .limit(5);
 
-    if (!newMembersResult.error) {
-      newMembers = ((newMembersResult.data ?? []) as NewMemberRow[])
-        .filter((member) => activeTags.has(member.player_tag.trim().toUpperCase()))
-        .map((member) => ({
-          playerName: member.player_name,
-          playerTag: member.player_tag,
-          enteredAt: member.entered_at,
-        }));
+      if (!newMembersResult.error) {
+        newMembers = ((newMembersResult.data ?? []) as NewMemberRow[])
+          .filter((member) => activeTags.has(member.player_tag.trim().toUpperCase()))
+          .map((member) => ({
+            playerName: member.player_name,
+            playerTag: member.player_tag,
+            enteredAt: member.entered_at,
+          }));
+      }
     }
 
     const playerNameCounts = new Map<string, number>();
