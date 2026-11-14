@@ -87,6 +87,7 @@ async function apiGet<T>(path: string): Promise<T> {
     method: "GET",
     headers: {
       Authorization: `Bearer ${getApiToken()}`,
+      auth: getApiToken(),
       Accept: "application/json",
       "User-Agent": "Inglorious/1.0",
     },
