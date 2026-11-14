@@ -62,23 +62,17 @@ export async function POST(request: Request) {
 
     const supabase = createSupabaseAdmin();
     const ipHash = hashIp(getClientIp(request));
-    const retentionStart = new Date(Date.now() - ATTEMPT_RETENTION_HOURS * 60 * 60 * 1000).toISOString();
-    const { error: cleanupError } = await supabase
-      .from("admin_login_attempts")
-      .delete()
-      .lt("attempted_at", retentionStart);
-    if (cleanupError) throw new Error("Não foi possível limpar o histórico antigo de autenticação.");
+    const now = Date.now();
+    const { data: allowed, error: rateLimitError } = await supabase.rpc("register_admin_login_attempt", {
+      p_ip_hash: ipHash,
+      p_succeeded: verifyAdminCredentials(username, password),
+      p_window_start: new Date(now - WINDOW_MINUTES * 60 * 1000).toISOString(),
+      p_retention_start: new Date(now - ATTEMPT_RETENTION_HOURS * 60 * 60 * 1000).toISOString(),
+      p_max_failed_attempts: MAX_FAILED_ATTEMPTS,
+    });
 
-    const windowStart = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
-    const { count, error: countError } = await supabase
-      .from("admin_login_attempts")
-      .select("id", { count: "exact", head: true })
-      .eq("ip_hash", ipHash)
-      .eq("succeeded", false)
-      .gte("attempted_at", windowStart);
-
-    if (countError) throw new Error("Não foi possível validar o limite de tentativas.");
-    if ((count ?? 0) >= MAX_FAILED_ATTEMPTS) {
+    if (rateLimitError) throw new Error("Não foi possível validar o limite de tentativas.");
+    if (!allowed) {
       return jsonResponse(
         { success: false, error: "Muitas tentativas. Aguarde 15 minutos antes de tentar novamente." },
         429,
@@ -87,21 +81,10 @@ export async function POST(request: Request) {
     }
 
     if (!verifyAdminCredentials(username, password)) {
-      const { error: attemptError } = await supabase.from("admin_login_attempts").insert({
-        ip_hash: ipHash,
-        succeeded: false,
-      });
-      if (attemptError) throw new Error("Não foi possível registrar a tentativa de autenticação.");
       return jsonResponse({ success: false, error: "Usuário ou senha incorretos." }, 401);
     }
 
-    const { error: successError } = await supabase.from("admin_login_attempts").insert({
-      ip_hash: ipHash,
-      succeeded: true,
-    });
-    if (successError) throw new Error("Não foi possível registrar a autenticação.");
     await createAdminSession();
-
     return jsonResponse({ success: true });
   } catch (error) {
     console.error("Inglorious admin login failed:", error);
