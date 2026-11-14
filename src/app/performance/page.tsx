@@ -20,9 +20,9 @@ const metrics = [
   { key: "wars", label: "Guerras", unit: "Ataques", points: "warsPoints", percent: "warsPercent", icon: "⚔" },
   { key: "league", label: "Liga", unit: "Ataques", points: "leaguePoints", percent: "leaguePercent", icon: "🏆" },
   { key: "raid", label: "Raide", unit: "Ataques", points: "raidPoints", percent: "raidPercent", icon: "🛡" },
-  { key: "donations", label: "Doações", unit: "Tropas", points: "donationsPoints", percent: "donationsPercent", icon: "🤝" },
-  { key: "games", label: "Jogos do Clã", unit: "Pontos", points: "gamesPoints", percent: "gamesPercent", icon: "🎮" },
-  { key: "capital", label: "Capital", unit: "Moedas", points: "capitalPoints", percent: "capitalPercent", icon: "🏰" },
+  { key: "donations", label: "Doações", unit: "Tropas Doadas", points: "donationsPoints", percent: "donationsPercent", icon: "🤝" },
+  { key: "games", label: "Jogos do Clã", unit: "Pontos Obtidos", points: "gamesPoints", percent: "gamesPercent", icon: "🎮" },
+  { key: "capital", label: "Capital", unit: "Moedas Doadas", points: "capitalPoints", percent: "capitalPercent", icon: "🏰" },
 ] as const;
 
 type MetricKey = typeof metrics[number]["key"];
@@ -174,7 +174,7 @@ export default async function PerformancePage({
                 <>
                   <div className="history-section-title"><h2>Indicadores do clã</h2><span>{number(activeRows.length)} JOGADORES ATIVOS</span></div>
                   <div className="performance-totals">
-                    {totals.map((metric) => <article key={metric.key}><small>{metric.label.toLocaleUpperCase("pt-BR")} · {metric.unit.toLocaleUpperCase("pt-BR")}</small><b>{number(metric.value)}</b><span>Total no mês</span></article>)}
+                    {totals.map((metric) => <article key={metric.key}><small>{metric.label}</small><b>{number(metric.value)}</b><span>{metric.unit}</span></article>)}
                   </div>
                 </>
               )}
