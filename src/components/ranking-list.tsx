@@ -40,7 +40,7 @@ export default function RankingList({ players }: { players: RankingRow[] }) {
         <div className="ranking-row ranking-row-toggle">
           <span className="ranking-player">
             <b className="ranking-position">{player.position === 1 ? "🥇" : player.position === 2 ? "🥈" : player.position === 3 ? "🥉" : number(player.position)}</b>
-            <span><b>{player.player}</b><small>{player.active ? "NO CLÃ" : "FORA DO CLÃ"}{player.tag ? " · " + player.tag : ""}</small></span>
+            <span><b>{player.player}</b>{player.role && <small className="performance-leader-role">{player.role.toLocaleUpperCase("pt-BR")}</small>}<small>{player.active ? "NO CLÃ" : "FORA DO CLÃ"}{player.tag ? " · " + player.tag : ""}</small></span>
           </span>
           <span className="ranking-score"><strong>{number(player.total)} pts</strong>
             <button className="ranking-details-button" type="button" aria-expanded={isExpanded}
