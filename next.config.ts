@@ -19,7 +19,6 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         headers: [
-          ...securityHeaders,
           { key: "Cache-Control", value: "no-store, max-age=0" },
         ],
       },
