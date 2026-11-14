@@ -1,26 +1,44 @@
 # Inglorious
 
-Painel independente de gestão e acompanhamento do clã Inglorious (`#2RVQ9YGRY`).
+Aplicação independente para gestão e acompanhamento do clã Inglorious.
 
 ## Stack
 
-- Next.js 15 / React 19 / TypeScript
-- Supabase com acesso exclusivamente pelo servidor
-- Vercel para hospedagem, sem implantação autorizada nesta etapa
+- Next.js 15 e React 19
+- TypeScript
+- Supabase independente
+- Integração server-side com a API do Clash of Clans
 
-## Desenvolvimento local
+## Configuração local
 
-1. Instale Node.js 20.19 ou 22.
+1. Instale as dependências com `npm install`.
 2. Copie `.env.example` para `.env.local`.
-3. Configure `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no ambiente local.
-4. Execute `npm install` e `npm run dev`.
+3. Configure as variáveis:
+   - `NEXT_PUBLIC_SUPABASE_URL`: URL do projeto Supabase Inglorious.
+   - `SUPABASE_SERVICE_ROLE_KEY`: chave secreta do servidor; nunca usar prefixo `NEXT_PUBLIC_`.
+   - `CLASH_OF_CLANS_API_TOKEN`: token da API Clash of Clans.
+   - `CRON_SECRET`: segredo aleatório usado para proteger as rotas de automação.
+   - `CLAN_TAG`: tag do clã.
+   - `APP_TIME_ZONE`: fuso horário da aplicação.
+4. Execute `npm run dev`.
 
-A chave `SUPABASE_SERVICE_ROLE_KEY` nunca deve ser exposta em variáveis `NEXT_PUBLIC_*` nem enviada ao navegador.
+## Sincronização automática de membros
 
-## Estado
+A rota `GET /api/cron/sync-roster` consulta o roster atual do clã configurado e chama a função protegida `sync_inglorious_clan_roster` no Supabase.
 
-- Projeto Next.js inicial criado na branch `work/initial-implementation`.
-- Banco Supabase independente provisionado.
-- Regras de pontuação do código atual do Ghost Hunt portadas, com elegibilidade adaptada ao Telegram e aos cargos do Inglorious.
-- Nenhuma informação de jogadores foi importada.
-- Nenhuma implantação, publicação, domínio ou integração com o Ghost Hunt foi realizada.
+A rota exige o cabeçalho:
+
+```http
+Authorization: Bearer <CRON_SECRET>
+```
+
+A rotina valida a fotografia completa antes de gravar, não aceita listas vazias ou tags duplicadas e mantém o histórico de entradas, saídas e períodos de permanência no banco independente do Inglorious.
+
+A rota está implementada, mas não foi agendada nem ativada em produção. Nenhum deploy foi realizado.
+
+## Segurança
+
+- A chave `SUPABASE_SERVICE_ROLE_KEY` e o token do Clash são usados exclusivamente no servidor.
+- O cliente web não acessa diretamente as tabelas protegidas.
+- Rotas de automação exigem segredo de autorização.
+- O projeto não importa dados do Ghost Hunt.
