@@ -135,10 +135,12 @@ export async function getPerformanceData(
       db.from("players").select("name,player_tag,active,role").order("name", { ascending: true }),
       allRows<Stats>(db.from("player_monthly_stats")
         .select("month_key,player_tag,player,war_attacks,donations,clan_games_points")
-        .order("month_key", { ascending: false }) as unknown as RangeQuery<Stats>),
+        .order("month_key", { ascending: false })
+        .order("player_tag", { ascending: true }) as unknown as RangeQuery<Stats>),
       allRows<ActivitySource>(db.from("player_monthly_stat_sources")
         .select("month_key,source_key,player_tag,war_attacks,league_attacks,raid_attacks,updated_at")
-        .order("updated_at", { ascending: false }) as unknown as RangeQuery<ActivitySource>),
+        .order("updated_at", { ascending: false })
+        .order("source_key", { ascending: true }) as unknown as RangeQuery<ActivitySource>),
     ]);
     if (playersResult.error) throw new Error(playersResult.error.message);
 
@@ -212,7 +214,10 @@ export async function getPerformanceData(
     const events = await allRows<EventRow>(db.from("events")
       .select("player,player_tag,category,activity,points,created_at")
       .gte("created_at", start.toISOString())
-      .lt("created_at", end.toISOString()) as unknown as RangeQuery<EventRow>);
+      .lt("created_at", end.toISOString())
+      .order("created_at", { ascending: true })
+      .order("player_tag", { ascending: true })
+      .order("activity", { ascending: true }) as unknown as RangeQuery<EventRow>);
 
     const statsByTag = new Map(
       stats.filter((row) => row.player_tag)
