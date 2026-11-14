@@ -184,7 +184,8 @@ export async function getDashboardData(): Promise<DashboardData> {
         || b.capitalPoints - a.capitalPoints
         || b.donations - a.donations
         || b.games - a.games
-        || a.player.localeCompare(b.player, "pt-BR"),
+        || a.player.localeCompare(b.player, "pt-BR")
+        || a.tag.localeCompare(b.tag, "pt-BR"),
       )
       .map((row, index) => ({ ...row, position: index + 1 }));
 
