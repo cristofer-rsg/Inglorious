@@ -5,12 +5,12 @@ export default function RulesPage() {
     {
       title: "Guerras do Clã",
       target: "Sem teto mensal",
-      detail: "Participação na guerra: +5 pontos; realizar os dois ataques: +10; cada ataque no espelho: +5; cada estrela conquistada: +1. Ao encerrar a guerra, não realizar nenhum ataque gera −10 e realizar apenas um ataque gera −5. O primeiro ataque fora do espelho antes das 12 horas finais gera −5; o segundo ataque antes das 12 horas finais também gera −5.",
+      detail: "ATAQUES: participar da guerra concede +5 pontos; realizar os dois ataques concede +10; cada ataque realizado no espelho soma +5; cada estrela conquistada soma +1. PENALIDADES: após o encerramento da guerra, não realizar nenhum ataque gera −10 pontos e realizar apenas um ataque gera −5. Cada ataque fora do espelho realizado antes das 12 horas finais gera −5 pontos.",
     },
     {
       title: "Liga dos Clãs",
       target: "+10 no bônus",
-      detail: "Cada ataque concluído soma +5 pontos; cada estrela soma +1; acertar o espelho soma +5. Cada ataque fora do espelho gera −5 e deixar de realizar o ataque do dia gera −5 após o encerramento da guerra. Completar os sete ataques da Liga concede um bônus único de +10 no mês.",
+      detail: "ATAQUES: cada um dos sete ataques da Liga concluído soma +5 pontos; cada estrela conquistada soma +1; acertar o espelho soma +5 por ataque. PENALIDADES: cada ataque fora do espelho gera −5 pontos; deixar de realizar o ataque do dia gera −5 após o encerramento da batalha. BÔNUS: completar os sete ataques da Liga concede +10 pontos uma única vez no mês.",
     },
     {
       title: "Raide de Fim de Semana",
