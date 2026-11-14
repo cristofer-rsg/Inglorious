@@ -72,7 +72,7 @@ As rotas não estão agendadas. O agendamento será configurado somente após va
 
 ## Banco de dados e migrations
 
-O projeto Supabase independente já possui 43 migrations aplicadas no ambiente remoto. Os arquivos SQL históricos ainda não estão versionados nesta branch. Até que o histórico completo seja recuperado e sincronizado, não execute `supabase db reset`, recriação do projeto ou sincronização de schema que possa sobrescrever o banco existente.
+O projeto Supabase independente já possui 45 migrations aplicadas no ambiente remoto. Os arquivos SQL históricos ainda não estão versionados nesta branch. Até que o histórico completo seja recuperado e sincronizado, não execute `supabase db reset`, recriação do projeto ou sincronização de schema que possa sobrescrever o banco existente.
 
 ## Validação
 
