@@ -201,7 +201,7 @@ export default async function PerformancePage({
                         <b>
                           <span className="performance-position-badge">{row.position}</span>
                           <span className="performance-player-name">{row.player}</span>
-                          {row.roleLabel && <small className="performance-leader-role">{row.roleLabel}</small>}
+                          {row.roleLabel && <small className={`performance-leader-role ${row.roleLabel === "LÍDER" || row.roleLabel === "CO-LÍDER" ? "role-leadership" : row.roleLabel === "ANCIÃO" ? "role-elder" : row.roleLabel === "MEMBRO" ? "role-member" : "role-other"}`}>{row.roleLabel}</small>}
                         </b>
                         {event ? (
                           <span className={attacks === null ? "performance-event-inline no-data" : attacks === 0 ? "performance-event-inline no-attack" : "performance-event-inline attacked"}>
