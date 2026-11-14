@@ -333,3 +333,16 @@ a { color: inherit; text-decoration: none; }
   .admin-event-delete { align-items: flex-start; flex-direction: column; }
   .admin-event-delete button { width: 100%; }
 }
+
+
+.admin-analytics-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 16px 0; }
+.admin-analytics-grid article { min-width: 0; padding: 16px; border: 1px solid var(--line); background: rgba(9,15,11,.65); }
+.admin-analytics-grid h3 { margin: 0 0 12px; color: var(--green-strong); font: 700 18px "Barlow Condensed",sans-serif; }
+.admin-analytics-grid p { color: var(--muted); font-size: 10px; }
+.admin-analytics-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 10px; }
+.admin-analytics-row:last-child { border-bottom: 0; }
+.admin-analytics-row span { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+.admin-analytics-row strong { color: var(--text); font-variant-numeric: tabular-nums; }
+@media(max-width:600px) {
+  .admin-analytics-grid { grid-template-columns: 1fr; }
+}
