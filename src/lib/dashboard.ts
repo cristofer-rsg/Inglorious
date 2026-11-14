@@ -4,6 +4,7 @@ import { APP_CONFIG } from "@/lib/config";
 import { calculatePlayerScore, isRankingEligible, type ScoringEvent } from "@/lib/scoring";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getZonedMonthBounds } from "@/lib/time";
+import { createMonthlyDonationMaps } from "@/lib/monthly-stats";
 
 type PlayerRow = {
   id: string;
@@ -128,21 +129,12 @@ export async function getDashboardData(): Promise<DashboardData> {
         .filter((row) => row.player_tag)
         .map((row): [string, number] => [String(row.player_tag).trim().toUpperCase(), Number(row.clan_games_points ?? 0)]),
     );
-    const donationsByTag = new Map<string, number>(
-      stats
-        .filter((row) => row.player_tag && row.donations != null)
-        .map((row): [string, number] => [String(row.player_tag).trim().toUpperCase(), Number(row.donations)]),
-    );
     const gamesByName = new Map<string, number>(
       stats
         .filter((row) => row.player)
         .map((row): [string, number] => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.clan_games_points ?? 0)]),
     );
-    const donationsByName = new Map<string, number>(
-      stats
-        .filter((row) => row.player && row.donations != null)
-        .map((row): [string, number] => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.donations)]),
-    );
+    const { byTag: donationsByTag, byName: donationsByName } = createMonthlyDonationMaps(stats);
 
     const playerNameCounts = new Map<string, number>();
     for (const player of players) {
