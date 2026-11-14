@@ -72,7 +72,7 @@ function getMonthLabel(monthKey: string) {
     month: "long",
     year: "numeric",
     timeZone: APP_CONFIG.timeZone,
-  }).format(new Date(`${monthKey}-15T12:00:00-03:00`));
+  }).format(new Date(`${monthKey}-15T12:00:00Z`));
   return label.charAt(0).toLocaleUpperCase("pt-BR") + label.slice(1);
 }
 
