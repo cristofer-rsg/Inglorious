@@ -39,7 +39,11 @@ export async function GET(request: Request) {
     const { members: roster } = await synchronizeCurrentRoster();
     const playersByTag = new Map<string, (typeof roster)[number]>(roster.map((player): [string, (typeof roster)[number]] => [player.player_tag, player]));
     const supabase = createSupabaseAdmin();
-    const monthKey = getMonthKey();
+    const group = await fetchCurrentLeagueGroup();
+    const seasonMonth = group?.season && /^\\d{6}$/.test(group.season)
+      ? `${group.season.slice(0, 4)}-${group.season.slice(4, 6)}`
+      : getMonthKey();
+    const monthKey = seasonMonth;
 
     const { data: monthlyRows, error: monthlyError } = await supabase
       .from("player_monthly_stats")
@@ -74,7 +78,6 @@ export async function GET(request: Request) {
       return Array.isArray(data) ? data[0] : data;
     };
 
-    const group = await fetchCurrentLeagueGroup();
     if (!group || group.state === "notInWar") {
       const bonusSync = await syncLeagueBonus();
       return NextResponse.json({
