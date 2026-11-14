@@ -90,26 +90,21 @@ export async function GET(request: Request) {
     }
 
     const supabase = createSupabaseAdmin();
-    const { data: statsData, error: statsError } = await supabase.rpc(
-      "sync_player_monthly_stat_sources",
-      { p_sources: statsSources },
+    const { data: atomicResult, error: atomicError } = await supabase.rpc(
+      "sync_inglorious_raid_atomic",
+      {
+        p_sources: statsSources,
+        p_awards: awards,
+      },
     );
 
-    if (statsError) {
-      throw new Error(`Falha ao sincronizar ataques do Raide: ${statsError.message}`);
+    if (atomicError) {
+      throw new Error(`Falha na sincronização transacional do Raide: ${atomicError.message}`);
     }
 
-    let awardsData: unknown = { success: true, results: [] };
-    if (awards.length > 0) {
-      const { data, error } = await supabase.rpc("apply_automatic_raid_points", {
-        p_awards: awards,
-      });
-
-      if (error) {
-        throw new Error(`Falha ao lançar pontos automáticos do Raide: ${error.message}`);
-      }
-      awardsData = Array.isArray(data) ? data[0] : data;
-    }
+    const result = Array.isArray(atomicResult) ? atomicResult[0] : atomicResult;
+    const performanceSync = result?.performance_sync ?? null;
+    const awardsData = result?.awards_sync ?? { success: true, results: [] };
 
     return NextResponse.json({
       success: true,
