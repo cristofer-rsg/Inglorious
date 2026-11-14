@@ -76,21 +76,23 @@ async function getAdminAnalytics(): Promise<AnalyticsSummary | null> {
 
 async function getAdminData() {
   const supabase = createSupabaseAdmin();
-  const [playersResult, eventsResult] = await Promise.all([
+  const [playersResult, manualEventsResult, manualDonationsResult] = await Promise.all([
     supabase.from("players").select("id,name,player_tag").order("name", { ascending: true }),
     supabase.from("events").select("id,player,player_tag,category,activity,points,created_at")
-      .order("created_at", { ascending: false }).limit(100),
+      .ilike("activity", "MANUAL:%").order("created_at", { ascending: false }).limit(20),
+    supabase.from("events").select("id,player,player_tag,category,activity,points,created_at")
+      .ilike("activity", "TROPAS_DOADAS: manual -%").order("created_at", { ascending: false }).limit(20),
   ]);
 
-  if (playersResult.error || eventsResult.error) {
+  if (playersResult.error || manualEventsResult.error || manualDonationsResult.error) {
     return { players: [] as AdminPlayer[], events: [] as AdminEvent[], error: true };
   }
 
   const players = (playersResult.data ?? []) as AdminPlayer[];
-  const events = ((eventsResult.data ?? []) as AdminEvent[])
-    .filter((event) => event.activity.startsWith("MANUAL:")
-      || event.activity.startsWith("TROPAS_DOADAS: manual -"))
-    .slice(0, 20);
+  const events = [
+    ...((manualEventsResult.data ?? []) as AdminEvent[]),
+    ...((manualDonationsResult.data ?? []) as AdminEvent[]),
+  ].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 20);
 
   return { players, events, error: false };
 }
