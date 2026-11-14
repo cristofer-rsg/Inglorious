@@ -89,7 +89,7 @@ async function fetchMonthEvents(start: string, end: string): Promise<EventRow[]>
   for (let offset = 0; ; offset += pageSize) {
     const { data, error } = await supabase
       .from("events")
-      .select("id,player,category,activity,points,created_at,battle_time")
+      .select("id,player,player_tag,category,activity,points,created_at,battle_time")
       .gte("created_at", start)
       .lt("created_at", end)
       .order("created_at", { ascending: true })
@@ -143,12 +143,12 @@ export async function getDashboardData(): Promise<DashboardData> {
     const ranking = players
       .filter(isRankingEligible)
       .map((player) => {
-        const games = Math.max(
-          gamesByTag.get((player.player_tag ?? "").trim().toUpperCase()) ?? 0,
-          gamesByName.get(player.name.trim().toLocaleLowerCase("pt-BR")) ?? 0,
-        );
+        const games = player.player_tag
+          ? gamesByTag.get(player.player_tag.trim().toUpperCase()) ?? 0
+          : gamesByName.get(player.name.trim().toLocaleLowerCase("pt-BR")) ?? 0;
         const score = calculatePlayerScore({
           playerName: player.name,
+          playerTag: player.player_tag,
           events,
           clanGamesPoints: games,
         });
