@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
 
+import { isCronAuthorized } from "@/lib/auth/cron";
+
 import { synchronizeCurrentRoster } from "@/lib/clan-sync";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-function isAuthorized(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  return Boolean(secret)
-    && request.headers.get("authorization") === `Bearer ${secret}`;
-}
+
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Não autorizado." }, { status: 401 });
   }
 
