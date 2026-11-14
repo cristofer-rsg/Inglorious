@@ -47,12 +47,12 @@ describe("calculatePlayerScore", () => {
     });
   });
 
-  it("does not count other players or unrelated capital activities", () => {
+  it("does not count other players or unrelated activity categories", () => {
     const result = calculatePlayerScore({
       playerName: "Jogador",
       events: [
         { player: "Outro", category: "Guerras", points: 200 },
-        { player: "Jogador", category: "Capital do Clã", activity: "Ajuste manual", points: 250000 },
+        { player: "Jogador", category: "Doações", activity: "Ajuste manual", points: 250000 },
       ],
     });
 
