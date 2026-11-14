@@ -7,20 +7,11 @@ import { APP_CONFIG } from "@/lib/config";
 import { mapWithConcurrency } from "@/lib/concurrency";
 import { getKnownPlayersByTags, synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { parseClashApiTimestamp } from "@/lib/time";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
-
-function parseClashTime(value: string) {
-  const match = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
-  if (!match) throw new Error(`Horário inválido retornado pela API: ${value}`);
-  const [, year, month, day, hour, minute, second] = match;
-  return new Date(Date.UTC(
-    Number(year), Number(month) - 1, Number(day),
-    Number(hour), Number(minute), Number(second),
-  ));
-}
 
 function getMonthKey(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -149,7 +140,9 @@ export async function GET(request: Request) {
 
       try {
         if (war.state !== "inWar" && war.state !== "warEnded") continue;
-        parseClashTime(war.startTime);
+        if (!parseClashApiTimestamp(war.startTime)) {
+          throw new Error(`Horário inválido retornado pela API: ${war.startTime}`);
+        }
         const warKey = `league:${warTag.toUpperCase()}`;
         const enemyPositions = new Map(
           war.opponent.members.map((member) => [member.tag, member.mapPosition]),
