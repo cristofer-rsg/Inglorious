@@ -11,8 +11,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-
-
 function localDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) throw new Error("Data inicial do Raide inválida.");
