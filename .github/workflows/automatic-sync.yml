@@ -1,6 +1,11 @@
 name: Inglorious - Sincronizações automáticas
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/automatic-sync.yml
   schedule:
     - cron: "2-59/5 * * * *"
     - cron: "*/15 * * * *"
@@ -30,7 +35,7 @@ jobs:
           test -n "$CRON_SECRET" || { echo "::error::Configure o secret INGLORIOUS_CRON_SECRET"; exit 1; }
 
       - name: Sincronizar guerras (a cada 5 minutos)
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '2-59/5 * * * *' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.schedule == '2-59/5 * * * *' }}
         env:
           BASE_URL: https://inglorious-six.vercel.app
           CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
@@ -42,7 +47,7 @@ jobs:
           jq -e '.success == true' /tmp/cron-result.json
 
       - name: Sincronizar Liga, doações e Jogos do Clã (a cada 15 minutos)
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '*/15 * * * *' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.schedule == '*/15 * * * *' }}
         env:
           BASE_URL: https://inglorious-six.vercel.app
           CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
@@ -57,7 +62,7 @@ jobs:
           done
 
       - name: Sincronizar membros do clã (a cada hora)
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '13 * * * *' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.schedule == '13 * * * *' }}
         env:
           BASE_URL: https://inglorious-six.vercel.app
           CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
@@ -69,7 +74,7 @@ jobs:
           jq -e '.success == true' /tmp/cron-result.json
 
       - name: Sincronizar Raide (a cada hora)
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '17 * * * *' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.schedule == '17 * * * *' }}
         env:
           BASE_URL: https://inglorious-six.vercel.app
           CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
@@ -81,7 +86,7 @@ jobs:
           jq -e '.success == true' /tmp/cron-result.json
 
       - name: Sincronizar Capital do Clã (a cada hora)
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '23 * * * *' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.schedule == '23 * * * *' }}
         env:
           BASE_URL: https://inglorious-six.vercel.app
           CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
@@ -93,7 +98,7 @@ jobs:
           jq -e '.success == true' /tmp/cron-result.json
 
       - name: Arquivar ranking mensal
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '0 5 1 * *' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.schedule == '0 5 1 * *' }}
         env:
           BASE_URL: https://inglorious-six.vercel.app
           CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
