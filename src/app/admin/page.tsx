@@ -25,6 +25,13 @@ type AdminPlayer = {
   player_tag: string | null;
 };
 
+type AnalyticsSummary = {
+  total_views: number;
+  unique_visitors: number;
+  top_pages: Array<{ page_path: string; views: number }>;
+  device_breakdown: Array<{ device_type: string; views: number }>;
+};
+
 type AdminEvent = {
   id: number;
   player: string;
@@ -55,6 +62,18 @@ async function getAdminOverview(): Promise<AdminOverview> {
     };
   } catch {
     return { activePlayers: null, pendingAccounts: null, approvedAccounts: null, lastRosterSync: null, error: true };
+  }
+}
+
+async function getAdminAnalytics(): Promise<AnalyticsSummary | null> {
+  try {
+    const supabase = createSupabaseAdmin();
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabase.rpc("get_inglorious_analytics_summary", { p_since: since });
+    if (error || !data || typeof data !== "object") return null;
+    return data as AnalyticsSummary;
+  } catch {
+    return null;
   }
 }
 
@@ -117,9 +136,9 @@ export default async function AdminPage({
   searchParams: Promise<SearchParams>;
 }) {
   const [session, params] = await Promise.all([getAdminSession(), searchParams]);
-  const [overview, adminData] = session
-    ? await Promise.all([getAdminOverview(), getAdminData()])
-    : [null, null];
+  const [overview, adminData, analytics] = session
+    ? await Promise.all([getAdminOverview(), getAdminData(), getAdminAnalytics()])
+    : [null, null, null];
 
   return (
     <main className="app-shell">
@@ -155,6 +174,25 @@ export default async function AdminPage({
             <article><strong>Última sincronização</strong><b className="admin-sync-value">{formatSyncDate(overview?.lastRosterSync ?? null)}</b><span>Último registro de sincronização do roster.</span></article>
           </div>
           {overview?.error || adminData?.error ? <div className="connection-alert"><strong>Leitura parcial</strong><span>Não foi possível consultar todos os indicadores e lançamentos. Verifique a conexão com o Supabase.</span></div> : null}
+
+          <div className="admin-section-heading"><h2>Análise de acessos</h2><span>ÚLTIMOS 30 DIAS</span></div>
+          {analytics ? (
+            <>
+              <div className="admin-cards admin-overview-grid">
+                <article><strong>Visualizações</strong><b>{new Intl.NumberFormat("pt-BR").format(analytics.total_views)}</b><span>Páginas abertas nos últimos 30 dias.</span></article>
+                <article><strong>Visitantes distintos</strong><b>{new Intl.NumberFormat("pt-BR").format(analytics.unique_visitors)}</b><span>Identificadores anônimos por hash protegido.</span></article>
+              </div>
+              <div className="admin-analytics-grid">
+                <article><h3>Páginas mais acessadas</h3>
+                  {analytics.top_pages.length > 0 ? analytics.top_pages.map((page) => <div className="admin-analytics-row" key={page.page_path}><span>{page.page_path}</span><strong>{new Intl.NumberFormat("pt-BR").format(page.views)}</strong></div>) : <p>Sem acessos registrados no período.</p>}
+                </article>
+                <article><h3>Acessos por dispositivo</h3>
+                  {analytics.device_breakdown.length > 0 ? analytics.device_breakdown.map((device) => <div className="admin-analytics-row" key={device.device_type}><span>{device.device_type}</span><strong>{new Intl.NumberFormat("pt-BR").format(device.views)}</strong></div>) : <p>Sem dados de dispositivo no período.</p>}
+                </article>
+              </div>
+              <p className="admin-help">O sistema registra caminho da página, domínio de referência e tipo de dispositivo. O endereço IP não é armazenado; o identificador do visitante é gerado por hash HMAC.</p>
+            </>
+          ) : <div className="admin-empty">A análise de acessos ficará disponível após a configuração do segredo de hash e o primeiro acesso ao aplicativo.</div>}
 
           <div className="admin-section-heading"><h2>Lançar pontuação manual</h2><span>ADMINISTRADOR</span></div>
           <p className="admin-help">Os lançamentos manuais ficam identificados e podem ser editados ou excluídos nesta tela. Raide e Capital continuam sob sincronização automática para evitar duplicidade.</p>
