@@ -40,7 +40,8 @@ export default async function MembersPage() {
       .from("clan_membership_summary")
       .select("player_tag,player_name,currently_in_clan,total_days,total_seconds,first_joined_at,latest_joined_at,membership_periods,has_open_period")
       .order("currently_in_clan", { ascending: false })
-      .order("total_seconds", { ascending: false });
+      .order("total_seconds", { ascending: false })
+      .order("player_tag", { ascending: true });
 
     if (result.error) throw new Error(result.error.message);
     rows = (result.data ?? []) as MembershipRow[];
