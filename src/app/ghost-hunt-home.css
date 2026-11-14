@@ -509,3 +509,25 @@
 .gh-home-v2 .gh-v2-recent .recent-members-list article small{color:#a9c7b0}
 .gh-home-v2 .gh-v2-recent .recent-members-list time{color:#c5d9c8}
 .gh-home-v2 .gh-v2-recent .recent-members-list article>strong{border-color:rgba(105,195,132,.42);background:rgba(33,91,53,.28);color:#a9e7b9}
+
+
+/* Compact leader-only community card: reward and prize panels intentionally omitted. */
+.gh-home-v2 .gh-community-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.9fr);align-items:center;gap:18px;padding:20px 22px;border:1px solid rgba(216,179,108,.34);border-radius:14px;background:radial-gradient(ellipse at 12% 0%,rgba(216,179,108,.12),transparent 45%),linear-gradient(145deg,#211b12,#100f0d 72%);box-shadow:inset 0 1px #ffffff0b,0 12px 30px #0004}
+.gh-community-copy{min-width:0}
+.gh-community-eyebrow{color:#c8a664;font-size:9px;font-weight:900;letter-spacing:1.5px}
+.gh-community-copy h2{margin:6px 0 7px;color:#f1e5cc;font:900 clamp(23px,3vw,32px)/1 'Barlow Condensed',sans-serif;letter-spacing:.5px}
+.gh-community-copy p{max-width:480px;margin:0;color:#b9ae9c;font-size:11px;line-height:1.65}
+.gh-community-profile{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:13px;min-width:0;padding:11px;border:1px solid rgba(216,179,108,.22);border-radius:10px;background:rgba(7,7,6,.52)}
+.gh-community-qr{width:100px;padding:5px;border-radius:6px;background:#fff;box-shadow:0 0 18px rgba(216,179,108,.13)}
+.gh-community-qr svg{display:block;width:100%;height:auto}
+.gh-community-leader{display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:4px}
+.gh-community-leader>small{color:#b89a62;font-size:8px;font-weight:900;letter-spacing:1.3px}
+.gh-community-leader>strong{color:#f1e5cc;font:800 20px 'Barlow Condensed',sans-serif}
+.gh-community-leader>span{color:#b9ae9c;font-size:9px;line-height:1.4}
+.gh-community-actions{display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:5px}
+.gh-community-actions .gh-reward-button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;padding:7px 9px;border:1px solid rgba(216,179,108,.38);border-radius:6px;font-size:8px;font-weight:900;letter-spacing:.25px;text-align:center}
+.gh-community-actions .gh-clash-button{flex:1 1 145px;background:linear-gradient(110deg,#a77a35,#76521f);color:#fff0ce}
+.gh-community-actions .gh-whatsapp-button{flex:0 0 auto;background:linear-gradient(120deg,#17633f,#10482f);border-color:rgba(80,164,105,.38);color:#e5ffed}
+.gh-community-actions .gh-reward-button b,.gh-community-actions .gh-reward-button span{font-size:12px}
+@media(max-width:760px){.gh-home-v2 .gh-community-card{grid-template-columns:1fr;gap:12px;padding:15px}.gh-community-copy p{max-width:none}.gh-community-profile{grid-template-columns:84px minmax(0,1fr);gap:10px;padding:9px}.gh-community-qr{width:84px}}
+@media(max-width:560px){.gh-home-v2 .gh-community-card{gap:10px;margin-bottom:16px;padding:12px;border-radius:11px}.gh-community-eyebrow{font-size:7px;letter-spacing:1px}.gh-community-copy h2{font-size:23px}.gh-community-copy p{font-size:9px;line-height:1.5}.gh-community-profile{grid-template-columns:76px minmax(0,1fr);gap:8px;padding:8px}.gh-community-qr{width:76px}.gh-community-leader>strong{font-size:17px}.gh-community-leader>span{font-size:8px}.gh-community-actions{gap:5px}.gh-community-actions .gh-reward-button{min-height:31px;padding:6px 7px;font-size:7px}}
