@@ -1,6 +1,6 @@
 import { getDashboardData } from "@/lib/dashboard";
 import SiteNav from "@/components/site-nav";
-import HomeRankingList from "@/components/home-ranking-list";
+import ClanCommunityCard from "@/components/clan-community-card";
 import { APP_CONFIG } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
@@ -87,6 +87,8 @@ export default async function HomePage() {
           <a href="/rules">VER REGRAS <b>›</b></a>
         </section>
 
+        <ClanCommunityCard />
+
         <section className="gh-v2-section gh-v2-ranking-section" id="ranking">
           <div className="gh-v2-section-head"><div><small>DISPUTA DO MÊS</small><h2>Ranking em destaque</h2></div><a href="/ranking">VER TUDO ↗</a></div>
           <div className="gh-v2-podium">
@@ -101,7 +103,12 @@ export default async function HomePage() {
           <div className="gh-v2-full-ranking-head"><div><small>CLASSIFICAÇÃO GERAL</small><h3>Todos os jogadores</h3></div><span>{data.monthLabel.toUpperCase()}</span></div>
           <section className="ranking-panel">
             <div className="ranking-head"><span>JOGADOR</span><span>PONTUAÇÃO</span></div>
-            {data.ranking.length ? <HomeRankingList players={data.ranking} /> : <div className="empty-state"><span className="empty-icon">♜</span><b>{data.connected ? "Ainda não há jogadores classificados" : "Conectando os dados do clã"}</b><p>O ranking será exibido assim que houver dados sincronizados.</p></div>}
+            {data.ranking.length ? data.ranking.slice(0, 10).map((player) => (
+              <article className="ranking-row" key={player.id}>
+                <div className="ranking-player"><span className="ranking-position">{String(player.position).padStart(2, "0")}</span><span>{player.player}<small>{player.tag || "TAG NÃO INFORMADA"}</small></span></div>
+                <strong>{number(player.total)} PTS</strong>
+              </article>
+            )) : <div className="empty-state"><span className="empty-icon">♜</span><b>{data.connected ? "Ainda não há jogadores classificados" : "Conectando os dados do clã"}</b><p>O ranking será exibido assim que houver dados sincronizados.</p></div>}
           </section>
         </section>
 
