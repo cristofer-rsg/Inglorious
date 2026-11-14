@@ -50,6 +50,7 @@ export function isRankingEligible(player: {
 export function calculatePlayerScore(input: {
   playerName: string;
   playerTag?: string | null;
+  allowLegacyNameFallback?: boolean;
   events: ScoringEvent[];
   clanGamesPoints?: number | null;
   donationsTotal?: number | null;
@@ -66,7 +67,12 @@ export function calculatePlayerScore(input: {
 
   for (const event of input.events) {
     const eventTag = normalized(event.player_tag).toUpperCase();
-    if (playerTag && eventTag ? eventTag !== playerTag : normalized(event.player) !== playerKey) continue;
+    if (playerTag && eventTag) {
+      if (eventTag !== playerTag) continue;
+    } else {
+      if (playerTag && input.allowLegacyNameFallback === false && !eventTag) continue;
+      if (normalized(event.player) !== playerKey) continue;
+    }
 
     const points = Number(event.points ?? 0);
     if (!Number.isFinite(points) || points === 0) continue;
