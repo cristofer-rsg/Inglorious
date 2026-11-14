@@ -51,7 +51,7 @@ export async function GET(request: Request) {
     ]);
     const roster = rosterResult.members;
 
-    const rosterByTag = new Map(roster.map((member) => [member.player_tag, member]));
+    const rosterByTag = new Map<string, (typeof roster)[number]>(roster.map((member): [string, (typeof roster)[number]] => [member.player_tag, member]));
     const seasonDate = localDate(season.startTime);
     const weekday = new Date(`${seasonDate}T12:00:00Z`).getUTCDay();
     const daysSinceFriday = (weekday + 2) % 7;
