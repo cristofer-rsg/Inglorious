@@ -11,8 +11,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-
-
 function parseClashTime(value: string) {
   const match = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
   if (!match) throw new Error(`Horário inválido retornado pela API: ${value}`);
