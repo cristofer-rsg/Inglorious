@@ -1,0 +1,105 @@
+name: Inglorious - Sincronizações automáticas
+
+on:
+  schedule:
+    - cron: "2-59/5 * * * *"
+    - cron: "*/15 * * * *"
+    - cron: "13 * * * *"
+    - cron: "17 * * * *"
+    - cron: "23 * * * *"
+    - cron: "0 5 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: inglorious-automatic-sync
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validar configuração
+        env:
+          BASE_URL: https://inglorious-six.vercel.app
+          CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
+        run: |
+          test -n "$CRON_SECRET" || { echo "::error::Configure o secret INGLORIOUS_CRON_SECRET"; exit 1; }
+
+      - name: Sincronizar guerras (a cada 5 minutos)
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '2-59/5 * * * *' }}
+        env:
+          BASE_URL: https://inglorious-six.vercel.app
+          CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$BASE_URL/api/cron/sync-wars" | tee /tmp/cron-result.json
+          jq -e '.success == true' /tmp/cron-result.json
+
+      - name: Sincronizar Liga, doações e Jogos do Clã (a cada 15 minutos)
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '*/15 * * * *' }}
+        env:
+          BASE_URL: https://inglorious-six.vercel.app
+          CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          for endpoint in sync-league sync-donations sync-clan-games; do
+            echo "Executando $endpoint"
+            curl --fail-with-body --silent --show-error --max-time 120 \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "$BASE_URL/api/cron/$endpoint" | tee /tmp/cron-result.json
+            jq -e '.success == true' /tmp/cron-result.json
+          done
+
+      - name: Sincronizar membros do clã (a cada hora)
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '13 * * * *' }}
+        env:
+          BASE_URL: https://inglorious-six.vercel.app
+          CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$BASE_URL/api/cron/sync-roster" | tee /tmp/cron-result.json
+          jq -e '.success == true' /tmp/cron-result.json
+
+      - name: Sincronizar Raide (a cada hora)
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '17 * * * *' }}
+        env:
+          BASE_URL: https://inglorious-six.vercel.app
+          CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$BASE_URL/api/cron/sync-raid" | tee /tmp/cron-result.json
+          jq -e '.success == true' /tmp/cron-result.json
+
+      - name: Sincronizar Capital do Clã (a cada hora)
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '23 * * * *' }}
+        env:
+          BASE_URL: https://inglorious-six.vercel.app
+          CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$BASE_URL/api/cron/sync-capital" | tee /tmp/cron-result.json
+          jq -e '.success == true' /tmp/cron-result.json
+
+      - name: Arquivar ranking mensal
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '0 5 1 * *' }}
+        env:
+          BASE_URL: https://inglorious-six.vercel.app
+          CRON_SECRET: ${{ secrets.INGLORIOUS_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$BASE_URL/api/cron/archive-month" | tee /tmp/cron-result.json
+          jq -e '.success == true' /tmp/cron-result.json

@@ -1,0 +1,63 @@
+import { describe, expect, it } from "vitest";
+
+import { getClashSeasonMonth, getZonedMonthBounds, parseClashApiTimestamp } from "./time";
+
+describe("getZonedMonthBounds", () => {
+  it("uses the configured São Paulo offset for month boundaries", () => {
+    expect(getZonedMonthBounds("2026-11", "America/Sao_Paulo")).toEqual({
+      start: "2026-11-01T03:00:00.000Z",
+      end: "2026-12-01T03:00:00.000Z",
+    });
+  });
+
+  it("accounts for daylight-saving offset changes between month boundaries", () => {
+    expect(getZonedMonthBounds("2026-03", "America/New_York")).toEqual({
+      start: "2026-03-01T05:00:00.000Z",
+      end: "2026-04-01T04:00:00.000Z",
+    });
+  });
+
+  it("rejects invalid month keys", () => {
+    expect(() => getZonedMonthBounds("2026-13", "America/Sao_Paulo"))
+      .toThrow("Mês inválido para cálculo do período.");
+  });
+});
+
+describe("getClashSeasonMonth", () => {
+  it.each([
+    ["2026-11", "2026-11"],
+    ["202611", "2026-11"],
+    ["2026-01", "2026-01"],
+    ["202612", "2026-12"],
+  ])("normalizes season %s to %s", (season, expected) => {
+    expect(getClashSeasonMonth(season)).toBe(expected);
+  });
+
+  it.each([undefined, "", "2026-13", "2026-1", "invalid"])(
+    "rejects invalid season %s",
+    (season) => {
+      expect(getClashSeasonMonth(season)).toBeNull();
+    },
+  );
+});
+
+describe("parseClashApiTimestamp", () => {
+  it("parses compact UTC timestamps with millisecond precision", () => {
+    expect(parseClashApiTimestamp("20261114T020304.125Z")?.toISOString())
+      .toBe("2026-11-14T02:03:04.125Z");
+  });
+
+  it("parses compact UTC timestamps without fractional seconds", () => {
+    expect(parseClashApiTimestamp("20261114T020304Z")?.toISOString())
+      .toBe("2026-11-14T02:03:04.000Z");
+  });
+
+  it.each([
+    "20261199T020304.000Z",
+    "20260229T020304.000Z",
+    "20261114T256304.000Z",
+    "invalid",
+  ])("rejects malformed or impossible timestamp %s", (value) => {
+    expect(parseClashApiTimestamp(value)).toBeNull();
+  });
+});
