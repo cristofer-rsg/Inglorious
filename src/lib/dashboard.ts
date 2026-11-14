@@ -5,6 +5,7 @@ import { calculatePlayerScore, isRankingEligible, type ScoringEvent } from "@/li
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 type PlayerRow = {
+  id: string;
   name: string;
   player_tag: string | null;
   active: boolean | null;
@@ -25,6 +26,7 @@ type MonthlyStatRow = {
 };
 
 export type RankingRow = {
+  id: string;
   position: number;
   player: string;
   tag: string;
@@ -115,7 +117,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     const [playersResult, events, statsResult] = await Promise.all([
       supabase
         .from("players")
-        .select("name,player_tag,active,eligible,role")
+        .select("id,name,player_tag,active,eligible,role")
         .order("name", { ascending: true }),
       fetchMonthEvents(bounds.start, bounds.end),
       supabase
@@ -162,6 +164,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         });
 
         return {
+          id: player.id,
           position: 0,
           player: player.name,
           tag: player.player_tag ?? "",
