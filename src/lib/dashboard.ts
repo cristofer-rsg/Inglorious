@@ -130,8 +130,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     );
     const donationsByTag = new Map<string, number>(
       stats
-        .filter((row) => row.player_tag)
-        .map((row): [string, number] => [String(row.player_tag).trim().toUpperCase(), Number(row.donations ?? 0)]),
+        .filter((row) => row.player_tag && row.donations != null)
+        .map((row): [string, number] => [String(row.player_tag).trim().toUpperCase(), Number(row.donations)]),
     );
     const gamesByName = new Map<string, number>(
       stats
@@ -140,8 +140,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     );
     const donationsByName = new Map<string, number>(
       stats
-        .filter((row) => row.player)
-        .map((row): [string, number] => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.donations ?? 0)]),
+        .filter((row) => row.player && row.donations != null)
+        .map((row): [string, number] => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.donations)]),
     );
 
     const playerNameCounts = new Map<string, number>();
