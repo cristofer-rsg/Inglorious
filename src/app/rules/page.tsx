@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import SiteNav from "@/components/site-nav";
 
 function PointRow({ label, value }: { label: string; value: string }) {
@@ -42,7 +43,7 @@ function RuleCard({
   title: string;
   subtitle: string;
   maximum?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <article className="rules-card">
