@@ -6,6 +6,7 @@ import "./ghost-hunt-gold.css";
 import "./ghost-hunt-readable.css";
 import "./ghost-hunt-rules.css";
 import "./ghost-hunt-tenure.css";
+import "./ghost-hunt-analytics.css";
 import "./ghost-hunt-parity.css";
 import AnalyticsTracker from "@/components/analytics-tracker";
 import BottomNavigation from "@/components/bottom-navigation";
