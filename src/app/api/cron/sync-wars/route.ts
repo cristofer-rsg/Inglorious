@@ -67,8 +67,8 @@ export async function GET(request: Request) {
     const endedAt = parseClashTime(war.endTime);
     const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
     const warEnd = endedAt?.getTime();
-    const playersByTag = new Map(roster.map((player) => [player.player_tag, player]));
-    const enemyPositions = new Map(war.opponent.members.map((member) => [member.tag, member.mapPosition]));
+    const playersByTag = new Map<string, (typeof roster)[number]>(roster.map((player): [string, (typeof roster)[number]] => [player.player_tag, player]));
+    const enemyPositions = new Map<string, number>(war.opponent.members.map((member): [string, number] => [member.tag, member.mapPosition]));
     const events = [];
     const statSources = [];
     const missingPlayers = [];
