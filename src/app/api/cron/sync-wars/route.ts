@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { isCronAuthorized } from "@/lib/auth/cron";
+
 import { fetchCurrentWar } from "@/lib/clash-api";
 import { APP_CONFIG } from "@/lib/config";
 import { synchronizeCurrentRoster } from "@/lib/clan-sync";
@@ -9,11 +11,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-function isAuthorized(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  return Boolean(secret)
-    && request.headers.get("authorization") === `Bearer ${secret}`;
-}
+
 
 function parseClashTime(value?: string) {
   if (!value) return null;
@@ -36,7 +34,7 @@ function getMonthKey(date: Date) {
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Não autorizado." }, { status: 401 });
   }
 
