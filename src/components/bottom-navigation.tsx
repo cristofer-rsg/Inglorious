@@ -8,8 +8,8 @@ const items = [
   { href: "/", icon: "⌂", label: "Início" },
   { href: "/ranking", icon: "♛", label: "Ranking" },
   { href: "/performance", icon: "◈", label: "Desempenho" },
-  { href: "/rules", icon: "⚖", label: "Regras" },
   { href: "/clan-time", icon: "◷", label: "Tempo de Clã" },
+  { href: "/rules", icon: "⚖", label: "Regras" },
 ];
 
 export default function BottomNavigation() {
@@ -28,7 +28,7 @@ export default function BottomNavigation() {
   useEffect(() => {
     items.forEach((item) => router.prefetch(item.href));
     const onStart = (event: TouchEvent) => {
-      if (currentPath.current.startsWith("/admin") || currentPath.current === "/login" || event.touches.length !== 1 || pending.current) {
+      if (currentPath.current.startsWith("/admin") || currentPath.current === "/login" || currentPath.current.startsWith("/history") || event.touches.length !== 1 || pending.current) {
         touchStart.current = null;
         return;
       }
@@ -44,12 +44,12 @@ export default function BottomNavigation() {
       touchStart.current = null;
       if (!start || event.changedTouches.length !== 1 || pending.current) return;
       const path = currentPath.current;
-      if (path.startsWith("/admin") || path === "/login") return;
+      if (path.startsWith("/admin") || path === "/login" || path.startsWith("/history")) return;
       const dx = event.changedTouches[0].clientX - start.x;
       const dy = event.changedTouches[0].clientY - start.y;
       if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-      const index = items.findIndex((item) => item.href === "/" ? path === "/" : path === item.href || path.startsWith(item.href + "/"));
-      const current = index >= 0 ? index : path.startsWith("/history") ? 1 : 0;
+      const index = items.findIndex((item) => item.href === "/" ? path === "/" : item.href === "/ranking" ? path.startsWith("/player/") || path === item.href : path === item.href || path.startsWith(item.href + "/"));
+      const current = index >= 0 ? index : 0;
       const next = dx < 0 ? Math.min(items.length - 1, current + 1) : Math.max(0, current - 1);
       if (next !== current) {
         pending.current = true;
@@ -67,12 +67,12 @@ export default function BottomNavigation() {
     };
   }, [router]);
 
-  if (pathname.startsWith("/admin") || pathname === "/login") return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/history") || pathname === "/login") return null;
   return (
     <nav className="mobile-bottom-nav" aria-label="Navegação principal">
       <span className="mobile-nav-swipe-arrow" aria-hidden="true">‹</span>
       {items.map((item) => {
-        const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(item.href + "/");
+        const active = item.href === "/" ? pathname === "/" : item.href === "/ranking" ? pathname === "/ranking" || pathname.startsWith("/player/") : pathname === item.href || pathname.startsWith(item.href + "/");
         return (
           <Link className={active ? "mobile-nav-item active" : "mobile-nav-item"} href={item.href} key={item.href} aria-current={active ? "page" : undefined} prefetch>
             <span className="mobile-nav-icon" aria-hidden="true">{item.icon}</span>
