@@ -49,7 +49,7 @@ export default function BottomNavigation() {
       const dy = event.changedTouches[0].clientY - start.y;
       if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
       const index = items.findIndex((item) => item.href === "/" ? path === "/" : path === item.href || path.startsWith(item.href + "/"));
-      const current = index >= 0 ? index : path.startsWith("/history") ? 1 : 0;
+      const current = index >= 0 ? index : 0;
       const next = dx < 0 ? Math.min(items.length - 1, current + 1) : Math.max(0, current - 1);
       if (next !== current) {
         pending.current = true;
