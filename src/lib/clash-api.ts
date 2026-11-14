@@ -61,6 +61,12 @@ export type ClashWar = {
   opponent: { tag: string; members: Array<{ tag: string; mapPosition: number }> };
 };
 
+export type ClashLeagueGroup = {
+  state: string;
+  season?: string;
+  rounds: Array<{ warTags: string[] }>;
+};
+
 type ClashApiMember = {
   name?: unknown;
   tag?: unknown;
@@ -119,6 +125,93 @@ export async function fetchCurrentClanMembers(): Promise<ClashClanMember[]> {
 
     return { name: member.name.trim(), player_tag: playerTag };
   });
+}
+
+export async function fetchCurrentLeagueGroup(): Promise<ClashLeagueGroup | null> {
+  const encodedTag = encodeURIComponent(APP_CONFIG.clanTag);
+  try {
+    const group = await apiGet<{
+      state?: unknown;
+      season?: unknown;
+      rounds?: Array<{ warTags?: unknown }>;
+    }>(`/clans/${encodedTag}/currentwar/leaguegroup`);
+
+    if (typeof group.state !== "string" || !Array.isArray(group.rounds)) {
+      throw new Error("A API retornou um grupo da Liga em formato inválido.");
+    }
+
+    return {
+      state: group.state,
+      season: typeof group.season === "string" ? group.season : undefined,
+      rounds: group.rounds.map((round) => ({
+        warTags: Array.isArray(round.warTags)
+          ? round.warTags.filter((tag): tag is string => typeof tag === "string" && tag !== "#0")
+          : [],
+      })),
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("HTTP 404")
+      && error.message.includes("notFound")) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function fetchLeagueWar(warTag: string): Promise<ClashWar> {
+  const encodedTag = encodeURIComponent(warTag);
+  const war = await apiGet<{
+    state?: unknown;
+    startTime?: unknown;
+    endTime?: unknown;
+    clan?: { tag?: unknown; members?: Array<{
+      tag?: unknown; name?: unknown; mapPosition?: unknown;
+      attacks?: Array<{ order?: unknown; defenderTag?: unknown; stars?: unknown; battleTime?: unknown }>;
+    }> };
+    opponent?: { tag?: unknown; members?: Array<{ tag?: unknown; mapPosition?: unknown }> };
+  }>(`/clanwarleagues/wars/${encodedTag}`);
+
+  if (typeof war.state !== "string" || !["preparation", "inWar", "warEnded"].includes(war.state)
+    || typeof war.startTime !== "string" || !war.startTime
+    || typeof war.clan?.tag !== "string" || typeof war.opponent?.tag !== "string"
+    || !Array.isArray(war.clan.members) || !Array.isArray(war.opponent.members)) {
+    throw new Error(`Guerra da Liga ${warTag} incompleta ou inválida.`);
+  }
+
+  const ownClan = war.clan.tag.toUpperCase() === APP_CONFIG.clanTag.toUpperCase()
+    ? war.clan : war.opponent;
+  const enemyClan = ownClan === war.clan ? war.opponent : war.clan;
+  const members = (ownClan.members ?? []).map((member) => {
+    if (typeof member.tag !== "string" || typeof member.name !== "string"
+      || typeof member.mapPosition !== "number") {
+      throw new Error(`Membro inválido na guerra da Liga ${warTag}.`);
+    }
+    return {
+      tag: member.tag.toUpperCase(),
+      name: member.name,
+      mapPosition: member.mapPosition,
+      attacks: (member.attacks ?? []).map((attack) => ({
+        order: typeof attack.order === "number" ? attack.order : 0,
+        defenderTag: typeof attack.defenderTag === "string" ? attack.defenderTag : undefined,
+        stars: typeof attack.stars === "number" ? attack.stars : 0,
+        battleTime: typeof attack.battleTime === "string" ? attack.battleTime : undefined,
+      })),
+    };
+  });
+  const opponents = (enemyClan.members ?? []).map((member) => {
+    if (typeof member.tag !== "string" || typeof member.mapPosition !== "number") {
+      throw new Error(`Adversário inválido na guerra da Liga ${warTag}.`);
+    }
+    return { tag: member.tag.toUpperCase(), mapPosition: member.mapPosition };
+  });
+
+  return {
+    state: war.state,
+    startTime: war.startTime,
+    endTime: typeof war.endTime === "string" ? war.endTime : undefined,
+    clan: { tag: APP_CONFIG.clanTag, members },
+    opponent: { tag: String(enemyClan.tag), members: opponents },
+  };
 }
 
 export async function fetchCurrentWar(): Promise<ClashWar> {
