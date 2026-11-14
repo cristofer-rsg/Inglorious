@@ -188,8 +188,6 @@ export async function GET(request: Request) {
       );
     }
 
-    const bonusSync = await syncLeagueBonus();
-
     let performanceSync: unknown = null;
     if (allStatSources.length > 0) {
       const { data, error } = await supabase.rpc("sync_player_monthly_stat_sources", {
@@ -207,6 +205,8 @@ export async function GET(request: Request) {
       if (error) throw new Error(`Falha ao registrar pontuação da Liga: ${error.message}`);
       scoreSync = Array.isArray(data) ? data[0] : data;
     }
+
+    const bonusSync = await syncLeagueBonus();
 
     return NextResponse.json({
       success: true,
