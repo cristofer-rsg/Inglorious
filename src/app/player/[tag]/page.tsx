@@ -22,8 +22,8 @@ function date(value: string) {
 }
 
 const metrics = [
-  ["Guerras", "wars", "ataques"],
-  ["Liga", "league", "ataques"],
+  ["Guerras", "wars", "pontos"],
+  ["Liga", "league", "pontos"],
   ["Doações", "donations", "pontos"],
   ["Jogos do clã", "games", "pontos"],
   ["Raide", "raid", "pontos"],
