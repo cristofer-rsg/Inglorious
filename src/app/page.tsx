@@ -65,7 +65,7 @@ export default async function HomePage() {
           </div>
           <div className="gh-v2-hero-copy">
             <div className="gh-v2-eyebrow"><span className="gh-v2-live-dot" /> BEM-VINDO, GUERREIRO <span>•</span> {data.monthLabel.toUpperCase()}</div>
-            <h1>HONRA.<br/><em>ESTRATÉGIA.</em></h1>
+            <h1>BEM-VINDO,<br/><em>INGLÓRIO</em></h1>
             <p>Acompanhe a força, a pontuação e o desempenho do clã Inglorious.</p>
             <a className="gh-v2-hero-link" href="/ranking">ACOMPANHAR RANKING <b>↗</b></a>
           </div>
