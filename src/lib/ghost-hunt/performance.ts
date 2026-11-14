@@ -162,7 +162,7 @@ export async function getPerformanceData(
     if (completedWarsError) throw new Error(completedWarsError.message);
     const latestWarKey = completedWars?.[0]?.war_key || "";
 
-    const latestLeagueDay = monthActivitySources
+    const latestLeagueDay = activitySources
       .map((row) => row.source_key.match(/^league:(\d{8})T\d{6}\.\d+Z:/)?.[1] || "")
       .sort()
       .at(-1) || "";
@@ -174,7 +174,7 @@ export async function getPerformanceData(
       )).toISOString().slice(0, 10).replace(/-/g, "")
       : "";
 
-    const raidSources = monthActivitySources.filter((row) => /^raid:\d{4}-\d{2}-\d{2}:/.test(row.source_key));
+    const raidSources = activitySources.filter((row) => /^raid:\d{4}-\d{2}-\d{2}:/.test(row.source_key));
     const latestRaidSync = raidSources.reduce(
       (latest, row) => row.updated_at && row.updated_at > latest ? row.updated_at : latest,
       "",
@@ -187,7 +187,7 @@ export async function getPerformanceData(
       league: number | null;
       raid: number | null;
     }>();
-    for (const source of monthActivitySources) {
+    for (const source of activitySources) {
       const tag = (source.player_tag || "").trim().toUpperCase();
       if (!tag) continue;
       const current = lastActivityByTag.get(tag) || { war: null, league: null, raid: null };
