@@ -28,3 +28,11 @@
 .rules-timing{padding:11px 13px;margin-top:12px;border:1px solid rgba(214,166,76,.5);border-radius:13px;background:rgba(108,77,28,.22);color:#e9dcc5;font-size:12px;line-height:1.5}
 .rules-timing>b{color:#f0ca78}.rules-timing p{margin:5px 0 0}
 @media(max-width:700px){.rules-table .rules-point-row{font-size:11px}.rules-table-head{font-size:11px}.rules-timing{font-size:11px}}
+
+.rules-attack-section{margin:22px 0;padding:20px;border:1px solid rgba(214,174,100,.3);border-radius:16px;background:linear-gradient(145deg,rgba(44,34,20,.78),rgba(18,18,15,.92))}
+.rules-attack-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}
+.rules-attack-item{display:flex;flex-direction:column;gap:5px;padding:13px;border:1px solid rgba(214,174,100,.2);border-radius:10px;background:rgba(8,10,9,.48)}
+.rules-attack-item b{color:#e8c477;font-size:16px;font-weight:900}
+.rules-attack-item span{color:#c7c0b3;font-size:12px;line-height:1.5}
+.rules-attack-item.penalty b{color:#e59a84}
+@media(max-width:560px){.rules-attack-section{padding:14px}.rules-attack-grid{grid-template-columns:1fr;gap:7px}.rules-attack-item{padding:11px}.rules-attack-item b{font-size:15px}.rules-attack-item span{font-size:11px}}
