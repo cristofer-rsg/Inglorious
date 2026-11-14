@@ -48,7 +48,7 @@ export default function BottomNavigation() {
       const dx = event.changedTouches[0].clientX - start.x;
       const dy = event.changedTouches[0].clientY - start.y;
       if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-      const index = items.findIndex((item) => item.href === "/" ? path === "/" : path === item.href || path.startsWith(item.href + "/"));
+      const index = items.findIndex((item) => item.href === "/" ? path === "/" : item.href === "/ranking" ? path.startsWith("/player/") || path === item.href : path === item.href || path.startsWith(item.href + "/"));
       const current = index >= 0 ? index : 0;
       const next = dx < 0 ? Math.min(items.length - 1, current + 1) : Math.max(0, current - 1);
       if (next !== current) {
@@ -72,7 +72,7 @@ export default function BottomNavigation() {
     <nav className="mobile-bottom-nav" aria-label="Navegação principal">
       <span className="mobile-nav-swipe-arrow" aria-hidden="true">‹</span>
       {items.map((item) => {
-        const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(item.href + "/");
+        const active = item.href === "/" ? pathname === "/" : item.href === "/ranking" ? pathname === "/ranking" || pathname.startsWith("/player/") : pathname === item.href || pathname.startsWith(item.href + "/");
         return (
           <Link className={active ? "mobile-nav-item active" : "mobile-nav-item"} href={item.href} key={item.href} aria-current={active ? "page" : undefined} prefetch>
             <span className="mobile-nav-icon" aria-hidden="true">{item.icon}</span>
