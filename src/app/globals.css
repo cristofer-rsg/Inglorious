@@ -346,3 +346,7 @@ a { color: inherit; text-decoration: none; }
 @media(max-width:600px) {
   .admin-analytics-grid { grid-template-columns: 1fr; }
 }
+
+
+.admin-export-link { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; margin: 12px 0 22px; padding: 11px 16px; border: 1px solid rgba(213,182,110,.38); background: rgba(213,182,110,.08); color: var(--gold); font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+.admin-export-link:hover { background: rgba(213,182,110,.14); }
