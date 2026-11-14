@@ -42,3 +42,15 @@ A rota está implementada, mas não foi agendada nem ativada em produção. Nenh
 - O cliente web não acessa diretamente as tabelas protegidas.
 - Rotas de automação exigem segredo de autorização.
 - O projeto não importa dados do Ghost Hunt.
+
+## Rotas de automação implementadas
+
+Todas exigem `Authorization: Bearer <CRON_SECRET>` e são executadas exclusivamente no servidor:
+
+- `GET /api/cron/sync-roster`: sincroniza membros, entradas, saídas e períodos de permanência.
+- `GET /api/cron/sync-capital`: coleta o total de contribuições de Capital e registra somente diferenças após o baseline.
+- `GET /api/cron/sync-donations`: acumula doações mensais considerando reinícios do contador sazonal.
+- `GET /api/cron/sync-clan-games`: observa a conquista Games Champion, detecta automaticamente o início dos Jogos do Clã e atualiza o desempenho.
+- `GET /api/cron/sync-raid`: sincroniza ataques do Raide e aplica a pontuação automática de +5 para quem realizou pelo menos cinco ataques, respeitando o limite mensal existente.
+
+As rotas não estão agendadas. O agendamento será configurado somente após validação completa e autorização para ativar as automações em ambiente publicado.
