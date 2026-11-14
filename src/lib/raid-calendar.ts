@@ -1,4 +1,4 @@
-import { parseClashApiTimestamp } from "@/lib/time";
+import { parseClashApiTimestamp } from "./time";
 
 export type RaidWeekend = {
   weekendStart: string;
