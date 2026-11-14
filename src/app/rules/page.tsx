@@ -21,7 +21,7 @@ export default function RulesPage() {
       <section className="rules-list">
         {rules.map((rule, index) => <article className="rule-card" key={rule.title}><span className="rule-index">{String(index + 1).padStart(2, "0")}</span><div><h2>{rule.title}</h2><p>{rule.detail}</p></div><strong>{rule.target}</strong></article>)}
       </section>
-      <section className="eligibility-note"><h2>Elegibilidade</h2><p>O ranking considera jogadores ativos, marcados como elegíveis, com participação no grupo do Telegram e que não ocupem os cargos de líder ou vice-líder.</p></section>
+      <section className="eligibility-note"><h2>Elegibilidade</h2><p>O ranking considera jogadores ativos e elegíveis. Líderes e vice-líderes não participam da classificação.</p></section>
     </main>
   );
 }
