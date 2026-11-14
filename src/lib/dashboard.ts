@@ -48,6 +48,7 @@ export type RankingRow = {
   capitalCoins: number;
   capitalPoints: number;
   penalties: number;
+  active: boolean;
 };
 
 export type DashboardData = {
@@ -206,8 +207,10 @@ export async function getDashboardData(): Promise<DashboardData> {
           capitalCoins: score.capitalCoins,
           capitalPoints: score.capitalPoints,
           penalties: score.penalties,
+          active: player.active !== false,
         };
       })
+      .filter((row) => row.active || row.total > 0)
       .sort((a, b) =>
         b.total - a.total
         || b.wars - a.wars
