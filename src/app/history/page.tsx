@@ -77,45 +77,39 @@ export default async function HistoryPage({
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
-        <span className="connection">TEMPORADAS ARQUIVADAS</span>
+        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+        <span className="status"><span className="status-dot online" />TEMPORADAS ARQUIVADAS</span>
       </header>
       <SiteNav active="/history" />
-      <section className="page-heading"><span className="eyebrow">MEMÓRIA DO CLÃ</span><h1>Histórico <em>mensal</em></h1><p>Classificações preservadas ao final de cada temporada.</p></section>
-      {error ? <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{error}</span></div> : (
-        <>
-          {months.length > 0 ? (
-            <form className="history-filter" action="/history" method="get">
-              <label htmlFor="history-month">Mês de referência</label>
-              <select id="history-month" name="month" defaultValue={selectedMonth}>
-                {months.map((month) => <option value={month} key={month}>{monthLabel(month)}</option>)}
-              </select>
-              <button type="submit">Consultar</button>
-            </form>
-          ) : null}
-          {selectedMonth ? (
-            <>
-              <div className="section-heading"><div><span className="eyebrow">CLASSIFICAÇÃO ARQUIVADA</span><h2>{monthLabel(selectedMonth)}</h2></div><span className="month-pill">{number(rows.length)} jogadores</span></div>
-              <div className="performance-table-wrap">
-                <table className="performance-table history-table">
-                  <thead><tr><th>Pos.</th><th>Jogador</th><th>Pontos</th><th>Guerras</th><th>Liga</th><th>Doações</th><th>Jogos</th><th>Raide</th><th>Capital</th><th>Penalidades</th></tr></thead>
-                  <tbody>
-                    {rows.map((row) => <tr key={row.id}>
-                      <td>{number(row.position)}</td>
-                      <th scope="row"><strong>{row.player}</strong><small>{row.player_tag ?? "TAG NÃO INFORMADA"}</small></th>
-                      <td><strong>{number(row.total)}</strong></td>
-                      <td>{number(row.wars)}</td><td>{number(row.league)}</td><td>{number(row.donations)}</td><td>{number(row.games)}</td><td>{number(row.raid)}</td><td>{number(row.capital)}</td><td>{number(row.penalties)}</td>
-                    </tr>)}
-                    {rows.length === 0 ? <tr><td colSpan={10} className="table-empty">Não há registros arquivados para este mês.</td></tr> : null}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          ) : (
-            <div className="empty-state"><span>⌛</span><strong>Nenhuma temporada arquivada</strong><p>O histórico será preenchido automaticamente no fechamento mensal, após a ativação autorizada das automações.</p></div>
-          )}
-        </>
-      )}
+      <section className="content gh-content">
+        <section className="admin-content history-content">
+          <span className="auth-kicker">MEMÓRIA DO CLÃ • TEMPORADAS ARQUIVADAS</span>
+          <h1>Histórico <em>mensal</em></h1>
+          <p>Consulte classificações preservadas ao final de cada temporada e confira a pontuação por categoria.</p>
+          {error && <div className="connection-alert"><b>Não foi possível carregar o histórico.</b><span>{error}</span></div>}
+          {months.length > 0 && <form className="history-filter" action="/history" method="get">
+            <label htmlFor="history-month">Mês de referência</label>
+            <select id="history-month" name="month" defaultValue={selectedMonth}>{months.map((month) => <option value={month} key={month}>{monthLabel(month)}</option>)}</select>
+            <button type="submit">Consultar</button>
+          </form>}
+          {selectedMonth ? <>
+            <div className="history-section-title"><h2>{monthLabel(selectedMonth)}</h2><span>{number(rows.length)} JOGADORES</span></div>
+            <div className="history-ranking">
+              {rows.map((row) => <article key={row.id}>
+                <b className="history-position">{row.position}</b>
+                <div className="history-player"><strong>{row.player}</strong><small>{row.player_tag ?? "TAG NÃO INFORMADA"}</small>
+                  <small>Guerras {number(row.wars)} · Liga {number(row.league)} · Doações {number(row.donations)} · Jogos {number(row.games)} · Raide {number(row.raid)} · Capital {number(row.capital)}</small>
+                  {row.penalties > 0 && <small className="history-penalty">Penalidades: −{number(row.penalties)} pontos</small>}
+                </div>
+                <strong className="history-total">{number(row.total)} pts</strong>
+              </article>)}
+              {rows.length === 0 && <div className="empty-state"><b>Nenhuma temporada arquivada</b><p>Não há registros preservados para este mês.</p></div>}
+            </div>
+          </> : <div className="empty-state"><span>⌛</span><strong>Nenhuma temporada arquivada</strong><p>O histórico será preenchido automaticamente no fechamento mensal.</p></div>}
+          <a className="back-link" href="/ranking">← Voltar ao ranking</a>
+        </section>
+        <footer className="footer"><span>INGLORIOUS <b>•</b> HISTÓRICO</span><span>Temporadas arquivadas</span></footer>
+      </section>
     </main>
   );
 }
