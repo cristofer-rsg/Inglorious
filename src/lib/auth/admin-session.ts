@@ -31,7 +31,7 @@ export async function createAdminSession() {
   const { error } = await supabase.from("device_sessions").insert({
     token_hash: digest(token),
     role: "admin",
-    player_name: process.env.ADMIN_USERNAME ?? "admin",
+    player_name: null,
     expires_at: expiresAt.toISOString(),
   });
   if (error) throw new Error("Não foi possível criar a sessão administrativa.");
