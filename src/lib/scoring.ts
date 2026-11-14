@@ -18,23 +18,15 @@ export type PlayerScoringResult = {
   total: number;
 };
 
-const WEIGHTS = {
-  wars: { target: 200, max: 200 },
-  league: { target: 140, max: 200 },
-  raid: { target: 32, max: 150 },
-  donations: { target: 10000, max: 150 },
-  games: { target: 10000, max: 100 },
-  capital: { target: 250000, max: 200 },
-} as const;
+const DONATIONS_CAP = 50;
+const DONATION_TROOPS_PER_POINT = 100;
+const CLAN_GAMES_CAP = 25;
+const CAPITAL_COINS_PER_POINT = 2500;
 
 const EXCLUDED_ROLES = new Set(["leader", "co_leader", "coleader", "co-leader"]);
 
 function normalized(value: string | null | undefined) {
   return (value ?? "").trim().toLocaleLowerCase("pt-BR");
-}
-
-function score(raw: number, target: number, max: number) {
-  return Math.round(Math.min(Math.max(raw, 0) / target, 1) * max);
 }
 
 export function isRankingEligible(player: {
@@ -57,11 +49,12 @@ export function calculatePlayerScore(input: {
 }): PlayerScoringResult {
   const playerKey = normalized(input.playerName);
   const playerTag = normalized(input.playerTag).toUpperCase();
-  let warsRaw = 0;
-  let leagueRaw = 0;
+  let wars = 0;
+  let league = 0;
+  let legacyDonationPoints = 0;
   let donatedTroops = 0;
-  let gamesRaw = 0;
-  let raidRaw = 0;
+  let games = 0;
+  let raid = 0;
   let capitalCoins = 0;
   let penalties = 0;
 
@@ -85,28 +78,31 @@ export function calculatePlayerScore(input: {
       continue;
     }
 
-    if (category === "guerras") warsRaw += points;
-    else if (category === "liga dos clãs") leagueRaw += points;
-    else if (category === "doações" && activity.startsWith("TROPAS_DOADAS:")) donatedTroops += points;
-    else if (category === "jogos do clã") gamesRaw = Math.max(gamesRaw, points);
-    else if (category === "raide de fim de semana") raidRaw += points;
-    else if (category === "capital do clã" && activity === "Doação automática de Ouro da Capital") capitalCoins += points;
+    if (category === "guerras") wars += points;
+    else if (category === "liga dos clãs") league += points;
+    else if (category === "doações") {
+      if (activity.startsWith("TROPAS_DOADAS:")) donatedTroops += points;
+      else legacyDonationPoints += points;
+    } else if (category === "jogos do clã") games = Math.max(games, points);
+    else if (category === "raide de fim de semana") raid += points;
+    else if (category === "capital do clã") capitalCoins += points;
   }
 
   if (input.donationsTotal != null && Number.isFinite(Number(input.donationsTotal))) {
     donatedTroops = Math.max(0, Number(input.donationsTotal));
   }
+
   const monthlyGames = Number(input.clanGamesPoints ?? 0);
   if (Number.isFinite(monthlyGames)) {
-    gamesRaw = Math.max(gamesRaw, Math.max(0, monthlyGames));
+    games = Math.max(games, Math.max(0, monthlyGames));
   }
 
-  const wars = score(warsRaw, WEIGHTS.wars.target, WEIGHTS.wars.max);
-  const league = score(leagueRaw, WEIGHTS.league.target, WEIGHTS.league.max);
-  const donations = score(donatedTroops, WEIGHTS.donations.target, WEIGHTS.donations.max);
-  const games = score(gamesRaw, WEIGHTS.games.target, WEIGHTS.games.max);
-  const raid = score(raidRaw, WEIGHTS.raid.target, WEIGHTS.raid.max);
-  const capitalPoints = score(capitalCoins, WEIGHTS.capital.target, WEIGHTS.capital.max);
+  const donations = Math.min(
+    DONATIONS_CAP,
+    legacyDonationPoints + Math.floor(donatedTroops / DONATION_TROOPS_PER_POINT),
+  );
+  games = Math.min(CLAN_GAMES_CAP, games);
+  const capitalPoints = Math.floor(capitalCoins / CAPITAL_COINS_PER_POINT);
 
   return {
     wars,
