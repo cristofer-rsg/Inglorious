@@ -59,3 +59,19 @@ Todas exigem `Authorization: Bearer <CRON_SECRET>` e são executadas exclusivame
 - `GET /api/cron/sync-league`: percorre as guerras da Liga, sincroniza ataques e pontuação, e verifica o bônus de conclusão dos sete ataques.
 
 As rotas não estão agendadas. O agendamento será configurado somente após validação completa e autorização para ativar as automações em ambiente publicado.
+
+## Validação
+
+Execute localmente:
+
+```bash
+npm run typecheck
+npm test
+npm run build
+```
+
+A integração contínua executa as três verificações em cada atualização da branch de desenvolvimento. Os testes automatizados cobrem regras de elegibilidade, cálculo de pontuação, proteção contra origem cruzada e calendário do Raide, incluindo a virada de mês.
+
+As rotinas de doações, Jogos do Clã, Capital, Raide, Guerras e Liga usam procedimentos transacionais no Supabase para impedir gravações parciais. Os procedimentos de sincronização possuem execução restrita ao papel `service_role`.
+
+Os testes de integração com a API do Clash dependem de um token válido e de dados reais do clã. Não são executados automaticamente no CI para evitar chamadas externas e alterações no banco.
