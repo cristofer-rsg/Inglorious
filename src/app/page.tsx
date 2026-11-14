@@ -1,4 +1,5 @@
 import { getDashboardData } from "@/lib/dashboard";
+import SiteNav from "@/components/site-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ export default async function HomePage() {
           {data.connected ? "CLÃ CONECTADO" : "AGUARDANDO CONEXÃO"}
         </div>
       </header>
+      <SiteNav active="/" />
 
       <section className="hero">
         <div className="hero-content">
