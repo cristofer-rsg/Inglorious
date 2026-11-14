@@ -46,7 +46,8 @@ A rota está implementada, mas não foi agendada nem ativada em produção. Nenh
 - Guerras, Liga, doações e Jogos do Clã podem receber lançamentos manuais identificados; Raide e Capital permanecem automáticos para evitar duplicidade.
 - A aba Desempenho permite selecionar o mês, pesquisar por nome/tag e comparar seis categorias com índice independente de até 600 pontos (100 por categoria), sem alterar o ranking oficial.
 - A página inicial destaca novas entradas identificadas pela sincronização, sem confundir o roster inicial de referência com novos membros.
-- O painel administrativo apresenta visualizações, visitantes distintos, páginas mais acessadas e tipos de dispositivo nos últimos 30 dias.
+- O histórico mensal possui página pública e rota protegida `GET /api/cron/archive-month`; a rota arquiva o mês anterior somente quando existem dados e não cria temporadas vazias.
+- O painel administrativo exporta o histórico de eventos em CSV e apresenta visualizações, visitantes distintos, páginas mais acessadas e tipos de dispositivo nos últimos 30 dias.
 - A análise registra somente caminho da página, host de referência, tipo de dispositivo e hash HMAC do visitante. Endereços IP não são armazenados e dados geográficos não são coletados.
 
 ## Segurança
@@ -67,6 +68,7 @@ Todas exigem `Authorization: Bearer <CRON_SECRET>` e são executadas exclusivame
 - `GET /api/cron/sync-raid`: sincroniza ataques do Raide e aplica a pontuação automática de +5 para quem realizou pelo menos cinco ataques, respeitando o limite mensal existente.
 - `GET /api/cron/sync-wars`: sincroniza ataques, estrelas, espelhos, penalidades e conclusão das guerras normais.
 - `GET /api/cron/sync-league`: percorre as guerras da Liga, sincroniza ataques e pontuação, e verifica o bônus de conclusão dos sete ataques.
+- `GET /api/cron/archive-month`: arquiva a classificação do mês anterior quando há atividade registrada.
 
 As rotas não estão agendadas. O agendamento será configurado somente após validação completa e autorização para ativar as automações em ambiente publicado.
 
