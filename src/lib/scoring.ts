@@ -81,7 +81,7 @@ export function calculatePlayerScore(input: {
     else if (category === "liga dos clãs") league += points;
     else if (category === "doações") {
       if (activity.startsWith("TROPAS_DOADAS:")) donatedTroops += points;
-      else legacyDonationPoints += points;
+      else if (points <= DONATIONS_CAP) legacyDonationPoints += points;
     } else if (category === "jogos do clã") games = Math.max(games, points);
     else if (category === "raide de fim de semana") raid += points;
     else if (category === "capital do clã") capitalCoins += points;
