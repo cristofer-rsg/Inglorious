@@ -156,3 +156,19 @@ a { color: inherit; text-decoration: none; }
   .podium-player { font-size:10px; }
   .podium-points { font-size:20px; }
 }
+
+.admin-panel { max-width:620px; margin:52px auto 70px; padding:clamp(20px,5vw,36px); border:1px solid var(--line); background:linear-gradient(145deg,rgba(22,32,25,.98),rgba(12,18,14,.98)); }
+.admin-panel h1 { margin:12px 0; font:800 clamp(38px,7vw,58px)/.95 "Barlow Condensed",sans-serif; }
+.admin-panel h1 em { color:var(--green-strong); font-style:normal; }
+.admin-panel > p { color:var(--muted); font-size:12px; line-height:1.7; }
+.admin-login { display:grid; gap:10px; margin-top:25px; }
+.admin-login label { color:#b8c5b5; font-size:10px; font-weight:800; letter-spacing:.08em; }
+.admin-login input { width:100%; min-height:46px; padding:12px; border:1px solid var(--line); outline:none; background:#090f0b; color:var(--text); font:inherit; }
+.admin-login input:focus { border-color:rgba(184,223,130,.65); }
+.admin-login button,.admin-panel button { min-height:46px; margin-top:8px; padding:12px 18px; border:1px solid rgba(184,223,130,.45); background:rgba(155,198,107,.12); color:var(--green-strong); font-size:10px; font-weight:800; letter-spacing:.1em; cursor:pointer; }
+.admin-login button:disabled { opacity:.55; cursor:wait; }
+.admin-error { margin:4px 0; color:#e3a18f; font-size:11px; }
+.admin-cards { display:grid; gap:10px; margin:25px 0; }
+.admin-cards article { display:grid; gap:6px; padding:16px; border:1px solid var(--line); background:rgba(9,15,11,.65); }
+.admin-cards strong { font:700 19px "Barlow Condensed",sans-serif; }
+.admin-cards span { color:var(--muted); font-size:11px; line-height:1.6; }
