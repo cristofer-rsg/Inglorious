@@ -350,3 +350,15 @@ a { color: inherit; text-decoration: none; }
 
 .admin-export-link { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; margin: 12px 0 22px; padding: 11px 16px; border: 1px solid rgba(213,182,110,.38); background: rgba(213,182,110,.08); color: var(--gold); font-size: 9px; font-weight: 800; letter-spacing: .08em; }
 .admin-export-link:hover { background: rgba(213,182,110,.14); }
+
+
+.history-filter { display: flex; align-items: center; gap: 10px; margin: 18px 0 26px; padding: 14px; border: 1px solid var(--line); background: var(--panel); }
+.history-filter label { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.history-filter select { min-width: 180px; min-height: 42px; padding: 10px; border: 1px solid var(--line); background: #090f0b; color: var(--text); font: 11px Inter,sans-serif; }
+.history-filter button { min-height: 42px; padding: 10px 16px; border: 1px solid rgba(184,223,130,.45); background: rgba(155,198,107,.12); color: var(--green-strong); font-size: 9px; font-weight: 800; cursor: pointer; }
+.history-table { min-width: 980px; }
+@media(max-width:600px) {
+  .history-filter { align-items: stretch; flex-direction: column; }
+  .history-filter select { width: 100%; }
+  .history-filter button { width: 100%; }
+}
