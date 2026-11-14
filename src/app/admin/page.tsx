@@ -18,12 +18,6 @@ type AdminOverview = {
   error: boolean;
 };
 
-type AdminPlayer = {
-  id: string;
-  name: string;
-  player_tag: string | null;
-};
-
 type AnalyticsSummary = {
   total_views: number;
   unique_visitors: number;
@@ -50,12 +44,11 @@ async function getAdminOverview(): Promise<AdminOverview> {
       supabase.from("clan_sync_state").select("synced_at").order("synced_at", { ascending: false }).limit(1).maybeSingle(),
     ]);
 
-    const failed = Boolean(players.error || events.error || sync.error);
     return {
       activePlayers: players.error ? null : players.count ?? 0,
       eventCount: events.error ? null : events.count ?? 0,
       lastRosterSync: sync.error ? null : sync.data?.synced_at ?? null,
-      error: failed,
+      error: Boolean(players.error || events.error || sync.error),
     };
   } catch {
     return { activePlayers: null, eventCount: null, lastRosterSync: null, error: true };
@@ -75,26 +68,24 @@ async function getAdminAnalytics(): Promise<AnalyticsSummary | null> {
 }
 
 async function getAdminData() {
-  const supabase = createSupabaseAdmin();
-  const [playersResult, manualEventsResult, manualDonationsResult] = await Promise.all([
-    supabase.from("players").select("id,name,player_tag").order("name", { ascending: true }),
-    supabase.from("events").select("id,player,player_tag,category,activity,points,created_at")
-      .ilike("activity", "MANUAL:%").order("created_at", { ascending: false }).limit(20),
-    supabase.from("events").select("id,player,player_tag,category,activity,points,created_at")
-      .ilike("activity", "TROPAS_DOADAS: manual -%").order("created_at", { ascending: false }).limit(20),
-  ]);
+  try {
+    const supabase = createSupabaseAdmin();
+    const { data, error } = await supabase.from("events")
+      .select("id,player,player_tag,category,activity,points,created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
 
-  if (playersResult.error || manualEventsResult.error || manualDonationsResult.error) {
-    return { players: [] as AdminPlayer[], events: [] as AdminEvent[], error: true };
+    if (error) throw new Error(error.message);
+
+    const events = ((data ?? []) as AdminEvent[])
+      .filter((event) => !event.activity.startsWith("MANUAL:")
+        && !event.activity.startsWith("TROPAS_DOADAS: manual -"))
+      .slice(0, 20);
+
+    return { events, error: false };
+  } catch {
+    return { events: [] as AdminEvent[], error: true };
   }
-
-  const players = (playersResult.data ?? []) as AdminPlayer[];
-  const events = [
-    ...((manualEventsResult.data ?? []) as AdminEvent[]),
-    ...((manualDonationsResult.data ?? []) as AdminEvent[]),
-  ].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 20);
-
-  return { players, events, error: false };
 }
 
 function formatSyncDate(value: string | null) {
@@ -114,19 +105,8 @@ function formatEventDate(value: string) {
   }).format(new Date(value));
 }
 
-function editableActivity(event: AdminEvent) {
-  if (event.activity.startsWith("TROPAS_DOADAS: manual -")) {
-    return event.activity.slice("TROPAS_DOADAS: manual -".length).trim();
-  }
-  return event.activity.replace(/^MANUAL:\s*/, "");
-}
-
-function editableCategory(event: AdminEvent) {
-  return event.points < 0 ? "Penalidade" : event.category;
-}
-
-function editablePoints(event: AdminEvent) {
-  return event.category === "Doações" ? event.points : Math.abs(event.points);
+function displayActivity(event: AdminEvent) {
+  return event.activity.replace(/^TROPAS_DOADAS:\s*/, "");
 }
 
 export default async function AdminPage({
@@ -168,7 +148,7 @@ export default async function AdminPage({
           <div className="admin-section-heading"><h2>Visão geral do clã</h2><span>CONSULTA SOMENTE LEITURA</span></div>
           <div className="admin-cards admin-overview-grid">
             <article><strong>Jogadores ativos</strong><b>{overview?.activePlayers ?? "—"}</b><span>Cadastro atual de jogadores marcados como ativos.</span></article>
-            <article><strong>Eventos registrados</strong><b>{overview?.eventCount ?? "—"}</b><span>Lançamentos automáticos e manuais no banco independente.</span></article>
+            <article><strong>Eventos registrados</strong><b>{overview?.eventCount ?? "—"}</b><span>Lançamentos originados pelas sincronizações do clã.</span></article>
             <article><strong>Última sincronização</strong><b className="admin-sync-value">{formatSyncDate(overview?.lastRosterSync ?? null)}</b><span>Último registro de sincronização do roster.</span></article>
           </div>
           {overview?.error || adminData?.error ? <div className="connection-alert"><strong>Leitura parcial</strong><span>Não foi possível consultar todos os indicadores e lançamentos. Verifique a conexão com o Supabase.</span></div> : null}
@@ -193,46 +173,16 @@ export default async function AdminPage({
           ) : <div className="admin-empty">A análise de acessos ficará disponível após a configuração do segredo de hash e o primeiro acesso ao aplicativo.</div>}
           <a className="admin-export-link" href="/api/admin/export">Exportar histórico completo de eventos (CSV)</a>
 
-          <div className="admin-section-heading"><h2>Lançar pontuação manual</h2><span>ADMINISTRADOR</span></div>
-          <p className="admin-help">Os lançamentos manuais ficam identificados e podem ser editados ou excluídos nesta tela. Raide e Capital continuam sob sincronização automática para evitar duplicidade.</p>
-          {adminData && adminData.players.length > 0 ? (
-            <form className="admin-event-form" action="/api/admin/events" method="post">
-              <input type="hidden" name="action" value="create" />
-              <label><span>Jogador</span><select name="player_id" required>{adminData.players.map((player) => <option value={player.id} key={player.id}>{player.name}{player.player_tag ? ` · ${player.player_tag}` : ""}</option>)}</select></label>
-              <label><span>Categoria</span><select name="category" defaultValue="Guerras"><option value="Guerras">Guerras</option><option value="Liga dos Clãs">Liga dos Clãs</option><option value="Doações">Doações</option><option value="Jogos do Clã">Jogos do Clã</option><option value="Penalidade">Penalidade</option></select></label>
-              <label><span>Descrição</span><input name="activity" required minLength={2} maxLength={180} placeholder="Descreva o lançamento" /></label>
-              <label><span>Pontos ou tropas</span><input name="points" type="number" required min={1} max={100000} defaultValue={5} /></label>
-              <button type="submit">Salvar lançamento</button>
-              <small>Doações: informe a quantidade de tropas. Jogos do Clã: use 10, 15, 20 ou 25. Penalidades: informe o valor positivo a descontar.</small>
-            </form>
-          ) : <div className="admin-empty">Nenhum jogador cadastrado para receber lançamentos.</div>}
-
-          <div className="admin-section-heading"><h2>Editar e excluir lançamentos</h2><span>{adminData?.events.length ?? 0} REGISTROS MANUAIS</span></div>
-          <div className="admin-manual-events">
+          <div className="admin-section-heading"><h2>Últimos lançamentos automáticos</h2><span>{adminData?.events.length ?? 0} REGISTROS</span></div>
+          <p className="admin-help">Somente eventos recebidos pelas sincronizações oficiais são exibidos. Lançamentos manuais estão desativados para preservar a consistência dos dados da API.</p>
+          <div className="admin-automatic-events">
             {adminData?.events.map((event) => (
-              <details className="admin-event-item" key={event.id}>
-                <summary>
-                  <span><strong>{event.player}</strong><small>{event.category} · {formatEventDate(event.created_at)}</small></span>
-                  <b className={event.points < 0 ? "negative" : ""}>{event.points < 0 ? "−" : "+"}{number(Math.abs(event.points))}{event.category === "Doações" ? " tropas" : " pts"}</b>
-                </summary>
-                <form className="admin-event-edit" action="/api/admin/events" method="post">
-                  <input type="hidden" name="action" value="update" />
-                  <input type="hidden" name="event_id" value={event.id} />
-                  <label><span>Jogador</span><select name="player_id" defaultValue={adminData.players.find((player) => player.player_tag === event.player_tag)?.id ?? adminData.players[0]?.id}>{adminData.players.map((player) => <option value={player.id} key={player.id}>{player.name}</option>)}</select></label>
-                  <label><span>Categoria</span><select name="category" defaultValue={editableCategory(event)}><option value="Guerras">Guerras</option><option value="Liga dos Clãs">Liga dos Clãs</option><option value="Doações">Doações</option><option value="Jogos do Clã">Jogos do Clã</option><option value="Penalidade">Penalidade</option></select></label>
-                  <label><span>Descrição</span><input name="activity" required minLength={2} maxLength={180} defaultValue={editableActivity(event)} /></label>
-                  <label><span>Pontos ou tropas</span><input name="points" type="number" required min={1} max={100000} defaultValue={editablePoints(event)} /></label>
-                  <button type="submit">Salvar alterações</button>
-                </form>
-                <form className="admin-event-delete" action="/api/admin/events" method="post">
-                  <input type="hidden" name="action" value="delete" />
-                  <input type="hidden" name="event_id" value={event.id} />
-                  <label><input type="checkbox" name="confirm" value="yes" required /> Confirmo a exclusão permanente deste lançamento.</label>
-                  <button type="submit">Excluir lançamento</button>
-                </form>
-              </details>
+              <article className="admin-automatic-event" key={event.id}>
+                <div><strong>{event.player}</strong><small>{event.player_tag ?? "TAG NÃO INFORMADA"} · {event.category} · {formatEventDate(event.created_at)}</small><p>{displayActivity(event)}</p></div>
+                <b className={event.points < 0 ? "negative" : ""}>{event.points < 0 ? "−" : "+"}{new Intl.NumberFormat("pt-BR").format(Math.abs(event.points))}{event.category === "Doações" ? " tropas" : " pts"}</b>
+              </article>
             ))}
-            {adminData?.events.length === 0 ? <div className="admin-empty">Ainda não existem lançamentos manuais.</div> : null}
+            {adminData?.events.length === 0 ? <div className="admin-empty">Ainda não há lançamentos automáticos registrados.</div> : null}
           </div>
 
           <div className="admin-section-heading"><h2>Automações</h2><span>AGUARDANDO ATIVAÇÃO</span></div>
