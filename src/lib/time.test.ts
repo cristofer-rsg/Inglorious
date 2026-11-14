@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getZonedMonthBounds } from "./time";
+import { getZonedMonthBounds, parseClashApiTimestamp } from "./time";
 
 describe("getZonedMonthBounds", () => {
   it("uses the configured São Paulo offset for month boundaries", () => {
@@ -20,5 +20,26 @@ describe("getZonedMonthBounds", () => {
   it("rejects invalid month keys", () => {
     expect(() => getZonedMonthBounds("2026-13", "America/Sao_Paulo"))
       .toThrow("Mês inválido para cálculo do período.");
+  });
+});
+
+describe("parseClashApiTimestamp", () => {
+  it("parses compact UTC timestamps with millisecond precision", () => {
+    expect(parseClashApiTimestamp("20261114T020304.125Z")?.toISOString())
+      .toBe("2026-11-14T02:03:04.125Z");
+  });
+
+  it("parses compact UTC timestamps without fractional seconds", () => {
+    expect(parseClashApiTimestamp("20261114T020304Z")?.toISOString())
+      .toBe("2026-11-14T02:03:04.000Z");
+  });
+
+  it.each([
+    "20261199T020304.000Z",
+    "20260229T020304.000Z",
+    "20261114T256304.000Z",
+    "invalid",
+  ])("rejects malformed or impossible timestamp %s", (value) => {
+    expect(parseClashApiTimestamp(value)).toBeNull();
   });
 });
