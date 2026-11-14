@@ -121,13 +121,13 @@ export default async function AdminPage({
 
   return (
     <main className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span><strong>INGLORIOUS</strong><small>ADMIN CONTROL</small></span></a>
-        <span className="connection">ÁREA RESTRITA</span>
+      <header className="topbar gh-topbar">
+        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>ADMIN CONTROL</small></span></a>
+        <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>
       </header>
       <SiteNav active="/admin" />
       {!session ? (
-        <section className="admin-panel">
+        <section className="admin-content auth-card admin-panel">
           <span className="eyebrow">ACESSO PROTEGIDO</span>
           <h1>Administração <em>do clã</em></h1>
           <p>Entre com as credenciais administrativas configuradas no ambiente seguro do servidor.</p>
@@ -137,7 +137,7 @@ export default async function AdminPage({
           ) : null}
         </section>
       ) : (
-        <section className="admin-panel admin-panel-wide">
+        <section className="admin-content admin-panel admin-panel-wide">
           <span className="eyebrow">SESSÃO AUTENTICADA</span>
           <h1>Painel <em>administrativo</em></h1>
           <p>Bem-vindo, {session.playerName}. A sessão expira automaticamente em 12 horas.</p>

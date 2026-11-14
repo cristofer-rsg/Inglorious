@@ -1,61 +1,33 @@
 import { getDashboardData } from "@/lib/dashboard";
 import SiteNav from "@/components/site-nav";
+import RankingList from "@/components/ranking-list";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = {
-  q?: string;
-  all?: string;
-};
-
-function number(value: number) {
-  return new Intl.NumberFormat("pt-BR").format(value);
-}
-
-export default async function RankingPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const [data, params] = await Promise.all([getDashboardData(), searchParams]);
-  const search = typeof params.q === "string" ? params.q.trim().slice(0, 80) : "";
-  const showAll = params.all === "1";
-  const filteredRanking = data.ranking.filter((player) => !search
-    || player.player.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"))
-    || player.tag.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR")));
-  const visibleRanking = search || showAll ? filteredRanking : filteredRanking.slice(0, 5);
-  const showExpand = !search && !showAll && filteredRanking.length > 5;
-
+export default async function RankingPage() {
+  const data = await getDashboardData();
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
-        <span className="connection"><span className={data.connected ? "status-dot online" : "status-dot"} />{data.connected ? "CLÃ CONECTADO" : "AGUARDANDO CONEXÃO"}</span>
+        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+        <span className={data.connected ? "status" : "status status-offline"}><span className="status-dot" />{data.connected ? "CLÃ CONECTADO" : "AGUARDANDO CONEXÃO"}</span>
       </header>
       <SiteNav active="/ranking" />
-      <section className="page-heading"><span className="eyebrow">TEMPORADA · {data.monthLabel.toUpperCase()}</span><h1>Ranking <em>geral</em></h1><p>Classificação mensal por pontuação oficial acumulada.</p></section>
-      {!data.connected && <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{data.error}</span></div>}
-
-      <form className="ranking-search" action="/ranking" method="get">
-        <label htmlFor="ranking-search-input">Buscar jogador pelo nome ou tag</label>
-        <div><input id="ranking-search-input" name="q" type="search" defaultValue={search} placeholder="Digite o nome ou #TAG do jogador" /><button type="submit">Buscar</button></div>
-      </form>
-
-      <section className="ranking-list full-ranking">
-        {visibleRanking.map((player) => (
-          <article className={`ranking-row rank-${player.position}`} key={player.id}>
-            <span className="position">{String(player.position).padStart(2, "0")}</span>
-            <div className="player-info"><strong>{player.player}</strong><small>{player.tag || "TAG NÃO INFORMADA"}</small></div>
-            <div className="player-score"><strong>{number(player.total)}</strong><small>PTS</small></div>
-          </article>
-        ))}
-        {visibleRanking.length === 0 && <div className="empty-state"><span>♛</span><strong>Nenhum jogador encontrado</strong><p>Confira o nome ou a tag informada.</p></div>}
+      <section className="content gh-content">
+        <section className="admin-content history-content">
+          <span className="auth-kicker">CLASSIFICAÇÃO OFICIAL • TEMPORADA ATUAL</span>
+          <h1>Ranking <em>do clã</em></h1>
+          <p>Acompanhe a pontuação dos jogadores, consulte os detalhes por categoria e veja quem está liderando o mês.</p>
+          {!data.connected && <div className="connection-alert"><b>Não foi possível carregar o ranking.</b><span>Confira a conexão do servidor com o Supabase.</span>{data.error && <small>{data.error}</small>}</div>}
+          <div className="history-section-title"><h2>Classificação de {data.monthLabel}</h2><span>{data.ranking.length} JOGADORES</span></div>
+          <div className="ranking-panel">
+            <div className="ranking-head"><span>JOGADOR</span><span>PONTUAÇÃO</span></div>
+            {data.ranking.length ? <RankingList players={data.ranking} /> : <div className="empty-state"><span className="empty-icon">♜</span><b>{data.connected ? "Ainda não há jogadores classificados" : "Conectando os dados do clã"}</b><p>O ranking será exibido assim que os dados estiverem disponíveis.</p></div>}
+          </div>
+          <a className="back-link" href="/">← Voltar ao início</a>
+        </section>
+        <footer className="footer"><span>INGLORIOUS <b>•</b> RANKING</span><span>{data.monthLabel}</span></footer>
       </section>
-
-      {showExpand ? (
-        <a className="ranking-expand" href="/ranking?all=1">Ver classificação completa ({number(filteredRanking.length)} jogadores)</a>
-      ) : null}
-      {showAll && !search ? <a className="ranking-expand" href="/ranking">Mostrar somente os cinco primeiros</a> : null}
     </main>
   );
 }

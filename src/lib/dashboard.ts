@@ -49,6 +49,7 @@ export type RankingRow = {
   capitalPoints: number;
   penalties: number;
   active: boolean;
+  role: string | null;
 };
 
 export type DashboardData = {
@@ -219,6 +220,7 @@ export async function getDashboardData(monthOverride?: string): Promise<Dashboar
           capitalPoints: score.capitalPoints,
           penalties: score.penalties,
           active: player.active !== false,
+          role: player.role,
         };
       })
       .filter((row) => row.active || row.total > 0)
