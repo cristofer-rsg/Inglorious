@@ -23,6 +23,7 @@ type MonthlyStatRow = {
   player_tag: string | null;
   player: string | null;
   clan_games_points: number | null;
+  donations: number | null;
 };
 
 export type RankingRow = {
@@ -122,7 +123,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       fetchMonthEvents(bounds.start, bounds.end),
       supabase
         .from("player_monthly_stats")
-        .select("player_tag,player,clan_games_points")
+        .select("player_tag,player,clan_games_points,donations")
         .eq("month_key", monthKey),
     ]);
 
@@ -136,10 +137,20 @@ export async function getDashboardData(): Promise<DashboardData> {
         .filter((row) => row.player_tag)
         .map((row): [string, number] => [String(row.player_tag).trim().toUpperCase(), Number(row.clan_games_points ?? 0)]),
     );
+    const donationsByTag = new Map<string, number>(
+      stats
+        .filter((row) => row.player_tag)
+        .map((row): [string, number] => [String(row.player_tag).trim().toUpperCase(), Number(row.donations ?? 0)]),
+    );
     const gamesByName = new Map<string, number>(
       stats
         .filter((row) => row.player)
         .map((row): [string, number] => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.clan_games_points ?? 0)]),
+    );
+    const donationsByName = new Map<string, number>(
+      stats
+        .filter((row) => row.player)
+        .map((row): [string, number] => [String(row.player).trim().toLocaleLowerCase("pt-BR"), Number(row.donations ?? 0)]),
     );
 
     const playerNameCounts = new Map<string, number>();
@@ -155,9 +166,13 @@ export async function getDashboardData(): Promise<DashboardData> {
         const games = player.player_tag
           ? gamesByTag.get(player.player_tag.trim().toUpperCase()) ?? 0
           : gamesByName.get(normalizedName) ?? 0;
+        const donations = player.player_tag
+          ? donationsByTag.get(player.player_tag.trim().toUpperCase())
+          : donationsByName.get(normalizedName);
         const score = calculatePlayerScore({
           playerName: player.name,
           playerTag: player.player_tag,
+          donationsTotal: donations,
           allowLegacyNameFallback: playerNameCounts.get(normalizedName) === 1,
           events,
           clanGamesPoints: games,
