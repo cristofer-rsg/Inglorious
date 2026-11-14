@@ -62,10 +62,11 @@ export async function POST(request: Request) {
 
     const supabase = createSupabaseAdmin();
     const ipHash = hashIp(getClientIp(request));
+    const credentialsValid = verifyAdminCredentials(username, password);
     const now = Date.now();
     const { data: allowed, error: rateLimitError } = await supabase.rpc("register_admin_login_attempt", {
       p_ip_hash: ipHash,
-      p_succeeded: verifyAdminCredentials(username, password),
+      p_succeeded: credentialsValid,
       p_window_start: new Date(now - WINDOW_MINUTES * 60 * 1000).toISOString(),
       p_retention_start: new Date(now - ATTEMPT_RETENTION_HOURS * 60 * 60 * 1000).toISOString(),
       p_max_failed_attempts: MAX_FAILED_ATTEMPTS,
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!verifyAdminCredentials(username, password)) {
+    if (!credentialsValid) {
       return jsonResponse({ success: false, error: "Usuário ou senha incorretos." }, 401);
     }
 
