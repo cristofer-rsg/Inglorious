@@ -87,6 +87,23 @@ export default async function HomePage() {
           <a href="/rules">VER REGRAS <b>›</b></a>
         </section>
 
+        <section className="gh-v2-contact-banner" aria-label="Contato com o líder do clã">
+          <div className="gh-v2-leader-profile">
+            <div className="gh-v2-leader-qr">
+              <img src="https://raw.githubusercontent.com/cristofer-rsg/painel-clan-evento1/main/web/public/leader-friend-qr.png" alt="QR Code para adicionar o líder do clã como amigo" />
+            </div>
+            <div className="gh-v2-leader-copy">
+              <small>ADICIONE O LÍDER AOS AMIGOS</small>
+              <strong>ˡⁱᵈᵉʳ░L░I░L░I░A░S</strong>
+              <span>Leia o QR ou toque no botão.</span>
+              <div className="gh-v2-leader-buttons">
+                <a className="gh-v2-leader-button clash" href="https://link.clashofclans.com/?action=OpenSCID&p=84-546b40e0-6315-4ad3-a43a-34a9cac4bdfb" target="_blank" rel="noopener noreferrer">Adicionar aos amigos <b>↗</b></a>
+                <a className="gh-v2-leader-button whatsapp" href="https://chat.whatsapp.com/L8S4ivyohzF8DQQCU0SFUI?s=cl&p=a&iam=2" target="_blank" rel="noopener noreferrer"><span>◉</span> WhatsApp <b>↗</b></a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="gh-v2-section gh-v2-ranking-section" id="ranking">
           <div className="gh-v2-section-head"><div><small>DISPUTA DO MÊS</small><h2>Ranking em destaque</h2></div><a href="/ranking">VER TUDO ↗</a></div>
           <div className="gh-v2-podium">
@@ -94,7 +111,7 @@ export default async function HomePage() {
               <a className={`gh-v2-podium-card rank-${player.position}`} href="/ranking" key={player.id}>
                 <span className="gh-v2-medal">{player.position === 1 ? "👑" : player.position === 2 ? "🥈" : "🥉"}</span>
                 <span className="gh-v2-player-avatar">{player.player.slice(0,1).toUpperCase()}</span>
-                <b>{player.player}</b>{player.role && <small className="performance-leader-role">{player.role.toLocaleUpperCase("pt-BR")}</small>}<strong>{number(player.total)} <small>PTS</small></strong><span className="gh-v2-rank-label">{player.position}º LUGAR</span>
+                <b>{player.player}</b><strong>{number(player.total)} <small>PTS</small></strong><span className="gh-v2-rank-label">{player.position}º LUGAR</span>
               </a>
             )) : <p className="recent-members-empty">{data.connected ? "O pódio aparecerá quando houver jogadores classificados." : "Aguardando conexão para carregar o ranking."}</p>}
           </div>

@@ -162,3 +162,21 @@
 .player-profile-events article>strong.negative{color:#f0a38d}
 .player-profile-back{display:inline-block;margin-top:20px}
 @media(max-width:600px){.player-profile-hero{padding:15px;gap:12px}.player-profile-avatar{flex-basis:53px;height:53px;font-size:24px}.player-profile-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.player-profile-metrics article{padding:12px}.player-profile-total{padding:17px}}
+
+
+/* Ghost Hunt leader contact card, simplified for Inglorious home */
+.gh-v2-contact-banner{margin:18px 0 26px;padding:14px 15px;border:1px solid rgba(207,164,91,.34);border-radius:15px;background:linear-gradient(145deg,#211b12,#15120e);box-shadow:0 12px 28px rgba(0,0,0,.2)}
+.gh-v2-leader-profile{display:flex;align-items:center;gap:12px}
+.gh-v2-leader-qr{flex:0 0 94px;padding:5px;border-radius:9px;background:#fff}
+.gh-v2-leader-qr img{display:block;width:84px;height:84px;object-fit:contain}
+.gh-v2-leader-copy{display:grid;flex:1;min-width:0;gap:4px}
+.gh-v2-leader-copy>small{color:#b9a783;font-size:9px;font-weight:900;letter-spacing:.55px}
+.gh-v2-leader-copy>strong{color:#ead7ad;font-size:12px;overflow-wrap:anywhere}
+.gh-v2-leader-copy>span{color:#a99f8e;font-size:10px}
+.gh-v2-leader-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:5px}
+.gh-v2-leader-button{display:flex;align-items:center;justify-content:center;gap:5px;min-height:39px;padding:8px 9px;border:1px solid transparent;border-radius:9px;color:#fff;font-size:9px;font-weight:800;text-align:center;line-height:1.25}
+.gh-v2-leader-button b{font-size:13px}
+.gh-v2-leader-button.clash{border-color:rgba(207,164,91,.5);background:linear-gradient(110deg,#a9782e,#80551f)}
+.gh-v2-leader-button.whatsapp{border-color:rgba(80,164,105,.38);background:linear-gradient(120deg,#17633f,#10482f)}
+.gh-v2-leader-button.whatsapp span{font-size:14px}
+@media(max-width:460px){.gh-v2-contact-banner{margin:14px 0 20px;padding:11px}.gh-v2-leader-profile{gap:9px}.gh-v2-leader-qr{flex-basis:76px;padding:4px}.gh-v2-leader-qr img{width:68px;height:68px}.gh-v2-leader-buttons{gap:5px}.gh-v2-leader-button{min-height:36px;padding:7px 5px;font-size:8px}}
