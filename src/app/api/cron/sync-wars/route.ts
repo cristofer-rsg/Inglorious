@@ -6,21 +6,11 @@ import { fetchCurrentWar } from "@/lib/clash-api";
 import { APP_CONFIG } from "@/lib/config";
 import { getKnownPlayersByTags, synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { parseClashApiTimestamp } from "@/lib/time";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
-
-function parseClashTime(value?: string) {
-  if (!value) return null;
-  const match = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
-  if (!match) return null;
-  const [, year, month, day, hour, minute, second] = match;
-  return new Date(Date.UTC(
-    Number(year), Number(month) - 1, Number(day),
-    Number(hour), Number(minute), Number(second),
-  ));
-}
 
 function getMonthKey(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -58,9 +48,9 @@ export async function GET(request: Request) {
       });
     }
 
-    const startedAt = parseClashTime(war.startTime);
+    const startedAt = parseClashApiTimestamp(war.startTime);
     if (!startedAt) throw new Error("A API não informou um início de guerra válido.");
-    const endedAt = parseClashTime(war.endTime);
+    const endedAt = war.endTime ? parseClashApiTimestamp(war.endTime) : null;
     const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
     const warEnd = endedAt?.getTime();
     const playersByTag = await getKnownPlayersByTags(war.clan.members.map((member) => member.tag));
@@ -135,7 +125,7 @@ export async function GET(request: Request) {
       attacks.forEach((attack, index) => {
         const attackNumber = index + 1;
         const order = attack.order || attackNumber;
-        const battleTime = parseClashTime(attack.battleTime);
+        const battleTime = attack.battleTime ? parseClashApiTimestamp(attack.battleTime) : null;
         const defenderPosition = attack.defenderTag
           ? enemyPositions.get(attack.defenderTag)
           : undefined;
