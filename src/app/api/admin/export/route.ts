@@ -18,7 +18,8 @@ type ExportEvent = {
 };
 
 function csvCell(value: string | number | null) {
-  const text = String(value ?? "");
+  const raw = String(value ?? "");
+  const text = typeof value === "string" && /^[=+@-]/.test(raw) ? `'${raw}` : raw;
   return `"${text.replace(/"/g, '""')}"`;
 }
 
