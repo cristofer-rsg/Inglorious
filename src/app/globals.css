@@ -178,7 +178,7 @@ a { color: inherit; text-decoration: none; }
 .admin-section-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:30px 0 12px; }
 .admin-section-heading h2 { margin:0; font:700 24px "Barlow Condensed",sans-serif; }
 .admin-section-heading > span { color:var(--green); font-size:8px; font-weight:800; letter-spacing:.12em; }
-.admin-overview-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.admin-overview-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
 .admin-overview-grid article b { color:var(--green-strong); font:800 36px "Barlow Condensed",sans-serif; }
 .admin-overview-grid article .admin-sync-value { font-size:17px; line-height:1.4; }
 @media(max-width:600px) {
