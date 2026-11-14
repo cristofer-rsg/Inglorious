@@ -11,6 +11,10 @@ export default async function HomePage() {
   const data = await getDashboardData();
   const topThree = data.ranking.slice(0, 3);
   const podiumOrder = [topThree[1], topThree[0], topThree[2]].filter((player) => player !== undefined);
+  const formatJoinDate = (value: string) => new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date(value));
 
   return (
     <main className="app-shell">
@@ -50,6 +54,26 @@ export default async function HomePage() {
         <article className="metric-card featured"><span>♛</span><small>PONTOS DO LÍDER</small><strong>{formatNumber(data.leaderPoints)}</strong><i>NO MÊS ATUAL</i></article>
         <article className="metric-card"><span>♟</span><small>JOGADORES ATIVOS</small><strong>{formatNumber(data.activePlayers)}</strong><i>MEMBROS DO CLÃ</i></article>
         <article className="metric-card"><span>▤</span><small>EVENTOS</small><strong>{formatNumber(data.eventCount)}</strong><i>REGISTRADOS NO MÊS</i></article>
+      </section>
+
+      <section className="new-members-section" aria-label="Novos membros do clã">
+        <div className="section-heading">
+          <div><span className="eyebrow">CHEGADAS RECENTES</span><h2>Novos membros do clã</h2></div>
+          <span className="month-pill">{formatNumber(data.newMembers.length)} recentes</span>
+        </div>
+        {data.newMembers.length > 0 ? (
+          <div className="new-members-list">
+            {data.newMembers.map((member) => (
+              <article className="new-member-row" key={member.playerTag}>
+                <span className="new-member-icon">✦</span>
+                <div><strong>{member.playerName}</strong><small>{member.playerTag} · Entrou em {formatJoinDate(member.enteredAt)}</small></div>
+                <span className="new-member-badge">NOVO</span>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="new-members-empty">Nenhuma nova entrada identificada nos últimos 30 dias.</div>
+        )}
       </section>
 
       <section className="ranking-section" id="ranking">
