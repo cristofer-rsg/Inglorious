@@ -9,7 +9,6 @@ type PlayerRow = {
   player_tag: string | null;
   active: boolean | null;
   eligible: string | null;
-  telegram: string | null;
   role: string | null;
 };
 
@@ -116,7 +115,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     const [playersResult, events, statsResult] = await Promise.all([
       supabase
         .from("players")
-        .select("name,player_tag,active,eligible,telegram,role")
+        .select("name,player_tag,active,eligible,role")
         .order("name", { ascending: true }),
       fetchMonthEvents(bounds.start, bounds.end),
       supabase
