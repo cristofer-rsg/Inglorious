@@ -25,5 +25,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: TypeScript validation
         run: npm run typecheck
+      - name: Scoring regression tests
+        run: npm test
       - name: Next.js production build validation
         run: npm run build
