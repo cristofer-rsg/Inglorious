@@ -60,6 +60,10 @@ Todas exigem `Authorization: Bearer <CRON_SECRET>` e são executadas exclusivame
 
 As rotas não estão agendadas. O agendamento será configurado somente após validação completa e autorização para ativar as automações em ambiente publicado.
 
+## Banco de dados e migrations
+
+O projeto Supabase independente já possui 40 migrations aplicadas no ambiente remoto. Os arquivos SQL históricos ainda não estão versionados nesta branch. Até que o histórico completo seja recuperado e sincronizado, não execute `supabase db reset`, recriação do projeto ou sincronização de schema que possa sobrescrever o banco existente.
+
 ## Validação
 
 Execute localmente:
