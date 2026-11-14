@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  color-scheme: dark;
+  --bg: #090d0b;
+  --panel: #111915;
+  --panel-soft: #151f19;
+  --line: rgba(185, 205, 185, .12);
+  --text: #f1f4ed;
+  --muted: #8c9b8e;
+  --green: #9bc66b;
+  --green-strong: #b8df82;
+  --gold: #d5b66e;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 80% 5%, rgba(66, 104, 58, .16), transparent 36%), var(--bg); color: var(--text); font-family: Inter, sans-serif; }
+a { color: inherit; text-decoration: none; }
+.app-shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+.topbar { height: 82px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(184, 223, 130, .5); color: var(--green-strong); font: 800 28px "Barlow Condensed", sans-serif; transform: skew(-5deg); }
+.brand strong, .brand small { display: block; }
+.brand strong { letter-spacing: .16em; font-size: 13px; }
+.brand small { margin-top: 4px; color: var(--muted); font-size: 9px; letter-spacing: .22em; }
+.connection { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .12em; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #b56e5d; box-shadow: 0 0 12px rgba(181,110,93,.45); }
+.status-dot.online { background: var(--green); box-shadow: 0 0 12px rgba(155,198,107,.65); }
+.hero { position: relative; min-height: 400px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; border-bottom: 1px solid var(--line); }
+.hero::after { content: ""; position: absolute; inset: 0 0 0 40%; background: linear-gradient(90deg, var(--bg), transparent 55%), radial-gradient(circle at 60% 50%, rgba(133,173,90,.13), transparent 58%); pointer-events: none; }
+.hero-content { position: relative; z-index: 1; padding: 58px 0; }
+.eyebrow { color: var(--green); font-size: 10px; font-weight: 800; letter-spacing: .2em; }
+.hero h1 { margin: 18px 0 12px; font: 900 clamp(54px, 8vw, 88px)/.83 "Barlow Condensed", sans-serif; letter-spacing: .015em; }
+.hero h1 em { color: var(--green-strong); font-style: normal; }
+.hero p { max-width: 390px; color: #a6b1a5; font-size: 14px; line-height: 1.7; }
+.primary-link { display: inline-flex; align-items: center; gap: 30px; margin-top: 18px; padding: 14px 18px; border: 1px solid rgba(184,223,130,.45); color: var(--green-strong); font-size: 10px; font-weight: 800; letter-spacing: .13em; }
+.primary-link span { font-size: 16px; }
+.hero-emblem { position: relative; z-index: 1; width: 300px; height: 300px; margin-right: 8%; display: grid; place-items: center; }
+.emblem-ring { width: 210px; height: 210px; display: grid; place-items: center; border: 1px solid rgba(184,223,130,.52); border-radius: 50%; box-shadow: 0 0 0 14px rgba(184,223,130,.035), 0 0 0 30px rgba(184,223,130,.025), inset 0 0 50px rgba(155,198,107,.08), 0 0 80px rgba(155,198,107,.1); transform: rotate(-12deg); }
+.emblem-ring::before, .emblem-ring::after { content: ""; position: absolute; width: 248px; height: 248px; border: 1px dashed rgba(184,223,130,.24); border-radius: 50%; }
+.emblem-ring::after { width: 170px; height: 170px; border-style: solid; border-color: rgba(213,182,110,.4); }
+.emblem-ring span { color: var(--green-strong); font: 900 140px "Barlow Condensed", sans-serif; text-shadow: 0 0 34px rgba(155,198,107,.25); }
+.hero-emblem i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 15px var(--gold); }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0 48px; }
+.metric-card { position: relative; min-height: 145px; padding: 20px; display: flex; flex-direction: column; background: linear-gradient(145deg, rgba(22,32,25,.96), rgba(14,20,16,.96)); border: 1px solid var(--line); }
+.metric-card > span { position: absolute; right: 18px; top: 13px; color: rgba(184,223,130,.5); font-size: 24px; }
+.metric-card small { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .13em; }
+.metric-card strong { margin-top: 12px; font: 800 42px "Barlow Condensed", sans-serif; }
+.metric-card i { margin-top: auto; color: #718071; font-size: 8px; font-style: normal; letter-spacing: .15em; }
+.metric-card.featured { border-color: rgba(213,182,110,.32); }
+.metric-card.featured > span, .metric-card.featured strong { color: var(--gold); }
+.ranking-section { padding-bottom: 54px; }
+.section-heading { display: flex; justify-content: space-between; align-items: end; margin-bottom: 17px; }
+.section-heading h2 { margin: 7px 0 0; font: 700 30px "Barlow Condensed", sans-serif; }
+.month-pill { padding: 7px 10px; border: 1px solid var(--line); color: var(--muted); font-size: 10px; text-transform: capitalize; }
+.ranking-list { display: grid; gap: 9px; }
+.ranking-row { min-height: 76px; padding: 14px 18px; display: flex; align-items: center; gap: 16px; background: var(--panel); border: 1px solid var(--line); }
+.ranking-row.rank-1 { border-color: rgba(213,182,110,.5); background: linear-gradient(100deg, rgba(213,182,110,.1), var(--panel) 52%); }
+.position { width: 34px; color: var(--muted); font: 800 24px "Barlow Condensed", sans-serif; }
+.rank-1 .position { color: var(--gold); }
+.rank-2 .position { color: #c1c8c1; }
+.rank-3 .position { color: #bd8c68; }
+.player-info { min-width: 0; flex: 1; }
+.player-info strong, .player-info small { display: block; }
+.player-info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.player-info small { margin-top: 5px; color: var(--muted); font-size: 9px; letter-spacing: .08em; }
+.player-score { display: flex; align-items: baseline; gap: 6px; }
+.player-score strong { color: var(--green-strong); font: 800 27px "Barlow Condensed", sans-serif; }
+.rank-1 .player-score strong { color: var(--gold); }
+.player-score small { color: var(--muted); font-size: 8px; font-weight: 800; }
+.empty-state { min-height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 1px dashed rgba(184,223,130,.2); background: rgba(17,25,21,.65); }
+.empty-state > span { color: var(--green); font-size: 28px; }
+.empty-state strong { margin-top: 10px; font: 700 23px "Barlow Condensed", sans-serif; }
+.empty-state p { max-width: 370px; margin: 7px 20px 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.connection-alert { margin-top: 18px; padding: 13px 15px; display: grid; gap: 5px; border: 1px solid rgba(181,110,93,.35); background: rgba(181,110,93,.08); color: #d9a99b; font-size: 11px; }
+.connection-alert span { color: #bca39b; line-height: 1.5; }
+.footer { min-height: 60px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); color: #667367; font-size: 8px; font-weight: 700; letter-spacing: .14em; }
+@media (max-width: 680px) {
+  .app-shell { width: min(100% - 28px, 520px); }
+  .topbar { height: 68px; }
+  .connection { font-size: 7px; letter-spacing: .07em; }
+  .hero { min-height: 365px; }
+  .hero-content { padding: 48px 0; }
+  .hero h1 { font-size: clamp(58px, 17vw, 78px); }
+  .hero p { max-width: 260px; font-size: 12px; }
+  .hero-emblem { position: absolute; right: -118px; top: 75px; width: 230px; height: 230px; opacity: .32; }
+  .emblem-ring { width: 170px; height: 170px; }
+  .emblem-ring::before { width: 200px; height: 200px; }
+  .emblem-ring::after { width: 135px; height: 135px; }
+  .emblem-ring span { font-size: 110px; }
+  .metrics { grid-template-columns: 1fr 1fr; gap: 9px; margin: 16px 0 38px; }
+  .metric-card { min-height: 126px; padding: 14px; }
+  .metric-card:first-child { grid-column: span 2; min-height: 112px; }
+  .metric-card strong { font-size: 36px; }
+  .section-heading h2 { font-size: 27px; }
+  .ranking-row { min-height: 70px; padding: 12px; gap: 10px; }
+  .player-score strong { font-size: 24px; }
+  .footer { gap: 8px; font-size: 7px; letter-spacing: .07em; }
+}
