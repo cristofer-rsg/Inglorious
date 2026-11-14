@@ -122,7 +122,7 @@ export async function getPlayerProfile(tag: string): Promise<PlayerProfile | nul
   return {
     name: player.name,
     tag: normalizedTag,
-    active: player.active !== false,
+    active: Boolean(player.active ?? true),
     eligible,
     role: player.role,
     monthKey,
