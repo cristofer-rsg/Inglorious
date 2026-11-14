@@ -7,6 +7,7 @@ const API_BASE_URL = "https://cocproxy.royaleapi.dev/v1";
 export type ClashClanMember = {
   name: string;
   player_tag: string;
+  role: "leader" | "co_leader" | "elder" | "member";
 };
 
 export type ClashPlayerProfile = {
@@ -70,6 +71,7 @@ export type ClashLeagueGroup = {
 type ClashApiMember = {
   name?: unknown;
   tag?: unknown;
+  role?: unknown;
 };
 
 function getApiToken() {
@@ -123,7 +125,15 @@ export async function fetchCurrentClanMembers(): Promise<ClashClanMember[]> {
     }
     seen.add(playerTag);
 
-    return { name: member.name.trim(), player_tag: playerTag };
+    const role = member.role === "leader" ? "leader"
+      : member.role === "coLeader" ? "co_leader"
+      : member.role === "admin" ? "elder"
+      : member.role === "member" ? "member"
+      : null;
+    if (!role) {
+      throw new Error(`A API retornou um cargo inválido para ${playerTag}. O banco não foi alterado.`);
+    }
+    return { name: member.name.trim(), player_tag: playerTag, role };
   });
 }
 
