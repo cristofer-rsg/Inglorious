@@ -1,19 +1,9 @@
 import SiteNav from "@/components/site-nav";
 import { APP_CONFIG } from "@/lib/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { summarizeMembershipPeriods, type MembershipPeriod } from "@/lib/membership";
+import { summarizeMembershipPeriods, type MembershipPeriod, type PlayerMembership } from "@/lib/membership";
 
 export const dynamic = "force-dynamic";
-
-type MembershipPeriod = {
-  id: string;
-  player_tag: string;
-  player_name: string;
-  joined_at: string;
-  left_at: string | null;
-  entry_source: string;
-  exit_source: string | null;
-};
 
 function formatDate(value: string | null) {
   if (!value) return "Ainda no clã";
