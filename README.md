@@ -23,6 +23,7 @@ Aplicação independente para gestão e acompanhamento do clã Inglorious.
    - `ADMIN_USERNAME`: usuário administrativo, configurado somente em variável privada do servidor.
    - `ADMIN_PASSWORD`: senha administrativa forte, configurada somente em variável privada do servidor.
    - `AUTH_RATE_LIMIT_SECRET`: segredo aleatório exclusivo para proteger o identificador das tentativas de login; se ausente, a aplicação usa `CRON_SECRET` como alternativa.
+   - `ANALYTICS_HASH_SECRET`: segredo privado para gerar identificadores anônimos de visitantes; se ausente, usa `AUTH_RATE_LIMIT_SECRET` ou `CRON_SECRET`.
 4. Execute `npm run dev`.
 
 ## Sincronização automática de membros
@@ -38,6 +39,15 @@ Authorization: Bearer <CRON_SECRET>
 A rotina valida a fotografia completa antes de gravar, não aceita listas vazias ou tags duplicadas e mantém o histórico de entradas, saídas e períodos de permanência no banco independente do Inglorious. As rotinas de guerra, Liga e Raide resolvem os participantes pelo histórico de tags, preservando a pontuação conquistada mesmo quando um jogador deixa o roster atual.
 
 A rota está implementada, mas não foi agendada nem ativada em produção. Nenhum deploy foi realizado.
+
+## Recursos administrativos e análise
+
+- O painel administrativo permite criar, editar e excluir lançamentos manuais. Os registros automáticos ficam protegidos contra edição/exclusão por esse fluxo para preservar a idempotência das sincronizações.
+- Guerras, Liga, doações e Jogos do Clã podem receber lançamentos manuais identificados; Raide e Capital permanecem automáticos para evitar duplicidade.
+- A aba Desempenho permite selecionar o mês, pesquisar por nome/tag e comparar seis categorias com índice independente de até 600 pontos (100 por categoria), sem alterar o ranking oficial.
+- A página inicial destaca novas entradas identificadas pela sincronização, sem confundir o roster inicial de referência com novos membros.
+- O painel administrativo apresenta visualizações, visitantes distintos, páginas mais acessadas e tipos de dispositivo nos últimos 30 dias.
+- A análise registra somente caminho da página, host de referência, tipo de dispositivo e hash HMAC do visitante. Endereços IP não são armazenados e dados geográficos não são coletados.
 
 ## Segurança
 
