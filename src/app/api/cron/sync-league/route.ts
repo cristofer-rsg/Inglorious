@@ -118,7 +118,6 @@ export async function GET(request: Request) {
         const war = await fetchLeagueWar(warTag);
         if (war.state !== "inWar" && war.state !== "warEnded") continue;
         const startedAt = parseClashTime(war.startTime);
-        const warTime = war.startTime;
         const warKey = `league:${warTag.toUpperCase()}`;
         const enemyPositions = new Map(
           war.opponent.members.map((member) => [member.tag, member.mapPosition]),
