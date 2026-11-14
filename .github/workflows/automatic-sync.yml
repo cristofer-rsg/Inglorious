@@ -69,7 +69,7 @@ jobs:
             echo "::error::A chave Clash está vazia."
             exit 1
           fi
-          printf 'Caracteres da chave após remover espaços: %s\\n' "${#TOKEN}"
+          printf 'Caracteres da chave após remover espaços: %s\n' "${#TOKEN}"
           if [[ "$TOKEN" != "$CLASH_OF_CLANS_API_TOKEN" ]]; then
             echo "A chave contém espaços ou quebras de linha; será usada sem esses caracteres."
           fi
@@ -80,13 +80,13 @@ jobs:
         run: |
           set -euo pipefail
           TOKEN="$(printf '%s' "$CLASH_OF_CLANS_API_TOKEN" | tr -d '[:space:]')"
-          STATUS="$(curl --silent --show-error --output /tmp/clash-proxy-response.json --write-out '%{http_code}' \\
-            --max-time 30 \\
-            -H "Authorization: Bearer $TOKEN" \\
-            -H "auth: $TOKEN" \\
-            -H "Accept: application/json" \\
+          STATUS="$(curl --silent --show-error --output /tmp/clash-proxy-response.json --write-out '%{http_code}' \
+            --max-time 30 \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "auth: $TOKEN" \
+            -H "Accept: application/json" \
             "https://cocproxy.royaleapi.dev/v1/clans/%232RVQ9YGRY")"
-          printf 'HTTP do proxy Clash: %s\\n' "$STATUS"
+          printf 'HTTP do proxy Clash: %s\n' "$STATUS"
           if [[ "$STATUS" != "200" ]]; then
             printf 'Resposta do proxy (sem credencial): '
             jq -c '{reason, message}' /tmp/clash-proxy-response.json 2>/dev/null || echo 'corpo não JSON'
