@@ -115,7 +115,7 @@ export default function RulesPage() {
                 title="Penalidades"
                 penalties
                 rows={[
-                  { label: "Não realizar nenhum ataque", value="−10" },
+                  { label: "Não realizar nenhum ataque", value: "−10" },
                   { label: "Realizar apenas um ataque", value="−5" },
                   {
                     label: "Realizar o segundo ataque antes das 12 horas finais",
