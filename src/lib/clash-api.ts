@@ -168,7 +168,10 @@ export async function fetchLeagueWar(warTag: string): Promise<ClashWar> {
       tag?: unknown; name?: unknown; mapPosition?: unknown;
       attacks?: Array<{ order?: unknown; defenderTag?: unknown; stars?: unknown; battleTime?: unknown }>;
     }> };
-    opponent?: { tag?: unknown; members?: Array<{ tag?: unknown; mapPosition?: unknown }> };
+    opponent?: { tag?: unknown; members?: Array<{
+      tag?: unknown; name?: unknown; mapPosition?: unknown;
+      attacks?: Array<{ order?: unknown; defenderTag?: unknown; stars?: unknown; battleTime?: unknown }>;
+    }> };
   }>(`/clanwarleagues/wars/${encodedTag}`);
 
   if (typeof war.state !== "string" || !["preparation", "inWar", "warEnded"].includes(war.state)
@@ -224,7 +227,10 @@ export async function fetchCurrentWar(): Promise<ClashWar> {
       tag?: unknown; name?: unknown; mapPosition?: unknown;
       attacks?: Array<{ order?: unknown; defenderTag?: unknown; stars?: unknown; battleTime?: unknown }>;
     }> };
-    opponent?: { tag?: unknown; members?: Array<{ tag?: unknown; mapPosition?: unknown }> };
+    opponent?: { tag?: unknown; members?: Array<{
+      tag?: unknown; name?: unknown; mapPosition?: unknown;
+      attacks?: Array<{ order?: unknown; defenderTag?: unknown; stars?: unknown; battleTime?: unknown }>;
+    }> };
   }>(`/clans/${encodedTag}/currentwar`);
 
   if (war.state === "notInWar") {
