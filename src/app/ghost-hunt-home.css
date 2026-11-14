@@ -531,3 +531,21 @@
 .gh-community-actions .gh-reward-button b,.gh-community-actions .gh-reward-button span{font-size:12px}
 @media(max-width:760px){.gh-home-v2 .gh-community-card{grid-template-columns:1fr;gap:12px;padding:15px}.gh-community-copy p{max-width:none}.gh-community-profile{grid-template-columns:84px minmax(0,1fr);gap:10px;padding:9px}.gh-community-qr{width:84px}}
 @media(max-width:560px){.gh-home-v2 .gh-community-card{gap:10px;margin-bottom:16px;padding:12px;border-radius:11px}.gh-community-eyebrow{font-size:7px;letter-spacing:1px}.gh-community-copy h2{font-size:23px}.gh-community-copy p{font-size:9px;line-height:1.5}.gh-community-profile{grid-template-columns:76px minmax(0,1fr);gap:8px;padding:8px}.gh-community-qr{width:76px}.gh-community-leader>strong{font-size:17px}.gh-community-leader>span{font-size:8px}.gh-community-actions{gap:5px}.gh-community-actions .gh-reward-button{min-height:31px;padding:6px 7px;font-size:7px}}
+
+/* Destaque da legenda explicativa do cartão Conecte-se ao Líder */
+.gh-home-v2 .gh-community-copy p{
+  max-width:560px;
+  margin-top:10px;
+  padding:10px 12px;
+  border-left:3px solid #d8b36c;
+  border-radius:0 7px 7px 0;
+  background:linear-gradient(90deg,rgba(216,179,108,.13),rgba(216,179,108,.025));
+  color:#ead9b8;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.65;
+  text-shadow:0 1px 8px rgba(0,0,0,.35);
+}
+@media(max-width:560px){
+  .gh-home-v2 .gh-community-copy p{margin-top:8px;padding:8px 10px;font-size:10px;line-height:1.55}
+}
