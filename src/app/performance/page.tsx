@@ -27,6 +27,14 @@ const metrics = [
 type MetricKey = typeof metrics[number]["key"];
 type EventKey = "war" | "league" | "raid";
 
+function roleLabel(role: string) {
+  const normalized = role.trim().toLocaleLowerCase("pt-BR").replaceAll("-", "_").replaceAll(" ", "_");
+  if (normalized === "leader") return "LÍDER";
+  if (normalized === "co_leader" || normalized === "coleader") return "CO-LÍDER";
+  if (normalized === "member") return "MEMBRO";
+  return role.toLocaleUpperCase("pt-BR");
+}
+
 function number(value: number) {
   return numberFormatter.format(value);
 }
@@ -83,7 +91,7 @@ export default async function PerformancePage({
   const activeRows = allRows.filter((row) => row.active);
   const leadershipRows = activeRows.map((row) => ({
     ...row,
-    roleLabel: row.role ? row.role.toLocaleUpperCase("pt-BR") : "",
+    roleLabel: row.role ? roleLabel(row.role) : "",
   })).sort((a, b) =>
     b.totalPoints - a.totalPoints
     || b.warsPoints - a.warsPoints
