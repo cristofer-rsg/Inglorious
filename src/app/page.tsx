@@ -1,5 +1,6 @@
 import { getDashboardData } from "@/lib/dashboard";
 import SiteNav from "@/components/site-nav";
+import ClanCommunityCard from "@/components/clan-community-card";
 import { APP_CONFIG } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
@@ -85,6 +86,8 @@ export default async function HomePage() {
           <div><small>TEMPORADA EM ANDAMENTO</small><strong>{data.monthLabel}</strong><span>Participe, some pontos e dispute o topo.</span></div>
           <a href="/rules">VER REGRAS <b>›</b></a>
         </section>
+
+        <ClanCommunityCard />
 
         <section className="gh-v2-section gh-v2-ranking-section" id="ranking">
           <div className="gh-v2-section-head"><div><small>DISPUTA DO MÊS</small><h2>Ranking em destaque</h2></div><a href="/ranking">VER TUDO ↗</a></div>
