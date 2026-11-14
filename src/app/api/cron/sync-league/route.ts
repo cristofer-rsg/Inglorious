@@ -117,7 +117,7 @@ export async function GET(request: Request) {
       try {
         const war = await fetchLeagueWar(warTag);
         if (war.state !== "inWar" && war.state !== "warEnded") continue;
-        const startedAt = parseClashTime(war.startTime);
+        parseClashTime(war.startTime);
         const warKey = `league:${warTag.toUpperCase()}`;
         const enemyPositions = new Map(
           war.opponent.members.map((member) => [member.tag, member.mapPosition]),
@@ -129,7 +129,7 @@ export async function GET(request: Request) {
           const attacks = [...member.attacks].sort((a, b) => a.order - b.order);
 
           allStatSources.push({
-            month_key: getMonthKey(startedAt),
+            month_key: monthKey,
             source_key: `league:${warTag.toUpperCase()}:${member.tag}`,
             player_tag: member.tag,
             player: player.name,
