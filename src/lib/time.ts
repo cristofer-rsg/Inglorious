@@ -80,6 +80,6 @@ export function parseClashApiTimestamp(value: string): Date | null {
 
 export function getClashSeasonMonth(season: string | null | undefined): string | null {
   if (!season) return null;
-  const match = season.match(/^(\\d{4})-?(0[1-9]|1[0-2])$/);
+  const match = season.match(/^(\d{4})-?(0[1-9]|1[0-2])$/);
   return match ? `${match[1]}-${match[2]}` : null;
 }
