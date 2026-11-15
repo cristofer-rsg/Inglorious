@@ -4,7 +4,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-function normalizePath(pathname: string) {\n  const basePath = "/Inglorious";\n  if (pathname === basePath) return "/";\n  return pathname.startsWith(`${basePath}/`) ? pathname.slice(basePath.length) : pathname;\n}\n\nconst items = [
+function normalizePath(pathname: string) {
+  const basePath = "/Inglorious";
+  if (pathname === basePath) return "/";
+  return pathname.startsWith(`${basePath}/`) ? pathname.slice(basePath.length) : pathname;
+}
+
+const items = [
   { href: "/", icon: "⌂", label: "Início" },
   { href: "/ranking", icon: "♛", label: "Ranking" },
   { href: "/performance", icon: "◈", label: "Desempenho" },
