@@ -73,7 +73,8 @@ export default function BottomNavigation() {
     };
   }, [router]);
 
-  const normalizedPath = normalizePath(pathname);\n  if (normalizedPath.startsWith("/admin") || normalizedPath.startsWith("/history") || normalizedPath === "/login") return null;
+  const normalizedPath = normalizePath(pathname);
+  if (normalizedPath.startsWith("/admin") || normalizedPath.startsWith("/history") || normalizedPath === "/login") return null;
   return (
     <nav className="mobile-bottom-nav" aria-label="Navegação principal">
       <span className="mobile-nav-swipe-arrow" aria-hidden="true">‹</span>
