@@ -229,9 +229,10 @@ export async function getDashboardData(monthOverride?: string): Promise<Dashboar
           : hasUniqueLegacyName
             ? donationsByName.get(normalizedName)
             : undefined;
-        const playerEvents = player.player_tag
+        const playerTag = (player.player_tag ?? "").trim().toUpperCase();
+        const playerEvents = playerTag
           ? [
-            ...(eventIndexes.byTag.get(player.player_tag.trim().toUpperCase()) ?? []),
+            ...(eventIndexes.byTag.get(playerTag) ?? []),
             ...(eventIndexes.byLegacyName.get(normalizedName) ?? []),
           ]
           : eventIndexes.byName.get(normalizedName) ?? [];
