@@ -31,7 +31,7 @@ export default async function HomePage() {
   return (
     <main className="app-shell gh-home gh-home-v2">
       <header className="topbar gh-topbar">
-        <a className="brand" href="/" aria-label="Inglorious início">
+        <a className="brand" href="/Inglorious/" aria-label="Inglorious início">
           <span className="brand-mark">I</span>
           <span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span>
         </a>
@@ -39,7 +39,7 @@ export default async function HomePage() {
           <span className={data.connected ? "status" : "status status-offline"}>
             <span className="status-dot" /> {data.connected ? "CLÃ CONECTADO" : "AGUARDANDO CONEXÃO"}
           </span>
-          <a className="avatar" href="/admin" aria-label="Acesso administrativo">IG</a>
+          <a className="avatar" href="/Inglorious/admin" aria-label="Acesso administrativo">IG</a>
         </div>
       </header>
       <SiteNav active="/" />
@@ -68,7 +68,7 @@ export default async function HomePage() {
             <div className="gh-v2-eyebrow"><span className="gh-v2-live-dot" /> BEM-VINDO, GUERREIRO <span>•</span> {data.monthLabel.toUpperCase()}</div>
             <h1>BEM-VINDO,<br/><em>INGLÓRIO</em></h1>
             <p>O desempenho do Ghost Hunt em um só lugar.</p>
-            <a className="gh-v2-hero-link" href="/ranking">ACOMPANHAR RANKING <b>↗</b></a>
+            <a className="gh-v2-hero-link" href="/Inglorious/ranking">ACOMPANHAR RANKING <b>↗</b></a>
           </div>
           <div className="gh-v2-season-stamp"><small>TEMPORADA</small><strong>{data.monthLabel.split(" de ")[0].slice(0,3).toUpperCase()}</strong><span>{data.monthLabel.split(" de ")[1] ?? ""}</span></div>
         </section>
@@ -85,16 +85,16 @@ export default async function HomePage() {
         <section className="gh-v2-season-strip">
           <div className="gh-v2-season-emblem">♜</div>
           <div><small>TEMPORADA EM ANDAMENTO</small><strong>{data.monthLabel}</strong><span>Participe, some pontos e dispute o topo.</span></div>
-          <a href="/rules">VER REGRAS <b>›</b></a>
+          <a href="/Inglorious/rules">VER REGRAS <b>›</b></a>
         </section>
 
         <ClanCommunityCard />
 
         <section className="gh-v2-section gh-v2-ranking-section" id="ranking">
-          <div className="gh-v2-section-head"><div><small>DISPUTA DO MÊS</small><h2>Ranking em destaque</h2></div><a href="/ranking">VER TUDO ↗</a></div>
+          <div className="gh-v2-section-head"><div><small>DISPUTA DO MÊS</small><h2>Ranking em destaque</h2></div><a href="/Inglorious/ranking">VER TUDO ↗</a></div>
           <div className="gh-v2-podium">
             {podiumOrder.length ? podiumOrder.map((player) => (
-              <a className={`gh-v2-podium-card rank-${player.position}`} href="/ranking" key={player.id}>
+              <a className={`gh-v2-podium-card rank-${player.position}`} href="/Inglorious/ranking" key={player.id}>
                 <span className="gh-v2-medal">{player.position === 1 ? "👑" : player.position === 2 ? "🥈" : "🥉"}</span>
                 <span className="gh-v2-player-avatar">{player.player.slice(0,1).toUpperCase()}</span>
                 <b>{player.player}</b><strong>{number(player.total)} <small>PTS</small></strong><span className="gh-v2-rank-label">{player.position}º LUGAR</span>
