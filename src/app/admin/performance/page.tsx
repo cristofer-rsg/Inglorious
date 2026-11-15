@@ -153,7 +153,7 @@ export default async function PerformancePage({
         <a className="brand" href="/inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
         <form className="admin-topbar-logout" action="/inglorious/api/admin/logout" method="post"><button type="submit">Sair</button></form>
       </header>
-      <AdminNavigation />
+      <AdminNavigation current="/admin/performance" />
       <section className="admin-content admin-panel admin-panel-wide">
         <section className="performance-content">
           <span className="auth-kicker">CONSULTA PÚBLICA • INDICADORES DO CLÃ</span>
