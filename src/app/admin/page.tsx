@@ -1,5 +1,5 @@
 import Link from "next/link";
-import SiteNav from "@/components/site-nav";
+import AdminNavigation from "@/components/admin-navigation";
 import AdminLoginForm from "./login-form";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -125,7 +125,7 @@ export default async function AdminPage({
         <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>ADMIN CONTROL</small></span></a>
         <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>
       </header>
-      <SiteNav active="/admin" />
+      {session ? <AdminNavigation /> : null}
       {!session ? (
         <section className="admin-content auth-card admin-panel">
           <span className="eyebrow">ACESSO PROTEGIDO</span>
@@ -145,7 +145,13 @@ export default async function AdminPage({
           {params.success ? <div className="admin-success" role="status">{params.success}</div> : null}
           {params.error ? <div className="admin-error" role="alert">{params.error}</div> : null}
 
-          <div className="admin-section-heading"><h2>Visão geral do clã</h2><span>CONSULTA SOMENTE LEITURA</span></div>
+          <div className="admin-section-heading" id="overview"><h2>Visão geral do clã</h2><span>CONSULTA SOMENTE LEITURA</span></div>
+          <div className="admin-tools">
+            <a className="admin-tool-card" href="#analytics"><span>▥</span><div><b>Analytics do aplicativo</b><small>Acessos, visitantes e páginas mais consultadas</small></div></a>
+            <a className="admin-tool-card" href="#events"><span>✎</span><div><b>Lançamentos automáticos</b><small>Consultar registros recebidos pelas sincronizações</small></div></a>
+            <a className="admin-tool-card" href="/Inglorious/performance"><span>◈</span><div><b>Desempenho</b><small>Indicadores e participação dos jogadores</small></div></a>
+            <a className="admin-tool-card" href="/Inglorious/history"><span>▤</span><div><b>Histórico mensal</b><small>Classificações e eventos arquivados</small></div></a>
+          </div>
           <div className="admin-cards admin-overview-grid">
             <article><strong>Jogadores ativos</strong><b>{overview?.activePlayers ?? "—"}</b><span>Cadastro atual de jogadores marcados como ativos.</span></article>
             <article><strong>Eventos registrados</strong><b>{overview?.eventCount ?? "—"}</b><span>Lançamentos originados pelas sincronizações do clã.</span></article>
@@ -153,7 +159,7 @@ export default async function AdminPage({
           </div>
           {overview?.error || adminData?.error ? <div className="connection-alert"><strong>Leitura parcial</strong><span>Não foi possível consultar todos os indicadores e lançamentos. Verifique a conexão com o Supabase.</span></div> : null}
 
-          <div className="admin-section-heading"><h2>Análise de acessos</h2><span>ÚLTIMOS 30 DIAS</span></div>
+          <div className="admin-section-heading" id="analytics"><h2>Análise de acessos</h2><span>ÚLTIMOS 30 DIAS</span></div>
           {analytics ? (
             <>
               <div className="admin-cards admin-overview-grid">
@@ -171,9 +177,9 @@ export default async function AdminPage({
               <p className="admin-help">O sistema registra caminho da página, domínio de referência e tipo de dispositivo. O endereço IP não é armazenado; o identificador do visitante é gerado por hash HMAC.</p>
             </>
           ) : <div className="admin-empty">A análise de acessos ficará disponível após a configuração do segredo de hash e o primeiro acesso ao aplicativo.</div>}
-          <a className="admin-export-link" href="/Inglorious/api/admin/export">Exportar histórico completo de eventos (CSV)</a>
+          <section className="admin-export-center" id="exports"><span className="eyebrow">RELATÓRIOS E ARQUIVOS</span><h2>Central de exportações</h2><p>Exporte os registros automáticos preservados no Inglorious. A exportação não altera os dados do aplicativo.</p><div className="admin-export-actions"><a href="/Inglorious/api/admin/export">↓ Exportar histórico completo (CSV)</a></div></section>
 
-          <div className="admin-section-heading"><h2>Últimos lançamentos automáticos</h2><span>{adminData?.events.length ?? 0} REGISTROS</span></div>
+          <div className="admin-section-heading" id="events"><h2>Últimos lançamentos automáticos</h2><span>{adminData?.events.length ?? 0} REGISTROS</span></div>
           <p className="admin-help">Somente eventos recebidos pelas sincronizações oficiais são exibidos. Lançamentos manuais estão desativados para preservar a consistência dos dados da API.</p>
           <div className="admin-automatic-events">
             {adminData?.events.map((event) => (
@@ -185,7 +191,7 @@ export default async function AdminPage({
             {adminData?.events.length === 0 ? <div className="admin-empty">Ainda não há lançamentos automáticos registrados.</div> : null}
           </div>
 
-          <div className="admin-section-heading"><h2>Automações</h2><span>AGUARDANDO ATIVAÇÃO</span></div>
+          <div className="admin-section-heading" id="automations"><h2>Automações</h2><span>AGUARDANDO ATIVAÇÃO</span></div>
           <div className="admin-cards">
             <article><strong>Sincronizações automáticas</strong><span>As sete rotas de sincronização estão implementadas e protegidas. Os agendamentos permanecem desativados até a etapa de publicação autorizada.</span></article>
             <article><strong>Dados automáticos</strong><span>Guerras, Liga, Raide, doações, Jogos do Clã, Capital e roster são tratados pelas rotas automáticas, sem lançamentos manuais duplicados.</span></article>
