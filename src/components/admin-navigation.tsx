@@ -3,7 +3,6 @@ import Link from "next/link";
 const links = [
   { href: "/admin#overview", label: "Visão geral", icon: "⌂" },
   { href: "/admin#analytics", label: "Analytics", icon: "▥" },
-  { href: "/admin#events", label: "Lançamentos", icon: "✎" },
   { href: "/history", label: "Histórico", icon: "▤" },
 ];
 
