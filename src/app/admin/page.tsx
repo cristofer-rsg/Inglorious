@@ -122,7 +122,7 @@ export default async function AdminPage({
   return (
     <main className="app-shell">
       <header className="topbar gh-topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>ADMIN CONTROL</small></span></a>
+        <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>ADMIN CONTROL</small></span></a>
         <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>
       </header>
       <SiteNav active="/admin" />
@@ -193,7 +193,7 @@ export default async function AdminPage({
           <form action="/Inglorious/api/admin/logout" method="post"><button type="submit">Encerrar sessão</button></form>
         </section>
       )}
-      <footer className="footer"><span>INGLORIOUS · ADMIN</span><Link href="/">VOLTAR AO SITE</Link></footer>
+      <footer className="footer"><span>INGLORIOUS · ADMIN</span><Link href="/Inglorious/">VOLTAR AO SITE</Link></footer>
     </main>
   );
 }
