@@ -83,24 +83,56 @@ function getApiToken() {
 }
 
 async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${getApiToken()}`,
-      auth: getApiToken(),
-      Accept: "application/json",
-      "User-Agent": "Inglorious/1.0",
-    },
-    cache: "no-store",
-    signal: AbortSignal.timeout(25000),
-  });
+  const token = getApiToken();
+  const maxAttempts = 3;
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`A API do Clash of Clans respondeu HTTP ${response.status}: ${detail.slice(0, 300)}`);
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${path}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          auth: token,
+          Accept: "application/json",
+          "User-Agent": "Inglorious/1.0",
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(25000),
+      });
+
+      if (!response.ok) {
+        const detail = await response.text();
+        const error = new Error(
+          `A API do Clash of Clans respondeu HTTP ${response.status}: ${detail.slice(0, 300)}`,
+        );
+
+        if (response.status < 500 || attempt === maxAttempts) {
+          throw error;
+        }
+
+        lastError = error;
+      } else {
+        return response.json() as Promise<T>;
+      }
+    } catch (error) {
+      const normalizedError = error instanceof Error
+        ? error
+        : new Error("Falha desconhecida na comunicação com a API do Clash of Clans.");
+
+      if (attempt === maxAttempts || normalizedError.message.startsWith(
+        "A API do Clash of Clans respondeu HTTP 4",
+      )) {
+        throw normalizedError;
+      }
+
+      lastError = normalizedError;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
   }
 
-  return response.json() as Promise<T>;
+  throw lastError ?? new Error("Não foi possível consultar a API do Clash of Clans.");
 }
 
 export async function fetchCurrentClanMembers(): Promise<ClashClanMember[]> {
