@@ -34,7 +34,8 @@ export function isRankingEligible(player: {
   role?: string | null;
   active?: boolean | null;
 }) {
-  return (player.eligible ?? "Elegível") === "Elegível"
+  return player.active === true
+    && (player.eligible ?? "Elegível") === "Elegível"
     && !EXCLUDED_ROLES.has(normalized(player.role).replaceAll(" ", "_"));
 }
 
