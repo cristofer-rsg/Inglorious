@@ -9,13 +9,13 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  basePath: "/Inglorious",
+  basePath: "/inglorious",
   reactStrictMode: true,
   async redirects() {
     return [
       {
         source: "/",
-        destination: "/Inglorious/",
+        destination: "/inglorious/",
         permanent: false,
         basePath: false,
       },
