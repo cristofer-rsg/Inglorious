@@ -6,6 +6,8 @@ const links = [
   { href: "/admin#events", label: "Lançamentos", icon: "✎" },
   { href: "/performance", label: "Desempenho", icon: "◈" },
   { href: "/history", label: "Histórico", icon: "▤" },
+  { href: "/performance", label: "Desempenho", icon: "◈" },
+  { href: "/history", label: "Histórico", icon: "▤" },
 ];
 
 export default function AdminNavigation() {
