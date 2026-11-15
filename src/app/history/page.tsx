@@ -80,7 +80,7 @@ export default async function HistoryPage({
     if (monthsResult.error) throw new Error(monthsResult.error.message);
     months = [...new Set((monthsResult.data ?? [])
       .map((row) => row.month_key)
-      .filter((value): value is string => typeof value === "string" && /^\\d{4}-(0[1-9]|1[0-2])$/.test(value)))];
+      .filter((value): value is string => typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(value)))];
 
     selectedMonth = months.includes(params.month ?? "") ? params.month ?? "" : months[0] ?? "";
     if (selectedMonth) {
