@@ -4,7 +4,7 @@ const links = [
   { href: "/admin#overview", label: "Visão geral", icon: "⌂" },
   { href: "/admin#analytics", label: "Analytics", icon: "▥" },
   { href: "/admin#events", label: "Lançamentos", icon: "✎" },
-  { href: "/performance", label: "Desempenho", icon: "◈" },
+  { href: "/admin/performance", label: "Desempenho", icon: "◈" },
   { href: "/history", label: "Histórico", icon: "▤" },
 ];
 
