@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
   try {
     await destroyAdminSession();
-    return NextResponse.redirect(new URL("/Inglorious/admin", requestUrl.origin), { status: 303, headers: { "Cache-Control": "no-store, max-age=0" } });
+    return NextResponse.redirect(new URL("/inglorious/admin", requestUrl.origin), { status: 303, headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch {
     return NextResponse.json({ success: false }, { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } });
   }
