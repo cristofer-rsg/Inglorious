@@ -68,7 +68,7 @@ export default function RulesPage() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/">
+        <a className="brand" href="/Inglorious/">
           <span className="brand-mark">I</span>
           <span className="brand-copy">
             <strong>INGLORIOUS</strong>
@@ -299,7 +299,7 @@ export default function RulesPage() {
             </RuleCard>
           </div>
 
-          <a className="back-link" href="/ranking">
+          <a className="back-link" href="/Inglorious/ranking">
             ← Consultar ranking
           </a>
         </section>
