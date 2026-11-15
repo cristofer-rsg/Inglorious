@@ -162,3 +162,147 @@
 .player-profile-events article>strong.negative{color:#f0a38d}
 .player-profile-back{display:inline-block;margin-top:20px}
 @media(max-width:600px){.player-profile-hero{padding:15px;gap:12px}.player-profile-avatar{flex-basis:53px;height:53px;font-size:24px}.player-profile-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.player-profile-metrics article{padding:12px}.player-profile-total{padding:17px}}
+
+
+/* Ghost Hunt card parity: consistent warm fill, complete gold outlines and depth. */
+:root {
+  --gh-card-border: rgba(216,179,108,.38);
+  --gh-card-border-strong: rgba(216,179,108,.52);
+  --gh-card-top: #292219;
+  --gh-card-bottom: #17130f;
+  --gh-card-shadow: inset 0 1px rgba(255,255,255,.045), 0 9px 25px rgba(0,0,0,.28);
+}
+
+.gh-home-v2 .gh-v2-stat,
+.gh-home-v2 .gh-v2-activity,
+.gh-home-v2 .gh-v2-season-strip,
+.gh-home-v2 .gh-v2-podium-card,
+.gh-home-v2 .gh-community-card,
+.gh-home-v2 .gh-community-profile,
+.gh-home-v2 .ranking-panel,
+.gh-home-v2 .gh-v2-recent,
+.gh-home-v2 .gh-v2-rewards,
+.gh-home-v2 .gh-rewards-banner {
+  border: 1px solid var(--gh-card-border);
+  background: linear-gradient(145deg,var(--gh-card-top),var(--gh-card-bottom));
+  box-shadow: var(--gh-card-shadow);
+}
+
+.gh-home-v2 .gh-v2-stat,
+.gh-home-v2 .gh-v2-activity,
+.gh-home-v2 .gh-v2-season-strip,
+.gh-home-v2 .gh-v2-podium-card {
+  border-radius: 12px;
+}
+
+.gh-home-v2 .gh-v2-stat:hover,
+.gh-home-v2 .gh-v2-activity:hover,
+.gh-home-v2 .gh-v2-podium-card:hover {
+  border-color: var(--gh-card-border-strong);
+  box-shadow: var(--gh-card-shadow), 0 0 18px rgba(216,179,108,.07);
+}
+
+.gh-home-v2 .gh-v2-stat-icon,
+.gh-home-v2 .gh-v2-activity-icon,
+.gh-home-v2 .gh-v2-season-emblem {
+  border: 1px solid rgba(216,179,108,.3);
+  background: linear-gradient(145deg,#332819,#21190f);
+  color: #e2bd73;
+}
+
+.gh-home-v2 .gh-v2-season-strip {
+  background: linear-gradient(105deg,#292219,#17130f 78%);
+}
+
+.gh-home-v2 .gh-v2-podium-card.rank-1 {
+  border-color: rgba(244,202,105,.72);
+  background: linear-gradient(155deg,#493719 0%,#2b2112 48%,#17130d 100%);
+}
+
+.gh-home-v2 .gh-v2-podium-card.rank-2 {
+  border-color: rgba(190,200,211,.55);
+  background: linear-gradient(155deg,#343b43 0%,#20252b 52%,#14171b 100%);
+}
+
+.gh-home-v2 .gh-v2-podium-card.rank-3 {
+  border-color: rgba(190,125,79,.58);
+  background: linear-gradient(155deg,#422b20 0%,#291d17 54%,#17120f 100%);
+}
+
+.gh-home-v2 .gh-community-card {
+  border-radius: 16px;
+  background: radial-gradient(ellipse at 12% 0%,rgba(216,179,108,.12),transparent 45%),linear-gradient(145deg,#292219,#17130f 72%);
+}
+
+.gh-home-v2 .gh-community-profile {
+  border-radius: 11px;
+  background: rgba(10,8,6,.55);
+}
+
+.gh-home-v2 .ranking-panel {
+  overflow: hidden;
+  border-color: var(--gh-card-border-strong);
+  border-radius: 16px;
+  background: linear-gradient(145deg,#292219,#17130f);
+}
+
+.gh-home-v2 .ranking-head {
+  border-bottom: 1px solid rgba(216,179,108,.28);
+  background: rgba(216,179,108,.045);
+  color: #d8c7a5;
+}
+
+.gh-home-v2 .ranking-row,
+.gh-home-v2 .ranking-entry {
+  border-bottom: 1px solid rgba(216,179,108,.18);
+  background: transparent;
+}
+
+.gh-home-v2 .ranking-row:hover,
+.gh-home-v2 .ranking-entry:hover {
+  background: rgba(216,179,108,.055);
+}
+
+.gh-home-v2 .admin-content,
+.gh-home-v2 .history-content,
+.gh-home-v2 .performance-content {
+  border: 1px solid var(--gh-card-border-strong);
+  border-radius: 22px;
+  background: linear-gradient(145deg,#292219,#17130f);
+  box-shadow: 0 18px 42px rgba(0,0,0,.32), inset 0 1px rgba(255,255,255,.045);
+}
+
+.gh-home-v2 .admin-content:before,
+.gh-home-v2 .history-content:before,
+.gh-home-v2 .performance-content:before {
+  background: linear-gradient(90deg,transparent,rgba(240,202,120,.32),transparent);
+}
+
+@media(max-width:560px) {
+  .gh-home-v2 .admin-content,
+  .gh-home-v2 .history-content,
+  .gh-home-v2 .performance-content {
+    border-radius: 18px;
+  }
+}
+
+/* Mobile: use the same compact page gutters as Ghost Hunt so cards span the screen. */
+@media (max-width: 900px) {
+  .app-shell > :not(.topbar):not(.sidebar) {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .app-shell > .content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell > .content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

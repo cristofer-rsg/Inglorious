@@ -4,6 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
+function normalizePath(pathname: string) {
+  const basePath = "/Inglorious";
+  if (pathname === basePath) return "/";
+  return pathname.startsWith(`${basePath}/`) ? pathname.slice(basePath.length) : pathname;
+}
+
 const items = [
   { href: "/", icon: "⌂", label: "Início" },
   { href: "/ranking", icon: "♛", label: "Ranking" },
@@ -16,11 +22,11 @@ export default function BottomNavigation() {
   const pathname = usePathname();
   const router = useRouter();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const currentPath = useRef(pathname);
+  const currentPath = useRef(normalizePath(pathname));
   const pending = useRef(false);
 
   useEffect(() => {
-    currentPath.current = pathname;
+    currentPath.current = normalizePath(pathname);
     pending.current = false;
     touchStart.current = null;
   }, [pathname]);
@@ -67,12 +73,13 @@ export default function BottomNavigation() {
     };
   }, [router]);
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/history") || pathname === "/login") return null;
+  const normalizedPath = normalizePath(pathname);
+  if (normalizedPath.startsWith("/admin") || normalizedPath.startsWith("/history") || normalizedPath === "/login") return null;
   return (
     <nav className="mobile-bottom-nav" aria-label="Navegação principal">
       <span className="mobile-nav-swipe-arrow" aria-hidden="true">‹</span>
       {items.map((item) => {
-        const active = item.href === "/" ? pathname === "/" : item.href === "/ranking" ? pathname === "/ranking" || pathname.startsWith("/player/") : pathname === item.href || pathname.startsWith(item.href + "/");
+        const active = item.href === "/" ? normalizedPath === "/" : item.href === "/ranking" ? normalizedPath === "/ranking" || normalizedPath.startsWith("/player/") : normalizedPath === item.href || normalizedPath.startsWith(item.href + "/");
         return (
           <Link className={active ? "mobile-nav-item active" : "mobile-nav-item"} href={item.href} key={item.href} aria-current={active ? "page" : undefined} prefetch>
             <span className="mobile-nav-icon" aria-hidden="true">{item.icon}</span>

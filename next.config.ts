@@ -9,19 +9,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  basePath: "/Inglorious",
   reactStrictMode: true,
   async headers() {
     return [
-      {
-        source: "/:path*",
-        headers: securityHeaders,
-      },
-      {
-        source: "/api/:path*",
-        headers: [
-          { key: "Cache-Control", value: "no-store, max-age=0" },
-        ],
-      },
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/api/:path*", headers: [{ key: "Cache-Control", value: "no-store, max-age=0" }] },
     ];
   },
 };

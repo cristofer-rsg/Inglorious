@@ -145,7 +145,7 @@ export default async function PerformancePage({
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+        <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
         <span className="status"><span className="status-dot online" />DESEMPENHO MENSAL</span>
       </header>
       <SiteNav active="/performance" />
@@ -232,7 +232,7 @@ export default async function PerformancePage({
               </div>
             </>
           )}
-          <a className="back-link" href="/ranking">← Ver ranking oficial</a>
+          <a className="back-link" href="/Inglorious/ranking">← Ver ranking oficial</a>
         </section>
         <footer className="footer"><span>INGLORIOUS <b>•</b> DESEMPENHO</span><span>{monthLabel(selectedMonth)}</span></footer>
       </section>

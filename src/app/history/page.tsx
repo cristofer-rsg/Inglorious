@@ -80,7 +80,7 @@ export default async function HistoryPage({
     if (monthsResult.error) throw new Error(monthsResult.error.message);
     months = [...new Set((monthsResult.data ?? [])
       .map((row) => row.month_key)
-      .filter((value): value is string => typeof value === "string" && /^\\d{4}-(0[1-9]|1[0-2])$/.test(value)))];
+      .filter((value): value is string => typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(value)))];
 
     selectedMonth = months.includes(params.month ?? "") ? params.month ?? "" : months[0] ?? "";
     if (selectedMonth) {
@@ -117,7 +117,7 @@ export default async function HistoryPage({
   return (
     <main className="app-shell">
       <header className="topbar gh-topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN MANAGEMENT</small></span></a>
+        <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN MANAGEMENT</small></span></a>
         <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>
       </header>
       <SiteNav active="/history" />
@@ -127,7 +127,7 @@ export default async function HistoryPage({
           <h1>Histórico <em>mensal</em></h1>
           <p>Consulte a classificação final e os lançamentos preservados no Supabase.</p>
           {error && <div className="connection-alert"><b>Não foi possível carregar o histórico.</b><span>{error}</span></div>}
-          {months.length > 0 && <form className="history-filter" action="/history" method="get">
+          {months.length > 0 && <form className="history-filter" action="/Inglorious/history" method="get">
             <label htmlFor="history-month">Mês de referência</label>
             <select id="history-month" name="month" defaultValue={selectedMonth}>{months.map((month) => <option value={month} key={month}>{monthLabel(month)}</option>)}</select>
             <label htmlFor="history-category">Filtrar lançamentos por categoria</label>
@@ -159,7 +159,7 @@ export default async function HistoryPage({
               {!filteredEvents.length && <p>{events.length ? "Nenhum lançamento encontrado nesta categoria." : "Nenhum lançamento neste mês."}</p>}
             </div>
           </> : <div className="empty-state"><strong>Nenhuma temporada arquivada</strong><p>O histórico será preenchido automaticamente no fechamento mensal.</p></div>}
-          <a className="back-link" href="/admin">← Voltar à administração</a>
+          <a className="back-link" href="/Inglorious/admin">← Voltar à administração</a>
         </section>
         <footer className="footer"><span>INGLORIOUS <b>•</b> HISTÓRICO</span><span>Área administrativa</span></footer>
       </section>

@@ -9,7 +9,7 @@ export default async function RankingPage() {
   return (
     <main className="app-shell gh-home gh-home-v2">
       <header className="topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+        <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
         <span className={data.connected ? "status" : "status status-offline"}><span className="status-dot" />{data.connected ? "CLÃ CONECTADO" : "AGUARDANDO CONEXÃO"}</span>
       </header>
       <SiteNav active="/ranking" />
@@ -24,7 +24,7 @@ export default async function RankingPage() {
             <div className="ranking-head"><span>JOGADOR</span><span>PONTUAÇÃO</span></div>
             {data.ranking.length ? <HomeRankingList players={data.ranking} /> : <div className="empty-state"><span className="empty-icon">♜</span><b>{data.connected ? "Ainda não há jogadores classificados" : "Conectando os dados do clã"}</b><p>O ranking será exibido assim que os dados estiverem disponíveis.</p></div>}
           </div>
-          <a className="back-link" href="/">← Voltar ao início</a>
+          <a className="back-link" href="/Inglorious/">← Voltar ao início</a>
         </section>
         <footer className="footer"><span>INGLORIOUS <b>•</b> RANKING</span><span>{data.monthLabel}</span></footer>
       </section>

@@ -8,7 +8,7 @@ export default function AnalyticsTracker() {
 
   useEffect(() => {
     if (!pathname) return;
-    void fetch("/api/analytics", {
+    void fetch("/Inglorious/api/analytics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: pathname }),

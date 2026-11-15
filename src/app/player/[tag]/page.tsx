@@ -51,7 +51,7 @@ export default async function PlayerProfilePage({ params }: Props) {
   return (
     <main className="app-shell player-profile-shell">
       <header className="topbar gh-topbar">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+        <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
         <Link className="back-link" href="/ranking">← Ranking</Link>
       </header>
       <SiteNav active="/ranking" />
