@@ -229,15 +229,38 @@ async function loadPerformanceData(
         .map((row) => [String(row.player).trim().toLocaleLowerCase("pt-BR"), row]),
     );
 
+    const eventsByTag = new Map<string, Array<{ index: number; event: EventRow }>>();
+    const eventsByName = new Map<string, Array<{ index: number; event: EventRow }>>();
+
+    events.forEach((event, index) => {
+      const eventTag = (event.player_tag ?? "").trim().toUpperCase();
+      const eventName = (event.player ?? "").trim().toLocaleLowerCase("pt-BR");
+      const indexedEvent = { index, event };
+
+      if (eventTag) {
+        const taggedEvents = eventsByTag.get(eventTag) ?? [];
+        taggedEvents.push(indexedEvent);
+        eventsByTag.set(eventTag, taggedEvents);
+      }
+
+      if (eventName) {
+        const namedEvents = eventsByName.get(eventName) ?? [];
+        namedEvents.push(indexedEvent);
+        eventsByName.set(eventName, namedEvents);
+      }
+    });
+
     const rows = ((playersResult.data ?? []) as Player[]).map((player) => {
       const tag = (player.player_tag ?? "").trim().toUpperCase();
       const nameKey = player.name.trim().toLocaleLowerCase("pt-BR");
       const stat = (tag ? statsByTag.get(tag) : undefined) || statsByName.get(nameKey);
-      const playerEvents = events.filter((event) => {
-        const eventTag = (event.player_tag ?? "").trim().toUpperCase();
-        if (tag && eventTag) return eventTag === tag;
-        return (event.player ?? "").trim().toLocaleLowerCase("pt-BR") === nameKey;
-      });
+      const taggedEvents = tag ? eventsByTag.get(tag) ?? [] : [];
+      const legacyEvents = (eventsByName.get(nameKey) ?? []).filter(
+        ({ event }) => !tag || !(event.player_tag ?? "").trim(),
+      );
+      const playerEvents = [...taggedEvents, ...legacyEvents]
+        .sort((a, b) => a.index - b.index)
+        .map(({ event }) => event);
       const recordedDonations = safeCount(stat?.donations);
       const donationFallback = useManualDonationFallback
         ? playerEvents
