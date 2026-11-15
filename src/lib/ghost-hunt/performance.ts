@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 
 import { APP_CONFIG } from "@/lib/config";
 import { calculatePlayerScore, type ScoringEvent } from "@/lib/scoring";
@@ -124,7 +125,7 @@ function safeCount(value: number | null | undefined) {
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
 }
 
-export async function getPerformanceData(
+async function loadPerformanceData(
   requestedMonth?: string,
   useManualDonationFallback = false,
 ): Promise<PerformanceData> {
@@ -323,4 +324,13 @@ export async function getPerformanceData(
       error: error instanceof Error ? error.message : "Falha ao carregar desempenho.",
     };
   }
+}
+
+const getCachedPerformanceData = unstable_cache(loadPerformanceData, ["inglorious-performance-v1"], { revalidate: 20 });
+
+export async function getPerformanceData(
+  requestedMonth?: string,
+  useManualDonationFallback = false,
+): Promise<PerformanceData> {
+  return getCachedPerformanceData(requestedMonth, useManualDonationFallback);
 }
