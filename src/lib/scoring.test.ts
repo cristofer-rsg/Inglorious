@@ -13,8 +13,15 @@ describe("isRankingEligible", () => {
     },
   );
 
-  it("keeps eligibility independent from current roster status", () => {
-    expect(isRankingEligible({ active: false, eligible: "Elegível", role: "member" })).toBe(true);
+  it("excludes players who are no longer in the current clan roster", () => {
+    expect(isRankingEligible({ active: false, eligible: "Elegível", role: "member" })).toBe(false);
+  });
+
+  it("excludes players without an explicit active roster status", () => {
+    expect(isRankingEligible({ eligible: "Elegível", role: "member" })).toBe(false);
+  });
+
+  it("keeps active members subject to eligibility rules", () => {
     expect(isRankingEligible({ active: true, eligible: "Inelegível", role: "member" })).toBe(false);
   });
 });
