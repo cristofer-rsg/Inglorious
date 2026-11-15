@@ -182,6 +182,15 @@ async function loadDashboardData(monthOverride?: string): Promise<DashboardData>
       playerNameCounts.set(key, (playerNameCounts.get(key) ?? 0) + 1);
     }
 
+    const eventsByTag = new Map<string, EventRow[]>();
+    const eventsByName = new Map<string, EventRow[]>();
+    for (const event of events) {
+      const tag = (event.player_tag ?? "").trim().toUpperCase();
+      const name = (event.player ?? "").trim().toLocaleLowerCase("pt-BR");
+      if (tag) eventsByTag.set(tag, [...(eventsByTag.get(tag) ?? []), event]);
+      if (name) eventsByName.set(name, [...(eventsByName.get(name) ?? []), event]);
+    }
+
     const ranking = players
       .filter(isRankingEligible)
       .map((player) => {
@@ -197,12 +206,18 @@ async function loadDashboardData(monthOverride?: string): Promise<DashboardData>
           : hasUniqueLegacyName
             ? donationsByName.get(normalizedName)
             : undefined;
+        const playerEvents = [
+          ...(player.player_tag ? eventsByTag.get(player.player_tag.trim().toUpperCase()) ?? [] : []),
+          ...(hasUniqueLegacyName
+            ? (eventsByName.get(normalizedName) ?? []).filter((event) => !(event.player_tag ?? "").trim())
+            : []),
+        ];
         const score = calculatePlayerScore({
           playerName: player.name,
           playerTag: player.player_tag,
           donationsTotal: donations,
-          allowLegacyNameFallback: playerNameCounts.get(normalizedName) === 1,
-          events,
+          allowLegacyNameFallback: hasUniqueLegacyName,
+          events: playerEvents,
           clanGamesPoints: games,
         });
 
