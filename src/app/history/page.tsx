@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import SiteNav from "@/components/site-nav";
+import AdminNavigation from "@/components/admin-navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { APP_CONFIG } from "@/lib/config";
 import { getZonedMonthBounds } from "@/lib/time";
@@ -116,13 +116,12 @@ export default async function HistoryPage({
 
   return (
     <main className="app-shell">
-      <header className="topbar gh-topbar">
+      <header className="topbar gh-topbar admin-header">
         <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN MANAGEMENT</small></span></a>
-        <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>
+        <form className="admin-topbar-logout" action="/inglorious/api/admin/logout" method="post"><button type="submit">Sair</button></form>
       </header>
-      <SiteNav active="/history" />
-      <section className="content gh-content">
-        <section className="admin-content history-content">
+      <AdminNavigation current="/history" />
+      <section className="admin-content admin-panel admin-panel-wide history-content">
           <span className="auth-kicker">ÁREA RESTRITA • ADMINISTRADOR</span>
           <h1>Histórico <em>mensal</em></h1>
           <p>Consulte a classificação final e os lançamentos preservados no Supabase.</p>
@@ -160,9 +159,8 @@ export default async function HistoryPage({
             </div>
           </> : <div className="empty-state"><strong>Nenhuma temporada arquivada</strong><p>O histórico será preenchido automaticamente no fechamento mensal.</p></div>}
           <a className="back-link" href="/Inglorious/admin">← Voltar à administração</a>
-        </section>
-        <footer className="footer"><span>INGLORIOUS <b>•</b> HISTÓRICO</span><span>Área administrativa</span></footer>
       </section>
+      <footer className="footer"><span>INGLORIOUS <b>•</b> HISTÓRICO</span><span>Área administrativa</span></footer>
     </main>
   );
 }
