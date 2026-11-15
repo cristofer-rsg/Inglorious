@@ -50,8 +50,8 @@ export default async function ClanTimePage() {
   return (
     <main className="admin-shell">
       <header className="admin-header">
-        <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
-        <a className="back-link" href="/">← Início</a>
+        <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+        <a className="back-link" href="/Inglorious/">← Início</a>
       </header>
       <SiteNav active="/clan-time" />
       <section className="admin-content history-content tenure-content">
@@ -94,7 +94,7 @@ export default async function ClanTimePage() {
           </article>)}
           {players.length === 0 && <div className="tenure-empty">Ainda não há períodos de permanência registrados.</div>}
         </div>
-        <a className="back-link" href="/">← Voltar ao início</a>
+        <a className="back-link" href="/Inglorious/">← Voltar ao início</a>
       </section>
     </main>
   );
