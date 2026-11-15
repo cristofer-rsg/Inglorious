@@ -1,0 +1,20 @@
+/* Inglorious administrator — visual parity with Ghost Hunt. */
+.admin-navigation { display:flex; gap:7px; padding:14px 0; margin-bottom:8px; border-bottom:1px solid rgba(214,166,76,.2); overflow-x:auto; scrollbar-width:thin; }
+.admin-nav-link { display:inline-flex; flex:0 0 auto; align-items:center; gap:8px; min-height:39px; padding:9px 13px; border:1px solid transparent; border-radius:8px; color:#b7a78a; font-size:10px; font-weight:800; white-space:nowrap; }
+.admin-nav-link:hover,.admin-nav-link:focus-visible { border-color:rgba(214,166,76,.3); color:#f0ca78; background:rgba(214,166,76,.07); }
+.admin-nav-link>span { color:#d6aa4c; font-size:14px; }
+.admin-panel-wide,.admin-section-heading[id] { scroll-margin-top:18px; }
+.admin-tools { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:18px 0 26px; }
+.admin-tool-card { display:flex; min-width:0; align-items:center; gap:12px; padding:15px; border:1px solid rgba(214,166,76,.28); border-radius:12px; background:linear-gradient(145deg,#292219,#17130f); }
+.admin-tool-card>span { display:grid; flex:0 0 38px; width:38px; height:38px; place-items:center; border:1px solid rgba(214,166,76,.3); border-radius:9px; color:#f0ca78; font-size:17px; }
+.admin-tool-card>div { min-width:0; }
+.admin-tool-card b,.admin-tool-card small { display:block; }
+.admin-tool-card b { color:#f0e4cd; font-size:12px; }
+.admin-tool-card small { margin-top:4px; color:#b7a78a; font-size:10px; line-height:1.45; }
+.admin-export-center { padding:17px; margin:22px 0; border:1px solid rgba(214,166,76,.3); border-radius:13px; background:linear-gradient(145deg,#292219,#17130f); }
+.admin-export-center h2 { margin:6px 0 5px; color:#f0ca78; font:700 23px 'Barlow Condensed',sans-serif; }
+.admin-export-center p { color:#b7a78a; font-size:11px; line-height:1.6; }
+.admin-export-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:13px; }
+.admin-export-actions a { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:10px 14px; border:1px solid rgba(214,166,76,.42); border-radius:8px; color:#f0ca78; font-size:10px; font-weight:800; }
+.admin-export-actions a:hover { background:rgba(214,166,76,.1); }
+@media(max-width:640px) { .admin-navigation { margin-inline:-2px; } .admin-tools { grid-template-columns:1fr; } .admin-tool-card { padding:13px; } }
