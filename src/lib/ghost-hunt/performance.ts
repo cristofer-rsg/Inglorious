@@ -124,6 +124,37 @@ function safeCount(value: number | null | undefined) {
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
 }
 
+function indexEventsByPlayer(events: EventRow[]) {
+  const byTag = new Map<string, EventRow[]>();
+  const byName = new Map<string, EventRow[]>();
+  const byLegacyName = new Map<string, EventRow[]>();
+
+  for (const event of events) {
+    const nameKey = (event.player ?? "").trim().toLocaleLowerCase("pt-BR");
+    const tagKey = (event.player_tag ?? "").trim().toUpperCase();
+
+    if (nameKey) {
+      const named = byName.get(nameKey);
+      if (named) named.push(event);
+      else byName.set(nameKey, [event]);
+
+      if (!tagKey) {
+        const legacy = byLegacyName.get(nameKey);
+        if (legacy) legacy.push(event);
+        else byLegacyName.set(nameKey, [event]);
+      }
+    }
+
+    if (tagKey) {
+      const tagged = byTag.get(tagKey);
+      if (tagged) tagged.push(event);
+      else byTag.set(tagKey, [event]);
+    }
+  }
+
+  return { byTag, byName, byLegacyName };
+}
+
 export async function getPerformanceData(
   requestedMonth?: string,
   useManualDonationFallback = false,
@@ -219,6 +250,8 @@ export async function getPerformanceData(
       .order("player_tag", { ascending: true })
       .order("activity", { ascending: true }) as unknown as RangeQuery<EventRow>);
 
+    const eventIndexes = indexEventsByPlayer(events);
+
     const statsByTag = new Map(
       stats.filter((row) => row.player_tag)
         .map((row) => [String(row.player_tag).trim().toUpperCase(), row]),
@@ -232,11 +265,12 @@ export async function getPerformanceData(
       const tag = (player.player_tag ?? "").trim().toUpperCase();
       const nameKey = player.name.trim().toLocaleLowerCase("pt-BR");
       const stat = (tag ? statsByTag.get(tag) : undefined) || statsByName.get(nameKey);
-      const playerEvents = events.filter((event) => {
-        const eventTag = (event.player_tag ?? "").trim().toUpperCase();
-        if (tag && eventTag) return eventTag === tag;
-        return (event.player ?? "").trim().toLocaleLowerCase("pt-BR") === nameKey;
-      });
+      const playerEvents = tag
+        ? [
+          ...(eventIndexes.byTag.get(tag) ?? []),
+          ...(eventIndexes.byLegacyName.get(nameKey) ?? []),
+        ]
+        : eventIndexes.byName.get(nameKey) ?? [];
       const recordedDonations = safeCount(stat?.donations);
       const donationFallback = useManualDonationFallback
         ? playerEvents
