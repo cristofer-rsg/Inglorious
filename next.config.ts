@@ -11,6 +11,16 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   basePath: "/Inglorious",
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/Inglorious/",
+        permanent: false,
+        basePath: false,
+      },
+    ];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
