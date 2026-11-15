@@ -32,7 +32,6 @@ export default function BottomNavigation() {
   }, [pathname]);
 
   useEffect(() => {
-    items.forEach((item) => router.prefetch(item.href));
     const onStart = (event: TouchEvent) => {
       if (currentPath.current.startsWith("/admin") || currentPath.current === "/login" || currentPath.current.startsWith("/history") || event.touches.length !== 1 || pending.current) {
         touchStart.current = null;
@@ -81,7 +80,7 @@ export default function BottomNavigation() {
       {items.map((item) => {
         const active = item.href === "/" ? normalizedPath === "/" : item.href === "/ranking" ? normalizedPath === "/ranking" || normalizedPath.startsWith("/player/") : normalizedPath === item.href || normalizedPath.startsWith(item.href + "/");
         return (
-          <Link className={active ? "mobile-nav-item active" : "mobile-nav-item"} href={item.href} key={item.href} aria-current={active ? "page" : undefined} prefetch>
+          <Link className={active ? "mobile-nav-item active" : "mobile-nav-item"} href={item.href} key={item.href} aria-current={active ? "page" : undefined} prefetch={false} onMouseEnter={() => router.prefetch(item.href)} onFocus={() => router.prefetch(item.href)} onTouchStart={() => router.prefetch(item.href)}>
             <span className="mobile-nav-icon" aria-hidden="true">{item.icon}</span>
             <span>{item.label}</span>
           </Link>
