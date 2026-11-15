@@ -149,7 +149,7 @@ export default async function AdminPage({
           <div className="admin-tools">
             <a className="admin-tool-card" href="#analytics"><span>▥</span><div><b>Analytics do aplicativo</b><small>Acessos, visitantes e páginas mais consultadas</small></div></a>
             <a className="admin-tool-card" href="#events"><span>✎</span><div><b>Lançamentos automáticos</b><small>Consultar registros recebidos pelas sincronizações</small></div></a>
-            <a className="admin-tool-card" href="/admin/performance"><span>◈</span><div><b>Desempenho</b><small>Indicadores e participação dos jogadores</small></div></a>
+            <a className="admin-tool-card" href="/inglorious/admin/performance"><span>◈</span><div><b>Desempenho</b><small>Indicadores e participação dos jogadores</small></div></a>
             <a className="admin-tool-card" href="/Inglorious/history"><span>▤</span><div><b>Histórico mensal</b><small>Classificações e eventos arquivados</small></div></a>
           </div>
           <div className="admin-cards admin-overview-grid">
