@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 
 import { APP_CONFIG } from "@/lib/config";
 import { calculatePlayerScore, isRankingEligible, type ScoringEvent } from "@/lib/scoring";
@@ -109,7 +110,7 @@ async function fetchMonthEvents(start: string, end: string): Promise<EventRow[]>
   return rows;
 }
 
-export async function getDashboardData(monthOverride?: string): Promise<DashboardData> {
+async function loadDashboardData(monthOverride?: string): Promise<DashboardData> {
   const currentMonth = getCurrentMonthKey();
   const monthKey = monthOverride && /^\d{4}-(0[1-9]|1[0-2])$/.test(monthOverride)
     ? monthOverride
@@ -260,4 +261,10 @@ export async function getDashboardData(monthOverride?: string): Promise<Dashboar
       error: error instanceof Error ? error.message : "Não foi possível carregar os dados do clã.",
     };
   }
+}
+
+const getCachedDashboardData = unstable_cache(loadDashboardData, ["inglorious-dashboard-v1"], { revalidate: 20 });
+
+export async function getDashboardData(monthOverride?: string): Promise<DashboardData> {
+  return getCachedDashboardData(monthOverride);
 }
