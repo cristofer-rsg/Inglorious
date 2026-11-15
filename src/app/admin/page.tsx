@@ -123,7 +123,7 @@ export default async function AdminPage({
     <main className="app-shell">
       <header className="topbar gh-topbar">
         <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>ADMIN CONTROL</small></span></a>
-        <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>
+        {session ? <form className="admin-topbar-logout" action="/Inglorious/api/admin/logout" method="post"><button type="submit">Sair</button></form> : <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>}
       </header>
       {session ? <AdminNavigation /> : null}
       {!session ? (
@@ -196,7 +196,6 @@ export default async function AdminPage({
             <article><strong>Sincronizações automáticas</strong><span>As sete rotas de sincronização estão implementadas e protegidas. Os agendamentos permanecem desativados até a etapa de publicação autorizada.</span></article>
             <article><strong>Dados automáticos</strong><span>Guerras, Liga, Raide, doações, Jogos do Clã, Capital e roster são tratados pelas rotas automáticas, sem lançamentos manuais duplicados.</span></article>
           </div>
-          <form action="/Inglorious/api/admin/logout" method="post"><button type="submit">Encerrar sessão</button></form>
         </section>
       )}
       <footer className="footer"><span>INGLORIOUS · ADMIN</span><Link href="/Inglorious/">VOLTAR AO SITE</Link></footer>
