@@ -187,8 +187,16 @@ async function loadDashboardData(monthOverride?: string): Promise<DashboardData>
     for (const event of events) {
       const tag = (event.player_tag ?? "").trim().toUpperCase();
       const name = (event.player ?? "").trim().toLocaleLowerCase("pt-BR");
-      if (tag) eventsByTag.set(tag, [...(eventsByTag.get(tag) ?? []), event]);
-      if (name) eventsByName.set(name, [...(eventsByName.get(name) ?? []), event]);
+      if (tag) {
+        const tagged = eventsByTag.get(tag) ?? [];
+        tagged.push(event);
+        eventsByTag.set(tag, tagged);
+      }
+      if (name) {
+        const named = eventsByName.get(name) ?? [];
+        named.push(event);
+        eventsByName.set(name, named);
+      }
     }
 
     const ranking = players
