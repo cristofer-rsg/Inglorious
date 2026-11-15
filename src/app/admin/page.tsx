@@ -171,7 +171,7 @@ export default async function AdminPage({
               <p className="admin-help">O sistema registra caminho da página, domínio de referência e tipo de dispositivo. O endereço IP não é armazenado; o identificador do visitante é gerado por hash HMAC.</p>
             </>
           ) : <div className="admin-empty">A análise de acessos ficará disponível após a configuração do segredo de hash e o primeiro acesso ao aplicativo.</div>}
-          <a className="admin-export-link" href="/api/admin/export">Exportar histórico completo de eventos (CSV)</a>
+          <a className="admin-export-link" href="/Inglorious/api/admin/export">Exportar histórico completo de eventos (CSV)</a>
 
           <div className="admin-section-heading"><h2>Últimos lançamentos automáticos</h2><span>{adminData?.events.length ?? 0} REGISTROS</span></div>
           <p className="admin-help">Somente eventos recebidos pelas sincronizações oficiais são exibidos. Lançamentos manuais estão desativados para preservar a consistência dos dados da API.</p>
@@ -190,7 +190,7 @@ export default async function AdminPage({
             <article><strong>Sincronizações automáticas</strong><span>As sete rotas de sincronização estão implementadas e protegidas. Os agendamentos permanecem desativados até a etapa de publicação autorizada.</span></article>
             <article><strong>Dados automáticos</strong><span>Guerras, Liga, Raide, doações, Jogos do Clã, Capital e roster são tratados pelas rotas automáticas, sem lançamentos manuais duplicados.</span></article>
           </div>
-          <form action="/api/admin/logout" method="post"><button type="submit">Encerrar sessão</button></form>
+          <form action="/Inglorious/api/admin/logout" method="post"><button type="submit">Encerrar sessão</button></form>
         </section>
       )}
       <footer className="footer"><span>INGLORIOUS · ADMIN</span><Link href="/">VOLTAR AO SITE</Link></footer>
