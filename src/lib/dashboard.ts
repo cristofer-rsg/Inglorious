@@ -109,6 +109,37 @@ async function fetchMonthEvents(start: string, end: string): Promise<EventRow[]>
   return rows;
 }
 
+function indexEventsByPlayer(events: EventRow[]) {
+  const byTag = new Map<string, EventRow[]>();
+  const byName = new Map<string, EventRow[]>();
+  const byLegacyName = new Map<string, EventRow[]>();
+
+  for (const event of events) {
+    const nameKey = (event.player ?? "").trim().toLocaleLowerCase("pt-BR");
+    const tagKey = (event.player_tag ?? "").trim().toUpperCase();
+
+    if (nameKey) {
+      const named = byName.get(nameKey);
+      if (named) named.push(event);
+      else byName.set(nameKey, [event]);
+
+      if (!tagKey) {
+        const legacy = byLegacyName.get(nameKey);
+        if (legacy) legacy.push(event);
+        else byLegacyName.set(nameKey, [event]);
+      }
+    }
+
+    if (tagKey) {
+      const tagged = byTag.get(tagKey);
+      if (tagged) tagged.push(event);
+      else byTag.set(tagKey, [event]);
+    }
+  }
+
+  return { byTag, byName, byLegacyName };
+}
+
 export async function getDashboardData(monthOverride?: string): Promise<DashboardData> {
   const currentMonth = getCurrentMonthKey();
   const monthKey = monthOverride && /^\d{4}-(0[1-9]|1[0-2])$/.test(monthOverride)
@@ -175,6 +206,8 @@ export async function getDashboardData(monthOverride?: string): Promise<Dashboar
       }
     }
 
+    const eventIndexes = indexEventsByPlayer(events);
+
     const playerNameCounts = new Map<string, number>();
     for (const player of players) {
       const key = player.name.trim().toLocaleLowerCase("pt-BR");
@@ -196,12 +229,18 @@ export async function getDashboardData(monthOverride?: string): Promise<Dashboar
           : hasUniqueLegacyName
             ? donationsByName.get(normalizedName)
             : undefined;
+        const playerEvents = player.player_tag
+          ? [
+            ...(eventIndexes.byTag.get(player.player_tag.trim().toUpperCase()) ?? []),
+            ...(eventIndexes.byLegacyName.get(normalizedName) ?? []),
+          ]
+          : eventIndexes.byName.get(normalizedName) ?? [];
         const score = calculatePlayerScore({
           playerName: player.name,
           playerTag: player.player_tag,
           donationsTotal: donations,
           allowLegacyNameFallback: playerNameCounts.get(normalizedName) === 1,
-          events,
+          events: playerEvents,
           clanGamesPoints: games,
         });
 
