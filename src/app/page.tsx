@@ -68,7 +68,7 @@ export default async function HomePage() {
             <div className="gh-v2-eyebrow"><span className="gh-v2-live-dot" /> BEM-VINDO, GUERREIRO <span>•</span> {data.monthLabel.toUpperCase()}</div>
             <h1>BEM-VINDO,<br/><em>INGLÓRIO</em></h1>
             <p>O desempenho do Ghost Hunt em um só lugar.</p>
-            <a className="gh-v2-hero-link" href="/Inglorious/ranking">ACOMPANHAR RANKING <b>↗</b></a>
+            <a className="gh-v2-hero-link" href="https://ghosthunt.com.br/" aria-label="Trocar de clã">TROCAR CLÃ <b>↗</b></a>
           </div>
           <div className="gh-v2-season-stamp"><small>TEMPORADA</small><strong>{data.monthLabel.split(" de ")[0].slice(0,3).toUpperCase()}</strong><span>{data.monthLabel.split(" de ")[1] ?? ""}</span></div>
         </section>
