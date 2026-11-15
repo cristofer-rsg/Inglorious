@@ -265,7 +265,7 @@ async function getDashboardDataUncached(monthOverride?: string): Promise<Dashboa
           role: player.role,
         };
       })
-      .filter((row) => row.active || row.total > 0)
+      .filter((row) => row.active)
       .sort((a, b) =>
         b.total - a.total
         || b.wars - a.wars
