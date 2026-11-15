@@ -2,7 +2,6 @@ import Link from "next/link";
 import AdminNavigation from "@/components/admin-navigation";
 import AdminLoginForm from "./login-form";
 import { getAdminSession } from "@/lib/auth/admin-session";
-import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -11,75 +10,27 @@ type SearchParams = {
   error?: string;
 };
 
-type AdminOverview = {
-  activePlayers: number | null;
-  lastRosterSync: string | null;
-  error: boolean;
-};
-
-type AnalyticsSummary = {
-  total_views: number;
-  unique_visitors: number;
-  top_pages: Array<{ page_path: string; views: number }>;
-  device_breakdown: Array<{ device_type: string; views: number }>;
-};
-
-async function getAdminOverview(): Promise<AdminOverview> {
-  try {
-    const supabase = createSupabaseAdmin();
-    const [players, sync] = await Promise.all([
-      supabase.from("players").select("name", { count: "exact", head: true }).eq("active", true),
-      supabase.from("clan_sync_state").select("synced_at").order("synced_at", { ascending: false }).limit(1).maybeSingle(),
-    ]);
-
-    return {
-      activePlayers: players.error ? null : players.count ?? 0,
-      lastRosterSync: sync.error ? null : sync.data?.synced_at ?? null,
-      error: Boolean(players.error || sync.error),
-    };
-  } catch {
-    return { activePlayers: null, lastRosterSync: null, error: true };
-  }
-}
-
-async function getAdminAnalytics(): Promise<AnalyticsSummary | null> {
-  try {
-    const supabase = createSupabaseAdmin();
-    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const { data, error } = await supabase.rpc("get_inglorious_analytics_summary", { p_since: since });
-    if (error || !data || typeof data !== "object") return null;
-    return data as AnalyticsSummary;
-  } catch {
-    return null;
-  }
-}
-
-function formatSyncDate(value: string | null) {
-  if (!value) return "Ainda não executada";
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: process.env.APP_TIME_ZONE || "America/Sao_Paulo",
-  }).format(new Date(value));
-}
-
 export default async function AdminPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
   const [session, params] = await Promise.all([getAdminSession(), searchParams]);
-  const [overview, analytics] = session
-    ? await Promise.all([getAdminOverview(), getAdminAnalytics()])
-    : [null, null];
 
   return (
     <main className="app-shell">
-      <header className="topbar gh-topbar">
-        <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>ADMIN CONTROL</small></span></a>
-        {session ? <form className="admin-topbar-logout" action="/inglorious/api/admin/logout" method="post"><button type="submit">Sair</button></form> : <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>}
+      <header className="topbar gh-topbar admin-header">
+        <a className="brand" href="/Inglorious/">
+          <span className="brand-mark">I</span>
+          <span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN MANAGEMENT</small></span>
+        </a>
+        {session ? (
+          <form className="admin-topbar-logout" action="/inglorious/api/admin/logout" method="post">
+            <button type="submit">Sair</button>
+          </form>
+        ) : <span className="status"><span className="status-dot online" />ÁREA RESTRITA</span>}
       </header>
-      {session ? <AdminNavigation /> : null}
+      {session ? <AdminNavigation current="/admin" /> : null}
       {!session ? (
         <section className="admin-content auth-card admin-panel">
           <span className="eyebrow">ACESSO PROTEGIDO</span>
@@ -92,49 +43,36 @@ export default async function AdminPage({
         </section>
       ) : (
         <section className="admin-content admin-panel admin-panel-wide">
-          <span className="eyebrow">SESSÃO AUTENTICADA</span>
-          <h1>Painel <em>administrativo</em></h1>
-          <p>Bem-vindo, {session.playerName}. A sessão expira automaticamente em 12 horas.</p>
-
+          <span className="auth-kicker">SESSÃO SEGURA • ADMINISTRADOR</span>
+          <h1>Central de <em>administração</em></h1>
+          <p>Bem-vindo, {session.playerName}. Escolha uma ferramenta para consultar os registros do Inglorious.</p>
           {params.success ? <div className="admin-success" role="status">{params.success}</div> : null}
           {params.error ? <div className="admin-error" role="alert">{params.error}</div> : null}
-
-          <div className="admin-section-heading" id="overview"><h2>Visão geral do clã</h2><span>CONSULTA SOMENTE LEITURA</span></div>
           <div className="admin-tools">
-            <a className="admin-tool-card" href="#analytics"><span>▥</span><div><b>Analytics do aplicativo</b><small>Acessos, visitantes e páginas mais consultadas</small></div></a>
-            <a className="admin-tool-card" href="/Inglorious/history"><span>▤</span><div><b>Histórico mensal</b><small>Classificações e eventos arquivados</small></div></a>
+            <Link className="admin-tool-card" href="/admin/analytics">
+              <span>▥</span><div><b>Analytics do aplicativo</b><small>Visitantes, visualizações e páginas mais acessadas</small></div>
+            </Link>
           </div>
-          <div className="admin-cards admin-overview-grid">
-            <article><strong>Jogadores ativos</strong><b>{overview?.activePlayers ?? "—"}</b><span>Cadastro atual de jogadores marcados como ativos.</span></article>
-            <article><strong>Última sincronização</strong><b className="admin-sync-value">{formatSyncDate(overview?.lastRosterSync ?? null)}</b><span>Último registro de sincronização do roster.</span></article>
+          <section className="export-center" aria-labelledby="export-title">
+            <div className="export-heading">
+              <span className="auth-kicker">RELATÓRIOS E ARQUIVOS</span>
+              <h2 id="export-title">Central de <em>exportações</em></h2>
+              <p>Baixe uma cópia dos dados para conferência, arquivo ou análise externa.</p>
+            </div>
+            <div className="export-options">
+              <a className="export-option export-csv" href="/Inglorious/api/admin/export">
+                <span className="export-file-icon">CSV</span>
+                <span className="export-option-copy"><b>Histórico completo em CSV</b><small>Registros automáticos preservados no Inglorious, com jogadores, categorias, atividades e pontuação.</small><small className="export-meta">.CSV · Compatível com planilhas e sistemas</small></span>
+                <strong aria-hidden="true">↓</strong>
+              </a>
+            </div>
+            <p className="export-footnote">O arquivo é gerado no momento da solicitação e exige sessão administrativa válida.</p>
+          </section>
+          <div className="admin-notice">
+            <b>Recursos preservados</b>
+            <span>Cadastros e lançamentos são recebidos pelas sincronizações automáticas do clã. A edição manual permanece desativada.</span>
           </div>
-          {overview?.error ? <div className="connection-alert"><strong>Leitura parcial</strong><span>Não foi possível consultar todos os indicadores. Verifique a conexão com o Supabase.</span></div> : null}
-
-          <div className="admin-section-heading" id="analytics"><h2>Análise de acessos</h2><span>ÚLTIMOS 30 DIAS</span></div>
-          {analytics ? (
-            <>
-              <div className="admin-cards admin-overview-grid">
-                <article><strong>Visualizações</strong><b>{new Intl.NumberFormat("pt-BR").format(analytics.total_views)}</b><span>Páginas abertas nos últimos 30 dias.</span></article>
-                <article><strong>Visitantes distintos</strong><b>{new Intl.NumberFormat("pt-BR").format(analytics.unique_visitors)}</b><span>Identificadores anônimos por hash protegido.</span></article>
-              </div>
-              <div className="admin-analytics-grid">
-                <article><h3>Páginas mais acessadas</h3>
-                  {analytics.top_pages.length > 0 ? analytics.top_pages.map((page) => <div className="admin-analytics-row" key={page.page_path}><span>{page.page_path}</span><strong>{new Intl.NumberFormat("pt-BR").format(page.views)}</strong></div>) : <p>Sem acessos registrados no período.</p>}
-                </article>
-                <article><h3>Acessos por dispositivo</h3>
-                  {analytics.device_breakdown.length > 0 ? analytics.device_breakdown.map((device) => <div className="admin-analytics-row" key={device.device_type}><span>{device.device_type}</span><strong>{new Intl.NumberFormat("pt-BR").format(device.views)}</strong></div>) : <p>Sem dados de dispositivo no período.</p>}
-                </article>
-              </div>
-              <p className="admin-help">O sistema registra caminho da página, domínio de referência e tipo de dispositivo. O endereço IP não é armazenado; o identificador do visitante é gerado por hash HMAC.</p>
-            </>
-          ) : <div className="admin-empty">A análise de acessos ficará disponível após a configuração do segredo de hash e o primeiro acesso ao aplicativo.</div>}
-          <section className="admin-export-center" id="exports"><span className="eyebrow">RELATÓRIOS E ARQUIVOS</span><h2>Central de exportações</h2><p>Exporte os registros automáticos preservados no Inglorious. A exportação não altera os dados do aplicativo.</p><div className="admin-export-actions"><a href="/Inglorious/api/admin/export">↓ Exportar histórico completo (CSV)</a></div></section>
-
-          <div className="admin-section-heading" id="automations"><h2>Automações</h2><span>AGUARDANDO ATIVAÇÃO</span></div>
-          <div className="admin-cards">
-            <article><strong>Sincronizações automáticas</strong><span>As sete rotas de sincronização estão implementadas e protegidas. Os agendamentos permanecem desativados até a etapa de publicação autorizada.</span></article>
-            <article><strong>Dados automáticos</strong><span>Guerras, Liga, Raide, doações, Jogos do Clã, Capital e roster são tratados pelas rotas automáticas, sem lançamentos manuais duplicados.</span></article>
-          </div>
+          <Link className="back-link" href="/Inglorious/">← Abrir ranking público</Link>
         </section>
       )}
       <footer className="footer"><span>INGLORIOUS · ADMIN</span><Link href="/Inglorious/">VOLTAR AO SITE</Link></footer>
