@@ -9,10 +9,12 @@ type PerformanceFiltersProps = {
   selectedEvent: string;
   selectedSituation: string;
   order: string;
+  selectedTroops: string;
+  selectedCoins: string;
   monthLabels: Record<string, string>;
 };
 
-export default function PerformanceFilters({ months, selectedMonth, search, selectedEvent, selectedSituation, order, monthLabels }: PerformanceFiltersProps) {
+export default function PerformanceFilters({ months, selectedMonth, search, selectedEvent, selectedSituation, order, selectedTroops, selectedCoins, monthLabels }: PerformanceFiltersProps) {
   const [event, setEvent] = useState(selectedEvent);
   const [situation, setSituation] = useState(selectedSituation);
   function handleEventChange(value: string) { setEvent(value); setSituation(""); }
@@ -37,6 +39,18 @@ export default function PerformanceFilters({ months, selectedMonth, search, sele
         <option value="attacked">Com ataques</option>
         <option value="no-attack">Sem ataques</option>
         {event !== "raid" && <option value="no-data">Não Participou</option>}
+      </select>
+      <label htmlFor="troops">Doações</label>
+      <select id="troops" name="troops" defaultValue={selectedTroops}>
+        <option value="all">Todas</option>
+        <option value="with">Com doações</option>
+        <option value="without">Sem doações</option>
+      </select>
+      <label htmlFor="coins">Moedas da Capital</label>
+      <select id="coins" name="coins" defaultValue={selectedCoins}>
+        <option value="all">Todas</option>
+        <option value="with">Com moedas</option>
+        <option value="without">Sem moedas</option>
       </select>
       <label htmlFor="order">Ordenação</label>
       <select id="order" name="order" defaultValue={order}>
