@@ -33,7 +33,6 @@ function buildRemovalUrl(key: string, values: Record<string, string>) {
 
 export default function PerformanceFilters({
   months,
-  months,
   monthKey,
   monthLabel,
   query,
@@ -130,9 +129,9 @@ export default function PerformanceFilters({
   };
   const chips: FilterChip[] = [
     { key: "month", label: `Mês: ${currentMonthLabel}` },
-    ...(query.trim() ? [{ key: "q", label: `Jogador: ${query.trim()}` }] : []),
-    ...(event ? [{ key: "event", label: event === "all" ? "Eventos: Todos" : `Evento: ${eventLabels[event]}` }] : []),
-    ...(situation ? [{ key: "situation", label: situation === "all" ? "Situação: Todas" : `Situação: ${situationLabels[situation]}` }] : []),
+    ...(initialQuery.trim() ? [{ key: "q", label: `Jogador: ${initialQuery.trim()}` }] : []),
+    ...(initialEvent ? [{ key: "event", label: initialEvent === "all" ? "Eventos: Todos" : `Evento: ${eventLabels[initialEvent]}` }] : []),
+    ...(initialSituation ? [{ key: "situation", label: initialSituation === "all" ? "Situação: Todas" : `Situação: ${situationLabels[initialSituation]}` }] : []),
     ...(initialTroops ? [{ key: "troops", label: initialTroops === "all" ? "Doações: Todas" : initialTroops === "with" ? "Doações: Com doações" : "Doações: Sem doações" }] : []),
     ...(initialCoins ? [{ key: "coins", label: initialCoins === "all" ? "Moedas: Todas" : initialCoins === "with" ? "Moedas: Com moedas" : "Moedas: Sem moedas" }] : []),
     ...(order === "asc" ? [{ key: "order", label: "Ordenação: Menor para maior" }] : []),
