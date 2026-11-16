@@ -1439,3 +1439,5 @@ body{
 .ranking-penalties-unavailable{margin:9px 0;color:#bda8a1;font-size:10px;line-height:1.5}
 .ranking-penalties-total{padding-top:8px;border-top:1px solid #ffffff12;color:#d8c5bf;font-size:10px;font-weight:700}
 @media(max-width:560px){.ranking-penalties{padding:9px}.ranking-penalties-list li{gap:8px;padding:7px}}
+
+.performance-event-badges{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;min-width:0}

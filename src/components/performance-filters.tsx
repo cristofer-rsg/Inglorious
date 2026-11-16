@@ -1,49 +1,305 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import "./performance-filters.css";
 
-type PerformanceFiltersProps = {
+type Props = {
   months: string[];
-  selectedMonth: string;
-  search: string;
-  selectedEvent: string;
-  selectedSituation: string;
-  order: string;
-  monthLabels: Record<string, string>;
+  monthKey?: string;
+  monthLabel?: string;
+  query?: string;
+  event?: string;
+  situation?: string;
+  order: "asc" | "desc";
+  selectedTroops?: string;
+  selectedCoins?: string;
+  selectedMonth?: string;
+  search?: string;
+  selectedEvent?: string;
+  selectedSituation?: string;
+  monthLabels?: Record<string, string>;
 };
 
-export default function PerformanceFilters({ months, selectedMonth, search, selectedEvent, selectedSituation, order, monthLabels }: PerformanceFiltersProps) {
-  const [event, setEvent] = useState(selectedEvent);
-  const [situation, setSituation] = useState(selectedSituation);
-  function handleEventChange(value: string) { setEvent(value); setSituation(""); }
+type FilterChip = { key: string; label: string };
+
+function buildRemovalUrl(key: string, values: Record<string, string>) {
+  const params = new URLSearchParams();
+  for (const [name, value] of Object.entries(values)) {
+    if (name !== key && value) params.set(name, value);
+  }
+  const queryString = params.toString();
+  return queryString ? `/performance?${queryString}` : "/performance";
+}
+
+export default function PerformanceFilters({
+  months,
+  monthKey,
+  monthLabel,
+  query,
+  event,
+  situation,
+  order,
+  selectedTroops,
+  selectedCoins,
+  selectedMonth: adminMonth,
+  search,
+  selectedEvent: adminEvent,
+  selectedSituation: adminSituation,
+  monthLabels,
+}: Props) {
+  const adminMode = adminMonth !== undefined;
+  const initialMonth = monthKey ?? adminMonth ?? months[0] ?? "";
+  const initialQuery = query ?? search ?? "";
+  const initialEvent = event ?? adminEvent ?? "";
+  const initialSituation = situation ?? adminSituation ?? "";
+  const initialTroops = selectedTroops ?? "";
+  const initialCoins = selectedCoins ?? "";
+  const currentMonthLabel = monthLabel ?? monthLabels?.[initialMonth] ?? initialMonth;
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  const [selectedQuery, setSelectedQuery] = useState(initialQuery);
+  const [selectedEvent, setSelectedEvent] = useState(initialEvent);
+  const [selectedSituation, setSelectedSituation] = useState(initialSituation);
+  const [selectedTroopsValue, setSelectedTroopsValue] = useState(initialTroops);
+  const [selectedCoinsValue, setSelectedCoinsValue] = useState(initialCoins);
+  const [selectedOrder, setSelectedOrder] = useState(order);
+
+  useEffect(() => {
+    setSelectedMonth(initialMonth);
+    setSelectedQuery(initialQuery);
+    setSelectedEvent(initialEvent);
+    setSelectedSituation(initialSituation);
+    setSelectedTroopsValue(initialTroops);
+    setSelectedCoinsValue(initialCoins);
+    setSelectedOrder(order);
+  }, [initialMonth, initialQuery, initialEvent, initialSituation, initialTroops, initialCoins, order]);
+
+  function changeEvent(value: string) {
+    const nextValue = selectedEvent === value ? "" : value;
+    setSelectedEvent(nextValue);
+    setSelectedSituation(nextValue && nextValue !== "all" ? "all" : "");
+    if (nextValue) {
+      setSelectedTroopsValue("");
+      setSelectedCoinsValue("");
+    }
+  }
+
+  function changeSituation(value: string) {
+    setSelectedSituation(selectedSituation === value ? "" : value);
+  }
+
+  function changeTroops(value: string) {
+    const nextValue = selectedTroopsValue === value ? "" : value;
+    setSelectedTroopsValue(nextValue);
+    if (nextValue) {
+      setSelectedEvent("");
+      setSelectedSituation("");
+      setSelectedCoinsValue("");
+    }
+  }
+
+  function changeCoins(value: string) {
+    const nextValue = selectedCoinsValue === value ? "" : value;
+    setSelectedCoinsValue(nextValue);
+    if (nextValue) {
+      setSelectedEvent("");
+      setSelectedSituation("");
+      setSelectedTroopsValue("");
+    }
+  }
+
+  const values = {
+    month: initialMonth,
+    q: initialQuery.trim(),
+    event: initialEvent,
+    situation: initialSituation,
+    troops: initialTroops,
+    coins: initialCoins,
+    order: order === "desc" ? "" : order,
+  };
+
+  const eventLabels: Record<string, string> = {
+    war: "Última Guerra",
+    league: "Última batalha da Liga",
+    raid: "Última Raide",
+  };
+  const situationLabels: Record<string, string> = {
+    attacked: "Realizou ataques",
+    "no-attack": "Não realizou ataques",
+    "no-data": "Não participou",
+  };
+  const chips: FilterChip[] = [
+    { key: "month", label: `Mês: ${currentMonthLabel}` },
+    ...(initialQuery.trim() ? [{ key: "q", label: `Jogador: ${initialQuery.trim()}` }] : []),
+    ...(initialEvent ? [{ key: "event", label: initialEvent === "all" ? "Eventos: Todos" : `Evento: ${eventLabels[initialEvent]}` }] : []),
+    ...(initialSituation ? [{ key: "situation", label: initialSituation === "all" ? "Situação: Todas" : `Situação: ${situationLabels[initialSituation]}` }] : []),
+    ...(initialTroops ? [{ key: "troops", label: initialTroops === "all" ? "Doações: Todas" : initialTroops === "with" ? "Doações: Com doações" : "Doações: Sem doações" }] : []),
+    ...(initialCoins ? [{ key: "coins", label: initialCoins === "all" ? "Moedas: Todas" : initialCoins === "with" ? "Moedas: Com moedas" : "Moedas: Sem moedas" }] : []),
+    ...(order === "asc" ? [{ key: "order", label: "Ordenação: Menor para maior" }] : []),
+  ];
+
+  if (adminMode) {
+    return (
+      <form className="performance-filters" action="/admin/performance" method="get">
+        <label>
+          <span>Mês de referência</span>
+          <select name="month" value={selectedMonth} onChange={(change) => setSelectedMonth(change.target.value)}>
+            {months.map((month) => <option key={month} value={month}>{monthLabels?.[month] ?? month}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Buscar jogador</span>
+          <input name="q" type="search" maxLength={80} placeholder="Nome ou tag do jogador" value={selectedQuery} onChange={(change) => setSelectedQuery(change.target.value)} />
+        </label>
+        <label>
+          <span>Evento recente</span>
+          <select name="event" value={selectedEvent} onChange={(change) => { setSelectedEvent(change.target.value); setSelectedSituation(""); }}>
+            <option value="">Todos os indicadores</option>
+            <option value="war">Última Guerra</option>
+            <option value="league">Última batalha da Liga</option>
+            <option value="raid">Última Raide</option>
+          </select>
+        </label>
+        <label>
+          <span>Situação do evento</span>
+          <select name="situation" value={selectedSituation} onChange={(change) => setSelectedSituation(change.target.value)} disabled={!selectedEvent}>
+            <option value="">Todas as situações</option>
+            <option value="attacked">Realizou ataques</option>
+            <option value="no-attack">Não realizou ataques</option>
+            {selectedEvent !== "raid" && <option value="no-data">Não participou</option>}
+          </select>
+        </label>
+        <label>
+          <span>Ordenação</span>
+          <select name="order" value={selectedOrder} onChange={(change) => setSelectedOrder(change.target.value as "asc" | "desc")}>
+            <option value="desc">Maior para menor</option>
+            <option value="asc">Menor para maior</option>
+          </select>
+        </label>
+        <button type="submit">Aplicar filtros</button>
+      </form>
+    );
+  }
+
   return (
-    <form className="history-filter performance-filter" action="/performance" method="get">
-      <label htmlFor="month">Mês de referência</label>
-      <select id="month" name="month" defaultValue={selectedMonth}>
-        {months.map((month) => <option value={month} key={month}>{monthLabels[month] ?? month}</option>)}
-      </select>
-      <label htmlFor="q">Buscar jogador</label>
-      <input id="q" name="q" type="search" placeholder="Nome ou tag" defaultValue={search} />
-      <label htmlFor="event">Evento recente</label>
-      <select id="event" name="event" value={event} onChange={(change) => handleEventChange(change.target.value)}>
-        <option value="">Classificação geral</option>
-        <option value="war">Última Guerra</option>
-        <option value="league">Última batalha da Liga</option>
-        <option value="raid">Última Raide</option>
-      </select>
-      <label htmlFor="situation">Situação</label>
-      <select id="situation" name="situation" value={situation} onChange={(change) => setSituation(change.target.value)} disabled={!event}>
-        <option value="">Todas as situações</option>
-        <option value="attacked">Com ataques</option>
-        <option value="no-attack">Sem ataques</option>
-        {event !== "raid" && <option value="no-data">Não Participou</option>}
-      </select>
-      <label htmlFor="order">Ordenação</label>
-      <select id="order" name="order" defaultValue={order}>
-        <option value="desc">Maior para menor</option>
-        <option value="asc">Menor para maior</option>
-      </select>
-      <button type="submit">Consultar</button>
-    </form>
+    <section className="performance-search">
+      <form className="performance-search-form" action="/performance" method="get">
+        <div className="performance-filter-heading">
+          <div>
+            <span className="performance-filter-eyebrow">PESQUISA AVANÇADA</span>
+            <h2>Filtros de desempenho</h2>
+            <p>Escolha uma categoria por vez para consultar os resultados.</p>
+          </div>
+          <span className="performance-filter-count">{chips.length} {chips.length === 1 ? "critério" : "critérios"}</span>
+        </div>
+
+        <div className="performance-filter-group">
+          <h3><span aria-hidden="true">▦</span> Período</h3>
+          <div className="performance-filter-grid">
+            <label htmlFor="performance-month">
+              <span>Mês de referência</span>
+              <select id="performance-month" name="month" value={selectedMonth} onChange={(change) => setSelectedMonth(change.target.value)}>
+                {months.map((month) => (
+                  <option value={month} key={month}>
+                    {new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "America/Sao_Paulo" }).format(new Date(`${month}-15T12:00:00-03:00`))}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div className="performance-filter-group">
+          <h3><span aria-hidden="true">♙</span> Jogadores</h3>
+          <div className="performance-filter-grid">
+            <label htmlFor="performance-player">
+              <span>Buscar jogador</span>
+              <input id="performance-player" name="q" type="search" maxLength={80} placeholder="Nome ou tag do jogador" value={selectedQuery} onChange={(change) => setSelectedQuery(change.target.value)} />
+            </label>
+          </div>
+        </div>
+        <div className="performance-filter-group">
+          <h3><span aria-hidden="true">⚔</span> Eventos</h3>
+          <input type="hidden" name="event" value={selectedEvent} disabled={!selectedEvent} />
+          <div className="performance-filter-grid two-columns">
+            <fieldset className="performance-choice-group">
+              <legend>Evento recente</legend>
+              {[
+                { value: "all", label: "Todas" },
+                { value: "war", label: "Última Guerra" },
+                { value: "league", label: "Última batalha da Liga" },
+                { value: "raid", label: "Última Raide" },
+              ].map((option) => (
+                <label key={option.value}><input type="radio" name="event-choice" value={option.value} checked={selectedEvent === option.value} onClick={() => changeEvent(option.value)} /> <span>{option.label}</span></label>
+              ))}
+            </fieldset>
+            <fieldset className="performance-choice-group">
+              <legend>Situação do evento</legend>
+              <input type="hidden" name="situation" value={selectedSituation} disabled={!selectedSituation || !selectedEvent || selectedEvent === "all"} />
+              {[
+                { value: "all", label: "Todas" },
+                { value: "attacked", label: selectedEvent === "raid" ? "Com ataques" : "Realizou ataques" },
+                { value: "no-attack", label: selectedEvent === "raid" ? "Sem ataques" : "Não realizou ataques" },
+                ...(selectedEvent !== "raid" ? [{ value: "no-data", label: "Não participou" }] : []),
+              ].map((option) => (
+                <label key={option.value}><input type="radio" name="situation-choice" value={option.value} checked={selectedSituation === option.value} onClick={() => changeSituation(option.value)} disabled={!selectedEvent || selectedEvent === "all"} /> <span>{option.label}</span></label>
+              ))}
+            </fieldset>
+          </div>
+        </div>
+
+        <div className="performance-filter-group">
+          <h3><span aria-hidden="true">▥</span> Participação e contribuições</h3>
+          <div className="performance-filter-grid two-columns">
+            <fieldset className="performance-choice-group">
+              <legend>Doações</legend>
+              <input type="hidden" name="troops" value={selectedTroopsValue} disabled={!selectedTroopsValue} />
+              <label><input type="radio" name="troops-choice" value="all" checked={selectedTroopsValue === "all"} onClick={() => changeTroops("all")} /> <span>Todas</span></label>
+              <label><input type="radio" name="troops-choice" value="with" checked={selectedTroopsValue === "with"} onClick={() => changeTroops("with")} /> <span>Com doações</span></label>
+              <label><input type="radio" name="troops-choice" value="without" checked={selectedTroopsValue === "without"} onClick={() => changeTroops("without")} /> <span>Sem doações</span></label>
+            </fieldset>
+            <fieldset className="performance-choice-group">
+              <legend>Moedas da Capital</legend>
+              <input type="hidden" name="coins" value={selectedCoinsValue} disabled={!selectedCoinsValue} />
+              <label><input type="radio" name="coins-choice" value="all" checked={selectedCoinsValue === "all"} onClick={() => changeCoins("all")} /> <span>Todas</span></label>
+              <label><input type="radio" name="coins-choice" value="with" checked={selectedCoinsValue === "with"} onClick={() => changeCoins("with")} /> <span>Com moedas</span></label>
+              <label><input type="radio" name="coins-choice" value="without" checked={selectedCoinsValue === "without"} onClick={() => changeCoins("without")} /> <span>Sem moedas</span></label>
+            </fieldset>
+          </div>
+        </div>
+
+        <div className="performance-filter-group">
+          <h3><span aria-hidden="true">↕</span> Ordenação</h3>
+          <label className="performance-sort-field" htmlFor="performance-order">
+            <span>Ordenar resultados por pontuação</span>
+            <input type="hidden" name="order" value="asc" disabled={selectedOrder !== "asc"} />
+            <select id="performance-order" value={selectedOrder} onChange={(change) => setSelectedOrder(change.target.value as "asc" | "desc")}>
+              <option value="desc">Maior para menor</option>
+              <option value="asc">Menor para maior</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="performance-filter-actions">
+          <a className="performance-clear-button" href="/performance">Limpar pesquisa</a>
+          <button className="performance-apply-button" type="submit">Aplicar filtros</button>
+        </div>
+      </form>
+
+      {chips.length > 0 && (
+        <div className="performance-applied">
+          <div className="performance-applied-heading">
+            <strong>Critérios da consulta ({chips.length})</strong>
+            <a href="/performance">Remover todos</a>
+          </div>
+          <div className="performance-applied-chips">
+            {chips.map((chip) => (
+              <a key={chip.key} href={buildRemovalUrl(chip.key, values)} aria-label={`Remover filtro: ${chip.label}`}>
+                {chip.label}<span aria-hidden="true">×</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

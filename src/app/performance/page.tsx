@@ -1,33 +1,20 @@
-import "server-only";
-
+import { getPerformanceData } from "@/lib/ghost-hunt/performance";
 import SiteNav from "@/components/site-nav";
 import PerformanceFilters from "@/components/performance-filters";
-import { APP_CONFIG } from "@/lib/config";
-import { getPerformanceData, type PerformanceRow } from "@/lib/ghost-hunt/performance";
 
 export const dynamic = "force-dynamic";
-
-type SearchParams = {
-  month?: string;
-  q?: string;
-  event?: string;
-  situation?: string;
-  order?: string;
-};
-
-const numberFormatter = new Intl.NumberFormat("pt-BR");
+type SearchValue = string | string[] | undefined;
+type Props = { searchParams: Promise<{ month?: SearchValue; q?: SearchValue; order?: SearchValue; event?: SearchValue; situation?: SearchValue; troops?: SearchValue; coins?: SearchValue }> };
+function firstParam(value: SearchValue): string { return Array.isArray(value) ? value[0] ?? "" : value ?? ""; }
+function fmt(value: number) { return new Intl.NumberFormat("pt-BR").format(value); }
 const metrics = [
-  { key: "wars", label: "Guerras", unit: "Ataques", points: "warsPoints", percent: "warsPercent", icon: "⚔" },
-  { key: "league", label: "Liga", unit: "Ataques", points: "leaguePoints", percent: "leaguePercent", icon: "🏆" },
-  { key: "raid", label: "Raide", unit: "Ataques", points: "raidPoints", percent: "raidPercent", icon: "🛡" },
-  { key: "donations", label: "Doações", unit: "Tropas Doadas", points: "donationsPoints", percent: "donationsPercent", icon: "🤝" },
-  { key: "games", label: "Jogos do Clã", unit: "Pontos Obtidos", points: "gamesPoints", percent: "gamesPercent", icon: "🎮" },
-  { key: "capital", label: "Capital", unit: "Moedas Doadas", points: "capitalPoints", percent: "capitalPercent", icon: "🏰" },
+  { key: "wars", label: "Guerras", max: 200, unit: "Ataques", pointsKey: "warsPoints", percentKey: "warsPercent" },
+  { key: "league", label: "Liga", max: 200, unit: "Ataques", pointsKey: "leaguePoints", percentKey: "leaguePercent" },
+  { key: "raid", label: "Raide", max: 150, unit: "Ataques", pointsKey: "raidPoints", percentKey: "raidPercent" },
+  { key: "donations", label: "Doações", max: 150, unit: "Tropas Doadas", pointsKey: "donationsPoints", percentKey: "donationsPercent" },
+  { key: "games", label: "Jogos do Clã", max: 100, unit: "Pontos Obtidos", pointsKey: "gamesPoints", percentKey: "gamesPercent" },
+  { key: "capital", label: "Capital", max: 200, unit: "Moedas Doadas", pointsKey: "capitalPoints", percentKey: "capitalPercent" },
 ] as const;
-
-type MetricKey = typeof metrics[number]["key"];
-type EventKey = "war" | "league" | "raid";
-
 function roleLabel(role: string) {
   const normalized = role.trim().toLocaleLowerCase("pt-BR").replaceAll("-", "_").replaceAll(" ", "_");
   if (normalized === "leader") return "LÍDER";
@@ -37,205 +24,156 @@ function roleLabel(role: string) {
   return role.toLocaleUpperCase("pt-BR");
 }
 
-function number(value: number) {
-  return numberFormatter.format(value);
-}
-
-function monthKey() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: APP_CONFIG.timeZone,
-    year: "numeric",
-    month: "2-digit",
-  }).formatToParts(new Date());
-  return `${parts.find((part) => part.type === "year")?.value}-${parts.find((part) => part.type === "month")?.value}`;
-}
-
-function monthLabel(value: string) {
-  const label = new Intl.DateTimeFormat("pt-BR", {
-    month: "long",
-    year: "numeric",
-    timeZone: APP_CONFIG.timeZone,
-  }).format(new Date(`${value}-15T12:00:00Z`));
-  return label.charAt(0).toLocaleUpperCase("pt-BR") + label.slice(1);
-}
-
-function eventAttacks(row: PerformanceRow, event: EventKey): number | null {
-  if (event === "war") return row.lastWarAttacks;
-  if (event === "league") return row.lastLeagueAttacks;
-  return row.lastRaidAttacks ?? 0;
-}
-
-function eventLabel(event: EventKey) {
-  if (event === "war") return "Última Guerra";
-  if (event === "league") return "Última batalha da Liga";
-  return "Última Raide";
-}
-
-export default async function PerformancePage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
+export default async function PerformancePage({ searchParams }: Props) {
   const params = await searchParams;
-  const currentMonth = monthKey();
-  const requestedMonth = typeof params.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(params.month)
-    ? params.month
-    : "";
-  const search = typeof params.q === "string" ? params.q.trim().slice(0, 80) : "";
-  const event = ["war", "league", "raid"].includes(params.event ?? "") ? params.event as EventKey : "";
-  const allowedSituations = event === "raid" ? ["attacked", "no-attack"] : ["attacked", "no-attack", "no-data"];
-  const situation = event && allowedSituations.includes(params.situation ?? "") ? params.situation ?? "" : "";
-  const order = params.order === "asc" ? "asc" : "desc";
-
-  const data = await getPerformanceData(requestedMonth || undefined, true);
-  const selectedMonth = data.months.includes(requestedMonth) ? requestedMonth : data.monthKey || currentMonth;
-  const allRows = data.rows;
-  const activeRows = allRows.filter((row) => row.active);
-  const leadershipRows = activeRows.map((row) => ({
-    ...row,
-    roleLabel: row.role ? roleLabel(row.role) : "",
-  })).sort((a, b) =>
-    b.totalPoints - a.totalPoints
+  const monthParam = firstParam(params.month);
+  const queryParam = firstParam(params.q).trim().slice(0, 80);
+  const eventParam = firstParam(params.event);
+  const situationParam = firstParam(params.situation);
+  const troopsParam = firstParam(params.troops);
+  const coinsParam = firstParam(params.coins);
+  const orderParam = firstParam(params.order);
+  const data = await getPerformanceData(monthParam || undefined, true);
+  const activeRows = data.rows.filter(row => row.active);
+  const searchTerm = queryParam.toLocaleLowerCase("pt-BR");
+  const sortOrder = orderParam === "asc" ? "asc" : "desc";
+  const rankedRows = [...activeRows].map(row => ({ ...row, roleLabel: row.role ? roleLabel(row.role) : "" })).sort((a, b) =>
+    (sortOrder === "asc" ? a.totalPoints - b.totalPoints : b.totalPoints - a.totalPoints)
     || b.warsPoints - a.warsPoints
     || b.leaguePoints - a.leaguePoints
     || b.raidPoints - a.raidPoints
     || b.capitalPoints - a.capitalPoints
     || b.donationsPoints - a.donationsPoints
     || b.gamesPoints - a.gamesPoints
-    || a.player.localeCompare(b.player, "pt-BR"),
+    || a.player.localeCompare(b.player, "pt-BR")
   ).map((row, index) => ({ ...row, position: index + 1 }));
-
-  const eventRows = event
-    ? [...leadershipRows].sort((a, b) => {
-      const left = eventAttacks(a, event);
-      const right = eventAttacks(b, event);
-      if (left === null) return right === null ? a.player.localeCompare(b.player, "pt-BR") : 1;
-      if (right === null) return -1;
-      return (order === "asc" ? left - right : right - left) || a.player.localeCompare(b.player, "pt-BR");
-    })
-    : leadershipRows;
-
-  const filteredBySituation = eventRows.filter((row) => {
-    if (!event || !situation) return true;
-    const attacks = eventAttacks(row, event);
-    if (situation === "attacked") return attacks !== null && attacks > 0;
-    if (situation === "no-attack") return attacks === 0;
-    return attacks === null;
+  const eventCategoryActive = ["all", "war", "league", "raid"].includes(eventParam);
+  const eventFilter = eventCategoryActive && eventParam !== "all" ? eventParam : "";
+  const hasEventFilter = eventFilter !== "";
+  const allowedSituations = eventFilter === "raid" ? ["all", "attacked", "no-attack"] : ["all", "attacked", "no-attack", "no-data"];
+  const situationFilter = hasEventFilter && allowedSituations.includes(situationParam) ? situationParam : "";
+  const troopsCategoryActive = !eventCategoryActive && ["all", "with", "without"].includes(troopsParam);
+  const troopsFilter = troopsCategoryActive ? troopsParam : "all";
+  const coinsCategoryActive = !eventCategoryActive && !troopsCategoryActive && ["all", "with", "without"].includes(coinsParam);
+  const coinsFilter = coinsCategoryActive ? coinsParam : "all";
+  const hasAppliedFilters = Boolean(queryParam || eventCategoryActive || situationFilter || troopsCategoryActive || coinsCategoryActive || orderParam === "asc" || (monthParam && monthParam !== data.months[0]));
+  const showGeneralPerformance = !hasEventFilter && !troopsCategoryActive && !coinsCategoryActive;
+  // Liga: a fonte registra apenas os membros relacionados à batalha; ausência significa não participação.
+  // Raide: não há inscrição; ausência de ataque registrado equivale a zero ataques.
+  const attackValue = (row: (typeof rankedRows)[number]) =>
+    eventFilter === "league" ? row.lastLeagueAttacks : eventFilter === "raid" ? (row.lastRaidAttacks ?? 0) : row.lastWarAttacks;
+  // Nos filtros de evento, prioriza a quantidade de ataques e mantém ausências de dados no fim.
+  // Empates são ordenados pelo nome, sem alterar a classificação geral do ranking.
+  const eventRows = hasEventFilter ? [...rankedRows].sort((a, b) => {
+    const aAttacks = attackValue(a);
+    const bAttacks = attackValue(b);
+    if (aAttacks === null) return bAttacks === null ? a.player.localeCompare(b.player, "pt-BR") : 1;
+    if (bAttacks === null) return -1;
+    return (sortOrder === "asc" ? aAttacks - bAttacks : bAttacks - aAttacks)
+      || a.player.localeCompare(b.player, "pt-BR");
+  }) : rankedRows;
+  // Em categorias de contribuição, ordenar pelo valor filtrado; empates preservam a classificação geral.
+  const contributionRows = troopsCategoryActive && troopsFilter !== "without"
+    ? [...eventRows].sort((a, b) =>
+        (sortOrder === "asc" ? a.donations - b.donations : b.donations - a.donations)
+        || a.position - b.position
+      )
+    : coinsCategoryActive && coinsFilter !== "without"
+      ? [...eventRows].sort((a, b) =>
+          (sortOrder === "asc" ? a.capital - b.capital : b.capital - a.capital)
+          || a.position - b.position
+        )
+      : eventRows;
+  const orderedRows = contributionRows.map((row, index) => ({ ...row, position: index + 1 }));
+  const activityRows = hasEventFilter ? orderedRows.filter(row => {
+    const attacks = attackValue(row);
+    if (situationFilter === "attacked") return attacks !== null && attacks > 0;
+    if (situationFilter === "no-attack") return attacks === 0;
+    if (situationFilter === "no-data") return attacks === null;
+    return true;
+  }) : orderedRows;
+  const eventCounts = {
+    attacked: eventRows.filter(row => { const n = attackValue(row); return n !== null && n > 0; }).length,
+    noAttack: eventRows.filter(row => attackValue(row) === 0).length,
+    noData: eventRows.filter(row => attackValue(row) === null).length,
+  };
+  const visibleRows = activityRows.filter(row => {
+    const matchesSearch = !searchTerm || row.player.toLocaleLowerCase("pt-BR").includes(searchTerm) || row.tag.toLocaleLowerCase("pt-BR").includes(searchTerm);
+    const matchesTroops = troopsFilter === "all" || (troopsFilter === "with" ? row.donations > 0 : row.donations === 0);
+    const matchesCoins = coinsFilter === "all" || (coinsFilter === "with" ? row.capital > 0 : row.capital === 0);
+    return matchesSearch && matchesTroops && matchesCoins;
   });
-  const normalizedSearch = search.toLocaleLowerCase("pt-BR");
-  const visibleRows = filteredBySituation.filter((row) =>
-    !normalizedSearch
-    || row.player.toLocaleLowerCase("pt-BR").includes(normalizedSearch)
-    || row.tag.toLocaleLowerCase("pt-BR").includes(normalizedSearch),
-  );
-
-  const totals = metrics.map((metric) => ({
+  const totals = metrics.map(metric => ({
     ...metric,
-    value: activeRows.reduce((sum, row) => sum + row[metric.key as MetricKey], 0),
+    value: activeRows.reduce((sum, row) => sum + row[metric.key], 0),
   }));
-  const eventCounts = event ? {
-    attacked: eventRows.filter((row) => {
-      const attacks = eventAttacks(row, event);
-      return attacks !== null && attacks > 0;
-    }).length,
-    noAttack: eventRows.filter((row) => eventAttacks(row, event) === 0).length,
-    noData: eventRows.filter((row) => eventAttacks(row, event) === null).length,
-  } : null;
-
-  return (
-    <main className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="/Inglorious/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
-        <span className="status"><span className="status-dot online" />DESEMPENHO MENSAL</span>
-      </header>
-      <SiteNav active="/performance" />
-      <section className="content gh-content">
-        <section className="admin-content performance-content">
-          <span className="auth-kicker">CONSULTA PÚBLICA • INDICADORES DO CLÃ</span>
-          <h1>Desempenho <em>mensal</em></h1>
-          <p>Consulte a participação, os indicadores por atividade, as avaliações dos eventos recentes e as penalidades registradas. A classificação desta aba usa a pontuação oficial e seus critérios de desempate, sem alterar a aba Ranking e Pontos.</p>
-
-          <PerformanceFilters
-            months={data.months}
-            selectedMonth={selectedMonth}
-            search={search}
-            selectedEvent={event}
-            selectedSituation={situation}
-            order={order}
-            monthLabels={Object.fromEntries(data.months.map((month) => [month, monthLabel(month)]))}
-          />
-
-          {!data.connected ? (
-            <div className="connection-alert"><strong>Dados indisponíveis</strong><span>{data.error ?? "Não foi possível carregar o desempenho."}</span></div>
-          ) : (
-            <>
-              <div className="performance-period">{monthLabel(selectedMonth)}</div>
-              {!event && (
-                <>
-                  <div className="history-section-title"><h2>Indicadores do clã</h2><span>{number(activeRows.length)} JOGADORES ATIVOS</span></div>
-                  <div className="performance-totals">
-                    {totals.map((metric) => <article key={metric.key}><small>{metric.label}</small><b>{number(metric.value)}</b><span>{metric.unit}</span></article>)}
-                  </div>
-                </>
-              )}
-
-              {event && eventCounts && (
-                <>
-                  <div className="history-section-title"><h2>{eventLabel(event)}</h2><span>EVENTO RECENTE</span></div>
-                  <div className={event === "raid" ? "performance-activity-summary performance-activity-summary-raid" : "performance-activity-summary"}>
-                    <article className="activity-summary-attacked"><small>Com ataques</small><b>{number(eventCounts.attacked)}</b><span>Jogadores</span></article>
-                    <article className="activity-summary-no-attack"><small>Sem ataques</small><b>{number(eventCounts.noAttack)}</b><span>Registro confirmado</span></article>
-                    {event !== "raid" && <article className="activity-summary-no-data"><small>Não Participou</small><b>{number(eventCounts.noData)}</b><span>Sem registro de participação</span></article>}
-                  </div>
-                </>
-              )}
-
-              <div className="history-section-title"><h2>{event ? "Avaliação dos jogadores" : "Desempenho dos jogadores"}</h2><span>{number(visibleRows.length)} JOGADORES</span></div>
-              <p className="performance-result-count">{number(visibleRows.length)} de {number(filteredBySituation.length)} jogador(es){event ? ` • ${eventLabel(event)}` : " • Classificação por pontuação oficial"}</p>
-              <div className="performance-list">
-                {visibleRows.map((row) => {
-                  const attacks = event ? eventAttacks(row, event) : null;
-                  return (
-                    <article className={event ? "performance-card performance-card-event" : "performance-card"} key={row.tag || row.player}>
-                      <div className="performance-card-head">
-                        <b>
-                          <span className="performance-position-badge">{row.position}</span>
-                          <span className="performance-player-name">{row.player}</span>
-                          {row.roleLabel && <small className={`performance-leader-role ${row.roleLabel === "LÍDER" || row.roleLabel === "CO-LÍDER" ? "role-leadership" : row.roleLabel === "ANCIÃO" ? "role-elder" : row.roleLabel === "MEMBRO" ? "role-member" : "role-other"}`}>{row.roleLabel}</small>}
-                        </b>
-                        {event ? (
-                          <span className={attacks === null ? "performance-event-inline no-data" : attacks === 0 ? "performance-event-inline no-attack" : "performance-event-inline attacked"}>
-                            {attacks === null ? "Não Participou" : `${number(attacks)} ${attacks === 1 ? "ataque" : "ataques"}`}
-                          </span>
-                        ) : null}
-                      </div>
-                      {!event && (
-                        <>
-                          <div className="performance-player-stats">
-                            {metrics.map((metric) => {
-                              const value = row[metric.key as MetricKey];
-                              return (
-                                <div className="performance-player-stat-row" key={metric.key}>
-                                  <span className="performance-player-stat-label"><i aria-hidden="true">{metric.icon}</i>{metric.label}</span>
-                                  <strong className="performance-player-stat-tile"><b>{number(value)}</b><small>{metric.unit}</small></strong>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <small className={row.active ? "performance-status active" : "performance-status inactive"}>{row.active ? "ATIVO · NO CLÃ" : "INATIVO · FORA DO CLÃ"}</small>
-                        </>
-                      )}
-                    </article>
-                  );
-                })}
-                {visibleRows.length === 0 && <div className="empty-state"><b>Nenhum jogador encontrado</b><p>Não há jogadores correspondentes aos filtros selecionados.</p></div>}
+  return <main className="app-shell">
+    <header className="topbar gh-topbar">
+      <a className="brand" href="/"><span className="brand-mark">I</span><span className="brand-copy"><strong>INGLORIOUS</strong><small>CLAN COMMUNITY</small></span></a>
+      <span className="status"><span className="status-dot online" />DESEMPENHO MENSAL</span>
+    </header>
+    <SiteNav active="/performance" />
+    <section className="content gh-content">
+    <section className="admin-content performance-content">
+      <span className="auth-kicker">CONSULTA PÚBLICA • INDICADORES DO CLÃ</span><h1>Desempenho <em>mensal</em></h1>
+      <p>Consulte os indicadores de participação e o aproveitamento calculado pela mesma pontuação e pelos mesmos critérios de desempate do ranking. Jogadores inelegíveis também aparecem nesta avaliação.</p>
+      <PerformanceFilters
+        months={data.months}
+        monthKey={data.monthKey}
+        monthLabel={data.monthLabel}
+        query={queryParam}
+        event={eventCategoryActive ? eventParam : ""}
+        situation={situationFilter}
+        order={sortOrder}
+        selectedTroops={troopsCategoryActive ? troopsFilter : ""}
+        selectedCoins={coinsCategoryActive ? coinsFilter : ""}
+      />
+      {!data.connected && <div className="connection-alert"><b>Não foi possível carregar o desempenho.</b><span>Confira a conexão do servidor com o Supabase.</span>{data.error && <small>{data.error}</small>}</div>}
+      <div className="performance-period">{data.monthLabel}</div>
+      <div className="history-section-title"><h2>Desempenho do clã</h2><span>{activeRows.length} JOGADORES</span></div>
+      {showGeneralPerformance && <div className="performance-totals">{totals.map(metric => <article key={metric.key}><small>{metric.label}</small><b>{fmt(metric.value)}</b><span>{metric.unit}</span></article>)}</div>}
+      {hasEventFilter && <div className={`performance-activity-summary${eventFilter === "raid" ? " performance-activity-summary-raid" : ""}`} aria-label={`Resumo de ${eventFilter === "war" ? "última Guerra" : eventFilter === "league" ? "última batalha da Liga" : "última Raide"}`}>
+        <article className="activity-summary-attacked"><small>Com ataques</small><b>{eventCounts.attacked}</b><span>Jogadores</span></article>
+        <article className="activity-summary-no-attack"><small>Sem ataques</small><b>{eventCounts.noAttack}</b><span>Registro confirmado</span></article>
+        {eventFilter !== "raid" && <article className="activity-summary-no-data"><small>Não Participou</small><b>{eventCounts.noData}</b><span>{eventFilter === "war" ? "Ficou fora da guerra" : "Ficou fora da Liga"}</span></article>}
+      </div>}
+      <div className="performance-list">
+        <div className="history-section-title"><h2>Desempenho dos jogadores</h2><span>{visibleRows.length} JOGADORES</span></div>
+        <p className="performance-result-count">{visibleRows.length} de {activityRows.length} jogador(es){hasEventFilter ? ` • ${eventFilter === "war" ? "Última Guerra" : eventFilter === "league" ? "Última batalha da Liga" : "Última Raide"}` : " • Classificação geral"}</p>
+        {visibleRows.map(row => {
+          // Na Raide não há inscrição: ausência de fonte individual significa zero ataques.
+          const attacks = eventFilter === "league" ? row.lastLeagueAttacks : eventFilter === "raid" ? (row.lastRaidAttacks ?? 0) : row.lastWarAttacks;
+          const resultBadges = [
+            ...(hasEventFilter ? [{ label: attacks === null ? "Não Participou" : `${fmt(attacks)} ${attacks === 1 ? "ataque" : "ataques"}`, className: attacks === null ? "no-data" : attacks === 0 ? "no-attack" : "attacked" }] : []),
+            ...(troopsCategoryActive ? [{ label: `${fmt(row.donations)} tropas`, className: row.donations > 0 ? "attacked" : "no-attack" }] : []),
+            ...(coinsCategoryActive ? [{ label: `${fmt(row.capital)} moedas`, className: row.capital > 0 ? "attacked" : "no-attack" }] : []),
+            ...(!hasEventFilter && troopsFilter === "all" && coinsFilter === "all" && (queryParam || orderParam === "asc") ? [{ label: `${fmt(row.index)}%`, className: "attacked" }] : []),
+            ...(!hasEventFilter && troopsFilter === "all" && coinsFilter === "all" && !queryParam && orderParam !== "asc" && monthParam && monthParam !== data.months[0] ? [{ label: `${fmt(row.index)}%`, className: "attacked" }] : []),
+          ];
+          return <article className={showGeneralPerformance ? "performance-card" : "performance-card performance-card-event"} key={row.tag || row.player}>
+            <div className="performance-card-head">
+              <b><span className="performance-position-badge">{row.position}</span><span className="performance-player-name">{row.player}</span>{row.roleLabel && <small className={`performance-leader-role ${row.roleLabel === "LÍDER" || row.roleLabel === "CO-LÍDER" ? "role-leadership" : row.roleLabel === "ANCIÃO" ? "role-elder" : row.roleLabel === "MEMBRO" ? "role-member" : "role-other"}`}>{row.roleLabel}</small>}</b>
+              {!showGeneralPerformance
+                ? <span className="performance-event-badges">{resultBadges.map((badge, index) => <span className={`performance-event-inline ${badge.className}`} key={`${badge.label}-${index}`}>{badge.label}</span>)}</span>
+                : <strong>{fmt(row.index)}%</strong>}
+            </div>
+            {showGeneralPerformance && <>
+              <div className="performance-progress" role="img" aria-label={`Desempenho geral: ${row.index}%`}><span style={{ width: `${Math.min(row.index, 100)}%` }} /></div>
+              <div className="performance-player-stats">
+                {metrics.map(metric => <div className="performance-player-stat-row" key={metric.key}>
+                  <span className="performance-player-stat-label"><i aria-hidden="true">{metric.key === "wars" ? "⚔" : metric.key === "league" ? "🏆" : metric.key === "raid" ? "🛡" : metric.key === "donations" ? "👥" : metric.key === "games" ? "🎮" : "🏰"}</i>{metric.label}</span>
+                  <strong className="performance-player-stat-tile"><b>{fmt(row[metric.key])}</b><small>{metric.key === "wars" || metric.key === "league" || metric.key === "raid" ? "Ataques" : metric.key === "donations" ? "Tropas" : metric.key === "capital" ? "Moedas" : "Pontos"}</small></strong>
+                </div>)}
               </div>
-            </>
-          )}
-          <a className="back-link" href="/Inglorious/ranking">← Ver ranking oficial</a>
-        </section>
-        <footer className="footer"><span>INGLORIOUS <b>•</b> DESEMPENHO</span><span>{monthLabel(selectedMonth)}</span></footer>
-      </section>
-    </main>
-  );
+              {row.penalties > 0 && <small className="performance-status penalty">Penalidades: −{fmt(row.penalties)} pontos</small>}
+              <small className="performance-status active">ATIVO</small>
+            </>}
+          </article>;
+        })}
+        {!visibleRows.length && data.connected && <p>Nenhum jogador corresponde aos filtros selecionados.</p>}
+      </div>
+      <a className="back-link" href="/ranking">← Voltar ao ranking</a>
+    </section>
+    </section>
+  </main>;
 }
