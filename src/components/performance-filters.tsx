@@ -291,7 +291,7 @@ export default function PerformanceFilters({
         <div className="performance-applied">
           <div className="performance-applied-heading">
             <strong>Critérios da consulta ({chips.length})</strong>
-            <a href="/performance">Remover todos</a>
+            <a href={`${APP_BASE_PATH}/performance`}>Remover todos</a>
           </div>
           <div className="performance-applied-chips">
             {chips.map((chip) => (
