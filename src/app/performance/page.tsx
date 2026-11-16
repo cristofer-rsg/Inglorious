@@ -130,7 +130,7 @@ export default async function PerformancePage({ searchParams }: Props) {
       />
       {!data.connected && <div className="connection-alert"><b>Não foi possível carregar o desempenho.</b><span>Confira a conexão do servidor com o Supabase.</span>{data.error && <small>{data.error}</small>}</div>}
       <div className="performance-period">{data.monthLabel}</div>
-      <div className="performance-section-heading"><h2>Desempenho do clã</h2><span>{activeRows.length} JOGADORES</span></div>
+      <div className="history-section-title"><h2>Desempenho do clã</h2><span>{activeRows.length} JOGADORES</span></div>
       {showGeneralPerformance && <div className="performance-totals">{totals.map(metric => <article key={metric.key}><small>{metric.label}</small><b>{fmt(metric.value)}</b><span>{metric.unit}</span></article>)}</div>}
       {hasEventFilter && <div className={`performance-activity-summary${eventFilter === "raid" ? " performance-activity-summary-raid" : ""}`} aria-label={`Resumo de ${eventFilter === "war" ? "última Guerra" : eventFilter === "league" ? "última batalha da Liga" : "última Raide"}`}>
         <article className="activity-summary-attacked"><small>Com ataques</small><b>{eventCounts.attacked}</b><span>Jogadores</span></article>
@@ -138,7 +138,7 @@ export default async function PerformancePage({ searchParams }: Props) {
         {eventFilter !== "raid" && <article className="activity-summary-no-data"><small>Não Participou</small><b>{eventCounts.noData}</b><span>{eventFilter === "war" ? "Ficou fora da guerra" : "Ficou fora da Liga"}</span></article>}
       </div>}
       <div className="performance-list">
-        <div className="performance-section-heading"><h2>Desempenho dos jogadores</h2><span>{visibleRows.length} JOGADORES</span></div>
+        <div className="history-section-title"><h2>Desempenho dos jogadores</h2><span>{visibleRows.length} JOGADORES</span></div>
         <p className="performance-result-count">{visibleRows.length} de {activityRows.length} jogador(es){hasEventFilter ? ` • ${eventFilter === "war" ? "Última Guerra" : eventFilter === "league" ? "Última batalha da Liga" : "Última Raide"}` : " • Classificação geral"}</p>
         {visibleRows.map(row => {
           // Na Raide não há inscrição: ausência de fonte individual significa zero ataques.
