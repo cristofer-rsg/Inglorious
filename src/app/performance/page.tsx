@@ -13,6 +13,8 @@ type SearchParams = {
   event?: string;
   situation?: string;
   order?: string;
+  troops?: string;
+  coins?: string;
 };
 
 const numberFormatter = new Intl.NumberFormat("pt-BR");
@@ -86,6 +88,8 @@ export default async function PerformancePage({
   const allowedSituations = event === "raid" ? ["attacked", "no-attack"] : ["attacked", "no-attack", "no-data"];
   const situation = event && allowedSituations.includes(params.situation ?? "") ? params.situation ?? "" : "";
   const order = params.order === "asc" ? "asc" : "desc";
+  const troops = params.troops === "with" || params.troops === "without" ? params.troops : "all";
+  const coins = params.coins === "with" || params.coins === "without" ? params.coins : "all";
 
   const data = await getPerformanceData(requestedMonth || undefined, true);
   const selectedMonth = data.months.includes(requestedMonth) ? requestedMonth : data.monthKey || currentMonth;
@@ -123,11 +127,14 @@ export default async function PerformancePage({
     return attacks === null;
   });
   const normalizedSearch = search.toLocaleLowerCase("pt-BR");
-  const visibleRows = filteredBySituation.filter((row) =>
-    !normalizedSearch
-    || row.player.toLocaleLowerCase("pt-BR").includes(normalizedSearch)
-    || row.tag.toLocaleLowerCase("pt-BR").includes(normalizedSearch),
-  );
+  const visibleRows = filteredBySituation.filter((row) => {
+    const matchesSearch = !normalizedSearch
+      || row.player.toLocaleLowerCase("pt-BR").includes(normalizedSearch)
+      || row.tag.toLocaleLowerCase("pt-BR").includes(normalizedSearch);
+    const matchesTroops = troops === "all" || (troops === "with" ? row.donations > 0 : row.donations === 0);
+    const matchesCoins = coins === "all" || (coins === "with" ? row.capital > 0 : row.capital === 0);
+    return matchesSearch && matchesTroops && matchesCoins;
+  });
 
   const totals = metrics.map((metric) => ({
     ...metric,
@@ -162,6 +169,8 @@ export default async function PerformancePage({
             selectedEvent={event}
             selectedSituation={situation}
             order={order}
+            selectedTroops={troops}
+            selectedCoins={coins}
             monthLabels={Object.fromEntries(data.months.map((month) => [month, monthLabel(month)]))}
           />
 
