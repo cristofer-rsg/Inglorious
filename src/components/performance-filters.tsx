@@ -111,10 +111,10 @@ export default function PerformanceFilters({
   const values = {
     month: initialMonth,
     q: initialQuery.trim(),
-    event,
-    situation,
-    troops: selectedTroops,
-    coins: selectedCoins,
+    event: initialEvent,
+    situation: initialSituation,
+    troops: initialTroops,
+    coins: initialCoins,
     order: order === "desc" ? "" : order,
   };
 
@@ -133,8 +133,8 @@ export default function PerformanceFilters({
     ...(query.trim() ? [{ key: "q", label: `Jogador: ${query.trim()}` }] : []),
     ...(event ? [{ key: "event", label: event === "all" ? "Eventos: Todos" : `Evento: ${eventLabels[event]}` }] : []),
     ...(situation ? [{ key: "situation", label: situation === "all" ? "Situação: Todas" : `Situação: ${situationLabels[situation]}` }] : []),
-    ...(selectedTroops ? [{ key: "troops", label: selectedTroops === "all" ? "Doações: Todas" : selectedTroops === "with" ? "Doações: Com doações" : "Doações: Sem doações" }] : []),
-    ...(selectedCoins ? [{ key: "coins", label: selectedCoins === "all" ? "Moedas: Todas" : selectedCoins === "with" ? "Moedas: Com moedas" : "Moedas: Sem moedas" }] : []),
+    ...(initialTroops ? [{ key: "troops", label: initialTroops === "all" ? "Doações: Todas" : initialTroops === "with" ? "Doações: Com doações" : "Doações: Sem doações" }] : []),
+    ...(initialCoins ? [{ key: "coins", label: initialCoins === "all" ? "Moedas: Todas" : initialCoins === "with" ? "Moedas: Com moedas" : "Moedas: Sem moedas" }] : []),
     ...(order === "asc" ? [{ key: "order", label: "Ordenação: Menor para maior" }] : []),
   ];
 
