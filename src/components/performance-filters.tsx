@@ -5,14 +5,19 @@ import "./performance-filters.css";
 
 type Props = {
   months: string[];
-  monthKey: string;
-  monthLabel: string;
-  query: string;
-  event: string;
-  situation: string;
+  monthKey?: string;
+  monthLabel?: string;
+  query?: string;
+  event?: string;
+  situation?: string;
   order: "asc" | "desc";
-  selectedTroops: string;
-  selectedCoins: string;
+  selectedTroops?: string;
+  selectedCoins?: string;
+  selectedMonth?: string;
+  search?: string;
+  selectedEvent?: string;
+  selectedSituation?: string;
+  monthLabels?: Record<string, string>;
 };
 
 type FilterChip = { key: string; label: string };
@@ -28,6 +33,7 @@ function buildRemovalUrl(key: string, values: Record<string, string>) {
 
 export default function PerformanceFilters({
   months,
+  months,
   monthKey,
   monthLabel,
   query,
@@ -36,24 +42,37 @@ export default function PerformanceFilters({
   order,
   selectedTroops,
   selectedCoins,
+  selectedMonth: adminMonth,
+  search,
+  selectedEvent: adminEvent,
+  selectedSituation: adminSituation,
+  monthLabels,
 }: Props) {
-  const [selectedMonth, setSelectedMonth] = useState(monthKey);
-  const [selectedQuery, setSelectedQuery] = useState(query);
-  const [selectedEvent, setSelectedEvent] = useState(event);
-  const [selectedSituation, setSelectedSituation] = useState(situation);
-  const [selectedTroopsValue, setSelectedTroopsValue] = useState(selectedTroops);
-  const [selectedCoinsValue, setSelectedCoinsValue] = useState(selectedCoins);
+  const adminMode = adminMonth !== undefined;
+  const initialMonth = monthKey ?? adminMonth ?? months[0] ?? "";
+  const initialQuery = query ?? search ?? "";
+  const initialEvent = event ?? adminEvent ?? "";
+  const initialSituation = situation ?? adminSituation ?? "";
+  const initialTroops = selectedTroops ?? "";
+  const initialCoins = selectedCoins ?? "";
+  const currentMonthLabel = monthLabel ?? monthLabels?.[initialMonth] ?? initialMonth;
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  const [selectedQuery, setSelectedQuery] = useState(initialQuery);
+  const [selectedEvent, setSelectedEvent] = useState(initialEvent);
+  const [selectedSituation, setSelectedSituation] = useState(initialSituation);
+  const [selectedTroopsValue, setSelectedTroopsValue] = useState(initialTroops);
+  const [selectedCoinsValue, setSelectedCoinsValue] = useState(initialCoins);
   const [selectedOrder, setSelectedOrder] = useState(order);
 
   useEffect(() => {
-    setSelectedMonth(monthKey);
-    setSelectedQuery(query);
-    setSelectedEvent(event);
-    setSelectedSituation(situation);
-    setSelectedTroopsValue(selectedTroops);
-    setSelectedCoinsValue(selectedCoins);
+    setSelectedMonth(initialMonth);
+    setSelectedQuery(initialQuery);
+    setSelectedEvent(initialEvent);
+    setSelectedSituation(initialSituation);
+    setSelectedTroopsValue(initialTroops);
+    setSelectedCoinsValue(initialCoins);
     setSelectedOrder(order);
-  }, [monthKey, query, event, situation, selectedTroops, selectedCoins, order]);
+  }, [initialMonth, initialQuery, initialEvent, initialSituation, initialTroops, initialCoins, order]);
 
   function changeEvent(value: string) {
     const nextValue = selectedEvent === value ? "" : value;
@@ -90,8 +109,8 @@ export default function PerformanceFilters({
   }
 
   const values = {
-    month: monthKey,
-    q: query.trim(),
+    month: initialMonth,
+    q: initialQuery.trim(),
     event,
     situation,
     troops: selectedTroops,
@@ -110,7 +129,7 @@ export default function PerformanceFilters({
     "no-data": "Não participou",
   };
   const chips: FilterChip[] = [
-    { key: "month", label: `Mês: ${monthLabel}` },
+    { key: "month", label: `Mês: ${currentMonthLabel}` },
     ...(query.trim() ? [{ key: "q", label: `Jogador: ${query.trim()}` }] : []),
     ...(event ? [{ key: "event", label: event === "all" ? "Eventos: Todos" : `Evento: ${eventLabels[event]}` }] : []),
     ...(situation ? [{ key: "situation", label: situation === "all" ? "Situação: Todas" : `Situação: ${situationLabels[situation]}` }] : []),
@@ -118,6 +137,49 @@ export default function PerformanceFilters({
     ...(selectedCoins ? [{ key: "coins", label: selectedCoins === "all" ? "Moedas: Todas" : selectedCoins === "with" ? "Moedas: Com moedas" : "Moedas: Sem moedas" }] : []),
     ...(order === "asc" ? [{ key: "order", label: "Ordenação: Menor para maior" }] : []),
   ];
+
+  if (adminMode) {
+    return (
+      <form className="performance-filters" action="/admin/performance" method="get">
+        <label>
+          <span>Mês de referência</span>
+          <select name="month" value={selectedMonth} onChange={(change) => setSelectedMonth(change.target.value)}>
+            {months.map((month) => <option key={month} value={month}>{monthLabels?.[month] ?? month}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Buscar jogador</span>
+          <input name="q" type="search" maxLength={80} placeholder="Nome ou tag do jogador" value={selectedQuery} onChange={(change) => setSelectedQuery(change.target.value)} />
+        </label>
+        <label>
+          <span>Evento recente</span>
+          <select name="event" value={selectedEvent} onChange={(change) => { setSelectedEvent(change.target.value); setSelectedSituation(""); }}>
+            <option value="">Todos os indicadores</option>
+            <option value="war">Última Guerra</option>
+            <option value="league">Última batalha da Liga</option>
+            <option value="raid">Última Raide</option>
+          </select>
+        </label>
+        <label>
+          <span>Situação do evento</span>
+          <select name="situation" value={selectedSituation} onChange={(change) => setSelectedSituation(change.target.value)} disabled={!selectedEvent}>
+            <option value="">Todas as situações</option>
+            <option value="attacked">Realizou ataques</option>
+            <option value="no-attack">Não realizou ataques</option>
+            {selectedEvent !== "raid" && <option value="no-data">Não participou</option>}
+          </select>
+        </label>
+        <label>
+          <span>Ordenação</span>
+          <select name="order" value={selectedOrder} onChange={(change) => setSelectedOrder(change.target.value as "asc" | "desc")}>
+            <option value="desc">Maior para menor</option>
+            <option value="asc">Menor para maior</option>
+          </select>
+        </label>
+        <button type="submit">Aplicar filtros</button>
+      </form>
+    );
+  }
 
   return (
     <section className="performance-search">
