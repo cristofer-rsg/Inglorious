@@ -22,13 +22,15 @@ type Props = {
 
 type FilterChip = { key: string; label: string };
 
+const APP_BASE_PATH = "/inglorious";
+
 function buildRemovalUrl(key: string, values: Record<string, string>) {
   const params = new URLSearchParams();
   for (const [name, value] of Object.entries(values)) {
     if (name !== key && value) params.set(name, value);
   }
   const queryString = params.toString();
-  return queryString ? `/performance?${queryString}` : "/performance";
+  return queryString ? `${APP_BASE_PATH}/performance?${queryString}` : `${APP_BASE_PATH}/performance`;
 }
 
 export default function PerformanceFilters({
@@ -139,7 +141,7 @@ export default function PerformanceFilters({
 
   if (adminMode) {
     return (
-      <form className="performance-filters" action="/admin/performance" method="get">
+      <form className="performance-filters" action={`${APP_BASE_PATH}/admin/performance`} method="get">
         <label>
           <span>Mês de referência</span>
           <select name="month" value={selectedMonth} onChange={(change) => setSelectedMonth(change.target.value)}>
@@ -182,7 +184,7 @@ export default function PerformanceFilters({
 
   return (
     <section className="performance-search">
-      <form className="performance-search-form" action="/performance" method="get">
+      <form className="performance-search-form" action={`${APP_BASE_PATH}/performance`} method="get">
         <div className="performance-filter-heading">
           <div>
             <span className="performance-filter-eyebrow">PESQUISA AVANÇADA</span>
@@ -280,7 +282,7 @@ export default function PerformanceFilters({
         </div>
 
         <div className="performance-filter-actions">
-          <a className="performance-clear-button" href="/performance">Limpar pesquisa</a>
+          <a className="performance-clear-button" href={`${APP_BASE_PATH}/performance`}>Limpar pesquisa</a>
           <button className="performance-apply-button" type="submit">Aplicar filtros</button>
         </div>
       </form>
