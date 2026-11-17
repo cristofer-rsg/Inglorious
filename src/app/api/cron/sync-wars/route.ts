@@ -104,6 +104,8 @@ export async function GET(request: Request) {
         });
       };
 
+      add(`${warKey}:${member.tag}:participation`, "Participou da guerra (+5)", 5);
+
       if (attacks.length === 0) {
         if (war.state === "warEnded") {
           add(`${warKey}:${member.tag}:penalty:no-attacks`,
@@ -117,7 +119,6 @@ export async function GET(request: Request) {
           "Penalidade: realizou apenas um ataque (−5)", -5);
       }
 
-      add(`${warKey}:${member.tag}:participation`, "Participou da guerra (+5)", 5);
       if (attacks.length >= 2) {
         add(`${warKey}:${member.tag}:two-attacks`, "Fez os dois ataques (+10)", 10);
       }
