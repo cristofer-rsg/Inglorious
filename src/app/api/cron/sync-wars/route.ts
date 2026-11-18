@@ -33,10 +33,107 @@ export async function GET(request: Request) {
     ]);
 
     if (war.state === "notInWar") {
+      const supabase = createSupabaseAdmin();
+      const { data: recentWarSources, error: sourcesError } = await supabase
+        .from("player_monthly_stat_sources")
+        .select("source_key,player_tag,player,war_attacks,updated_at")
+        .like("source_key", "war:%")
+        .order("updated_at", { ascending: false })
+        .limit(5000);
+
+      if (sourcesError) throw new Error(`Falha ao recuperar a última guerra: ${sourcesError.message}`);
+
+      const latestWarKey = (recentWarSources ?? [])
+        .map((source) => source.source_key.match(/^war:(.+):#[A-Z0-9]+$/)?.[1] ?? "")
+        .find(Boolean) ?? "";
+
+      if (!latestWarKey) {
+        return NextResponse.json({
+          success: true,
+          state: "notInWar",
+          backfilled_penalties: 0,
+          message: "O clã não está em guerra e não há uma guerra anterior para finalizar.",
+        });
+      }
+
+      const startTimeMatch = latestWarKey.match(/:(\d{8}T\d{6}(?:\.\d+)?Z)$/);
+      const startedAt = startTimeMatch ? parseClashApiTimestamp(startTimeMatch[1]) : null;
+      const expectedEnd = startedAt ? startedAt.getTime() + 24 * 60 * 60 * 1000 : 0;
+      const latestWarRows = (recentWarSources ?? []).filter((source) =>
+        source.source_key.startsWith(`war:${latestWarKey}:`),
+      );
+      const latestSnapshotAt = latestWarRows.reduce((latest, source) => {
+        const updatedAt = source.updated_at ? new Date(source.updated_at).getTime() : 0;
+        return Math.max(latest, Number.isFinite(updatedAt) ? updatedAt : 0);
+      }, 0);
+
+      if (!startedAt || Date.now() < expectedEnd
+        || latestSnapshotAt < expectedEnd - 60 * 60 * 1000) {
+        return NextResponse.json({
+          success: true,
+          state: "notInWar",
+          war_key: latestWarKey,
+          backfilled_penalties: 0,
+          message: "O clã não está em guerra. A última leitura não é suficientemente próxima do encerramento para calcular penalidades com segurança.",
+        });
+      }
+
+      const { data: completion, error: completionError } = await supabase
+        .from("clan_war_completions")
+        .select("war_key")
+        .eq("war_key", latestWarKey)
+        .maybeSingle();
+
+      if (completionError) throw new Error(`Falha ao verificar o encerramento da guerra: ${completionError.message}`);
+
+      const penaltyEvents = completion ? [] : latestWarRows.flatMap((source) => {
+        if (!source.player_tag || !source.player || source.war_attacks == null) return [];
+        const attacks = Number(source.war_attacks);
+        const common = {
+          war_key: latestWarKey,
+          player_tag: source.player_tag,
+          player: source.player,
+          category: "Guerras",
+          battle_time: null,
+        };
+
+        if (attacks === 0) {
+          return [{
+            ...common,
+            source_key: `${latestWarKey}:${source.player_tag}:penalty:no-attacks`,
+            activity: "Penalidade: não realizou nenhum ataque (−10)",
+            points: -10,
+          }];
+        }
+
+        if (attacks === 1) {
+          return [{
+            ...common,
+            source_key: `${latestWarKey}:${source.player_tag}:penalty:one-attack`,
+            activity: "Penalidade: realizou apenas um ataque (−5)",
+            points: -5,
+          }];
+        }
+
+        return [];
+      });
+
+      if (penaltyEvents.length > 0) {
+        const { error: penaltyError } = await supabase.rpc(
+          "record_clash_war_events",
+          { p_events: penaltyEvents },
+        );
+        if (penaltyError) throw new Error(`Falha ao registrar penalidades pendentes: ${penaltyError.message}`);
+      }
+
       return NextResponse.json({
         success: true,
         state: "notInWar",
-        message: "O clã não está em guerra. Nenhum lançamento realizado.",
+        war_key: latestWarKey,
+        backfilled_penalties: penaltyEvents.length,
+        message: completion
+          ? "A última guerra já está registrada como concluída."
+          : "Penalidades de participação da última guerra verificadas e sincronizadas.",
       });
     }
 
