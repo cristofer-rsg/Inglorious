@@ -7,6 +7,7 @@ import { APP_CONFIG } from "@/lib/config";
 import { getKnownPlayersByTags, synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { parseClashApiTimestamp } from "@/lib/time";
+import { isBeforeFinalTwelveHours, resolveWarEnd } from "@/lib/war-penalties";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -148,7 +149,7 @@ export async function GET(request: Request) {
     const startedAt = parseClashApiTimestamp(war.startTime);
     if (!startedAt) throw new Error("A API não informou um início de guerra válido.");
     const endedAt = war.endTime ? parseClashApiTimestamp(war.endTime) : null;
-    const resolvedWarEnd = endedAt ?? new Date(startedAt.getTime() + 24 * 60 * 60 * 1000);
+    const resolvedWarEnd = resolveWarEnd(startedAt, endedAt, war.state);
     const observedAt = new Date();
     const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
     const warEnd = resolvedWarEnd.getTime();
@@ -229,7 +230,7 @@ export async function GET(request: Request) {
         const defenderPosition = attack.defenderTag
           ? enemyPositions.get(attack.defenderTag)
           : undefined;
-        const beforeFinalWindow = observedAt.getTime() < warEnd - 12 * 60 * 60 * 1000;
+        const beforeFinalWindow = isBeforeFinalTwelveHours(observedAt, resolvedWarEnd, battleTime);
 
         if (battleTime) {
           const timeLabel = new Intl.DateTimeFormat("pt-BR", {
