@@ -43,6 +43,7 @@ export type PlayerProfile = {
   capitalCoins: number;
   capitalPoints: number;
   penalties: number;
+  penaltyEvents: ProfileEvent[];
   recentEvents: ProfileEvent[];
 };
 
@@ -82,7 +83,7 @@ export async function getPlayerProfile(tag: string): Promise<PlayerProfile | nul
 
   const monthKey = getCurrentMonthKey();
   const bounds = getZonedMonthBounds(monthKey, APP_CONFIG.timeZone);
-  const [recentResult, monthlyStatsResult, monthEventsResult] = await Promise.all([
+  const [recentResult, monthlyStatsResult, monthEvents] = await Promise.all([
     db.from("events")
       .select("id,player,player_tag,category,activity,points,created_at,battle_time")
       .eq("player_tag", normalizedTag)
@@ -94,22 +95,33 @@ export async function getPlayerProfile(tag: string): Promise<PlayerProfile | nul
       .eq("month_key", monthKey)
       .eq("player_tag", normalizedTag)
       .maybeSingle(),
-    db.from("events")
-      .select("id,player,player_tag,category,activity,points,created_at,battle_time")
-      .eq("player_tag", normalizedTag)
-      .gte("created_at", bounds.start)
-      .lt("created_at", bounds.end)
-      .order("created_at", { ascending: true })
-      .order("id", { ascending: true }),
+    (async () => {
+      const rows: ProfileEvent[] = [];
+      for (let offset = 0; ; offset += 1000) {
+        const { data, error } = await db.from("events")
+          .select("id,player,player_tag,category,activity,points,created_at,battle_time")
+          .eq("player_tag", normalizedTag)
+          .gte("created_at", bounds.start)
+          .lt("created_at", bounds.end)
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(offset, offset + 999);
+        if (error) throw error;
+        const batch = (data ?? []) as ProfileEvent[];
+        rows.push(...batch);
+        if (batch.length < 1000) break;
+      }
+      return rows;
+    })(),
   ]);
 
-  if (recentResult.error || monthEventsResult.error || monthlyStatsResult.error) {
+  if (recentResult.error || monthlyStatsResult.error) {
     throw new Error("Não foi possível carregar o histórico de pontuação.");
   }
 
   const recentEvents = (recentResult.data ?? []) as ProfileEvent[];
-  const monthEvents = (monthEventsResult.data ?? []) as ProfileEvent[];
   const monthlyStat = monthlyStatsResult.data as MonthlyStat | null;
+  const penaltyEvents = monthEvents.filter((event) => Number(event.points ?? 0) < 0);
   const eligible = isRankingEligible(player);
   const scoring = calculatePlayerScore({
     playerName: player.name,
@@ -136,6 +148,7 @@ export async function getPlayerProfile(tag: string): Promise<PlayerProfile | nul
     capitalCoins: scoring.capitalCoins,
     capitalPoints: scoring.capitalPoints,
     penalties: scoring.penalties,
+    penaltyEvents,
     recentEvents,
   };
 }
