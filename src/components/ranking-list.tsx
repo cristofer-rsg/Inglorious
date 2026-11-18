@@ -62,7 +62,21 @@ export default function RankingList({ players }: { players: RankingRow[] }) {
               <small>{category.label}</small><b><span>{number(value)} pts</span><strong>{delta > 0 ? "↑ +" + number(delta) : delta < 0 ? "↓ −" + number(Math.abs(delta)) : "= 0"}</strong></b>
             </span>;
           })}</div>
-          {player.penalties > 0 && <div className="ranking-penalties"><div className="ranking-penalties-heading"><b>PENALIDADES APLICADAS</b></div><div className="ranking-penalties-total"><span>Total descontado</span><b>−{number(player.penalties)} pts</b></div></div>}
+          {player.penalties > 0 && <div className="ranking-penalties">
+            <div className="ranking-penalties-heading"><b>PENALIDADES APLICADAS</b></div>
+            <ul className="ranking-penalties-list">
+              {player.penaltyDetails.map((penalty, index) => (
+                <li key={`${penalty.createdAt}-${index}`}>
+                  <div>
+                    <small>{penalty.category}</small>
+                    <span>{penalty.activity}</span>
+                  </div>
+                  <b>−{number(Math.abs(penalty.points))} pts</b>
+                </li>
+              ))}
+            </ul>
+            <div className="ranking-penalties-total"><span>Total descontado</span><b>−{number(player.penalties)} pts</b></div>
+          </div>}
         </div>}
       </article>;
     })}
