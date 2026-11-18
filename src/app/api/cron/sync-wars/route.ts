@@ -148,8 +148,10 @@ export async function GET(request: Request) {
     const startedAt = parseClashApiTimestamp(war.startTime);
     if (!startedAt) throw new Error("A API não informou um início de guerra válido.");
     const endedAt = war.endTime ? parseClashApiTimestamp(war.endTime) : null;
+    const resolvedWarEnd = endedAt ?? new Date(startedAt.getTime() + 24 * 60 * 60 * 1000);
+    const observedAt = new Date();
     const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
-    const warEnd = endedAt?.getTime();
+    const warEnd = resolvedWarEnd.getTime();
     const playersByTag = await getKnownPlayersByTags(war.clan.members.map((member) => member.tag));
     const enemyPositions = new Map<string, number>(war.opponent.members.map((member): [string, number] => [member.tag, member.mapPosition]));
     const events: Array<{
@@ -227,9 +229,7 @@ export async function GET(request: Request) {
         const defenderPosition = attack.defenderTag
           ? enemyPositions.get(attack.defenderTag)
           : undefined;
-        const beforeFinalWindow = Boolean(
-          battleTime && warEnd && battleTime.getTime() < warEnd - 12 * 60 * 60 * 1000,
-        );
+        const beforeFinalWindow = observedAt.getTime() < warEnd - 12 * 60 * 60 * 1000;
 
         if (battleTime) {
           const timeLabel = new Intl.DateTimeFormat("pt-BR", {
@@ -263,8 +263,8 @@ export async function GET(request: Request) {
     }
 
     const supabase = createSupabaseAdmin();
-    if (war.state === "warEnded" && !endedAt) {
-      throw new Error("A API não informou o encerramento da guerra.");
+    if (war.state === "warEnded" && resolvedWarEnd.getTime() < startedAt.getTime()) {
+      throw new Error("Não foi possível determinar um encerramento válido para a guerra.");
     }
 
     const { data: atomicResult, error: atomicError } = await supabase.rpc(
@@ -274,7 +274,7 @@ export async function GET(request: Request) {
         p_events: events,
         p_war_key: warKey,
         p_started_at: startedAt.toISOString(),
-        p_ended_at: endedAt?.toISOString() ?? null,
+        p_ended_at: war.state === "warEnded" ? resolvedWarEnd.toISOString() : null,
         p_record_completion: war.state === "warEnded",
       },
     );
@@ -299,6 +299,8 @@ export async function GET(request: Request) {
       performance_sync: performanceSync,
       completion_sync: completionSync,
       score_sync: scoreSync,
+      war_end_used: resolvedWarEnd.toISOString(),
+      penalty_observed_at: observedAt.toISOString(),
       synchronized_at: new Date().toISOString(),
     });
   } catch (error) {
