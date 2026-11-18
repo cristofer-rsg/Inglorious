@@ -193,7 +193,11 @@ export async function getPerformanceData(
       .order("ended_at", { ascending: false })
       .limit(1);
     if (completedWarsError) throw new Error(completedWarsError.message);
-    const latestWarKey = completedWars?.[0]?.war_key || "";
+    const latestWarKey = completedWars?.[0]?.war_key
+      || activitySources
+        .map((source) => source.source_key.match(/^war:(.+):#[A-Z0-9]+$/)?.[1] || "")
+        .find(Boolean)
+      || "";
 
     const latestLeagueDay = activitySources
       .map((row) => row.source_key.match(/^league:(\d{8})T\d{6}(?:\.\d+)?Z:/)?.[1] || "")
