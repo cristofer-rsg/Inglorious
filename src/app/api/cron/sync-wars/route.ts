@@ -154,7 +154,9 @@ export async function GET(request: Request) {
     const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
     const warEnd = resolvedWarEnd.getTime();
     const playersByTag = await getKnownPlayersByTags(war.clan.members.map((member) => member.tag));
-    const enemyPositions = new Map<string, number>(war.opponent.members.map((member): [string, number] => [member.tag, member.mapPosition]));
+    const enemyPositions = new Map<string, number>(
+      war.opponent.members.map((member): [string, number] => [member.tag.trim().toUpperCase(), member.mapPosition]),
+    );
     const events: Array<{
       source_key: string;
       war_key: string;
@@ -169,7 +171,8 @@ export async function GET(request: Request) {
     const missingPlayers = [];
 
     for (const member of war.clan.members) {
-      const player = playersByTag.get(member.tag);
+      const normalizedPlayerTag = member.tag.trim().toUpperCase();
+      const player = playersByTag.get(normalizedPlayerTag);
       if (!player) {
         missingPlayers.push(member.tag);
         continue;
@@ -228,7 +231,7 @@ export async function GET(request: Request) {
         const order = attack.order || attackNumber;
         const battleTime = attack.battleTime ? parseClashApiTimestamp(attack.battleTime) : null;
         const defenderPosition = attack.defenderTag
-          ? enemyPositions.get(attack.defenderTag)
+          ? enemyPositions.get(attack.defenderTag.trim().toUpperCase())
           : undefined;
         const beforeFinalWindow = isBeforeFinalTwelveHours(observedAt, resolvedWarEnd, battleTime);
 
