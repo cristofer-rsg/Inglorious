@@ -50,6 +50,12 @@ export type RankingRow = {
   capitalCoins: number;
   capitalPoints: number;
   penalties: number;
+  penaltyDetails: Array<{
+    category: string;
+    activity: string;
+    points: number;
+    createdAt: string;
+  }>;
   active: boolean;
   role: string | null;
 };
@@ -261,6 +267,17 @@ async function getDashboardDataUncached(monthOverride?: string): Promise<Dashboa
           capitalCoins: score.capitalCoins,
           capitalPoints: score.capitalPoints,
           penalties: score.penalties,
+          penaltyDetails: playerEvents
+            .filter((event) => {
+              const points = Number(event.points ?? 0);
+              return Number.isFinite(points) && points < 0;
+            })
+            .map((event) => ({
+              category: (event.category ?? "").trim() || "Outros",
+              activity: (event.activity ?? "").trim() || "Penalidade aplicada",
+              points: Number(event.points),
+              createdAt: event.created_at,
+            })),
           active: player.active !== false,
           role: player.role,
         };
