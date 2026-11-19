@@ -63,6 +63,12 @@ describe("war discipline audit certainty", () => {
     expect(resolveSecondAfter12h(cutoff + 1, cutoff - 1, cutoff)).toBe(true);
   });
 
+  it("keeps checks unknown when the attack timeline is incomplete", () => {
+    expect(resolveFirstWithin12h(null, null, cutoff)).toBeNull();
+    expect(resolveSecondAfter12h(null, null, cutoff)).toBeNull();
+    expect(resolveFirstMirror(null, null, cutoff, null)).toBeNull();
+  });
+
   it("waives the mirror requirement only when the official first-attack time proves it was in the final window", () => {
     expect(resolveFirstMirror(cutoff + 1, null, cutoff, false)).toBe(true);
     expect(resolveFirstMirror(cutoff - 1, null, cutoff, true)).toBe(true);
