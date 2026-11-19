@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isCronAuthorized } from "@/lib/auth/cron";
 
-import { fetchCurrentWar } from "@/lib/clash-api";
+import { fetchCurrentWar, fetchPlayerWarPreference } from "@/lib/clash-api";
 import { APP_CONFIG } from "@/lib/config";
 import { getKnownPlayersByTags, synchronizeCurrentRoster } from "@/lib/clan-sync";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -32,6 +32,51 @@ export async function GET(request: Request) {
       synchronizeCurrentRoster(),
       fetchCurrentWar(),
     ]);
+
+    if (war.state !== "notInWar" && war.startTime) {
+      const preferenceDb = createSupabaseAdmin();
+      const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
+      const { data: savedPreferences, error: preferenceReadError } = await preferenceDb
+        .from("clan_war_preferences")
+        .select("player_tag")
+        .eq("war_key", warKey);
+      if (preferenceReadError) {
+        throw new Error(`Falha ao consultar preferências da guerra: ${preferenceReadError.message}`);
+      }
+
+      const savedTags = new Set((savedPreferences ?? []).map((row) => row.player_tag.trim().toUpperCase()));
+      const membersWithoutSnapshot = war.clan.members.filter(
+        (member) => !savedTags.has(member.tag.trim().toUpperCase()),
+      );
+      const preferenceSnapshots: Array<{war_key:string;player_tag:string;player_name:string;war_preference:"in"|"out"|"unknown"}> = [];
+      for (let index = 0; index < membersWithoutSnapshot.length; index += 8) {
+        const batch = membersWithoutSnapshot.slice(index, index + 8);
+        const preferenceResults = await Promise.allSettled(
+          batch.map(async (member) => ({
+            war_key: warKey,
+            player_tag: member.tag.trim().toUpperCase(),
+            player_name: member.name,
+            war_preference: await fetchPlayerWarPreference(member.tag),
+          })),
+        );
+        for (const result of preferenceResults) {
+          if (result.status === "fulfilled") preferenceSnapshots.push(result.value);
+          else console.error("Falha ao consultar preferência individual de guerra:", result.reason);
+        }
+      }
+
+      if (preferenceSnapshots.length > 0) {
+        const { error: preferenceWriteError } = await preferenceDb
+          .from("clan_war_preferences")
+          .upsert(preferenceSnapshots, {
+            onConflict: "war_key,player_tag",
+            ignoreDuplicates: true,
+          });
+        if (preferenceWriteError) {
+          throw new Error(`Falha ao salvar preferências da guerra: ${preferenceWriteError.message}`);
+        }
+      }
+    }
 
     if (war.state === "notInWar") {
       const supabase = createSupabaseAdmin();
