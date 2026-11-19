@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { isBeforeFinalTwelveHours, resolveWarEnd } from "./war-penalties";
+import {
+  isBeforeFinalTwelveHours,
+  resolveFirstMirror,
+  resolveFirstWithin12h,
+  resolveSecondAfter12h,
+  resolveWarEnd,
+} from "./war-penalties";
 
 describe("war penalty time window", () => {
   const startedAt = new Date("2026-11-18T15:36:30.000Z");
@@ -39,5 +45,28 @@ describe("war penalty time window", () => {
     const attackTime = new Date("2026-11-18T20:00:00.000Z");
 
     expect(isBeforeFinalTwelveHours(observedAt, warEnd, attackTime)).toBe(true);
+  });
+});
+
+describe("war discipline audit certainty", () => {
+  const cutoff = new Date("2026-11-19T03:36:30.000Z").getTime();
+
+  it("confirms the first attack only when its official time or observation proves it was early", () => {
+    expect(resolveFirstWithin12h(null, cutoff - 1, cutoff)).toBe(true);
+    expect(resolveFirstWithin12h(null, cutoff + 1, cutoff)).toBeNull();
+    expect(resolveFirstWithin12h(cutoff + 1, cutoff - 1, cutoff)).toBe(false);
+  });
+
+  it("does not approve a second attack from a late observation without an official time", () => {
+    expect(resolveSecondAfter12h(null, cutoff - 1, cutoff)).toBe(false);
+    expect(resolveSecondAfter12h(null, cutoff + 1, cutoff)).toBeNull();
+    expect(resolveSecondAfter12h(cutoff + 1, cutoff - 1, cutoff)).toBe(true);
+  });
+
+  it("waives the mirror requirement only when the official first-attack time proves it was in the final window", () => {
+    expect(resolveFirstMirror(cutoff + 1, null, cutoff, false)).toBe(true);
+    expect(resolveFirstMirror(cutoff - 1, null, cutoff, true)).toBe(true);
+    expect(resolveFirstMirror(cutoff - 1, null, cutoff, false)).toBe(false);
+    expect(resolveFirstMirror(null, cutoff + 1, cutoff, false)).toBeNull();
   });
 });
