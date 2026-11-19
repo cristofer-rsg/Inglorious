@@ -297,7 +297,6 @@ export async function GET(request: Request) {
               timeStyle: "medium",
             }).format(observedAt)} (Brasília)`,
             0,
-            observedAt,
           );
         }
 
