@@ -26,3 +26,50 @@ export function isBeforeFinalTwelveHours(
   const referenceTime = attackBattleTime ?? observedAt;
   return referenceTime.getTime() < warEnd.getTime() - 12 * 60 * 60 * 1000;
 }
+
+export type WarAuditCheck = boolean | null;
+
+export function resolveFirstWithin12h(
+  actualAttackTime: number | null,
+  observedAt: number | null,
+  cutoff: number,
+  noAttacks = false,
+): WarAuditCheck {
+  if (noAttacks) return false;
+  if (actualAttackTime !== null) return actualAttackTime <= cutoff;
+  return observedAt !== null && observedAt <= cutoff ? true : null;
+}
+
+export function resolveSecondAfter12h(
+  actualAttackTime: number | null,
+  observedAt: number | null,
+  cutoff: number,
+  missedSecond = false,
+  noAttacks = false,
+): WarAuditCheck {
+  if (noAttacks || missedSecond) return false;
+  if (actualAttackTime !== null) return actualAttackTime >= cutoff;
+  return observedAt !== null && observedAt < cutoff ? false : null;
+}
+
+export function resolveFirstMirror(
+  actualAttackTime: number | null,
+  observedAt: number | null,
+  cutoff: number,
+  mirrorResult: WarAuditCheck,
+): WarAuditCheck {
+  if (mirrorResult === true) return true;
+  if (actualAttackTime !== null && actualAttackTime >= cutoff) return true;
+  if (actualAttackTime !== null) return mirrorResult;
+  return observedAt !== null && observedAt < cutoff ? mirrorResult : null;
+}
+
+export function extractAttackOrder(sourceKey: string): number | null {
+  const match = sourceKey.match(
+    /:attack:(\d+):(?:stars|observed-time|battle-time)$|:mirror:(\d+)$|:penalty:(?:off-mirror|early-second):(\d+)$/,
+  );
+  const rawOrder = match?.[1] ?? match?.[2] ?? match?.[3];
+  if (!rawOrder) return null;
+  const order = Number(rawOrder);
+  return Number.isInteger(order) && order > 0 ? order : null;
+}
