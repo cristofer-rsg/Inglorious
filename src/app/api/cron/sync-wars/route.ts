@@ -235,6 +235,19 @@ export async function GET(request: Request) {
           : undefined;
         const beforeFinalWindow = isBeforeFinalTwelveHours(observedAt, resolvedWarEnd, battleTime);
 
+        if (!battleTime) {
+          add(
+            `${warKey}:${member.tag}:attack:${order}:observed-time`,
+            `Ataque detectado pela sincronização em ${new Intl.DateTimeFormat("pt-BR", {
+              timeZone: APP_CONFIG.timeZone,
+              dateStyle: "short",
+              timeStyle: "medium",
+            }).format(observedAt)} (Brasília)`,
+            0,
+            observedAt,
+          );
+        }
+
         if (battleTime) {
           const timeLabel = new Intl.DateTimeFormat("pt-BR", {
             timeZone: APP_CONFIG.timeZone,
