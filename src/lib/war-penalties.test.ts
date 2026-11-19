@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   isBeforeFinalTwelveHours,
+  extractAttackOrder,
   resolveFirstMirror,
   resolveFirstWithin12h,
   resolveSecondAfter12h,
@@ -74,5 +75,16 @@ describe("war discipline audit certainty", () => {
     expect(resolveFirstMirror(cutoff - 1, null, cutoff, true)).toBe(true);
     expect(resolveFirstMirror(cutoff - 1, null, cutoff, false)).toBe(false);
     expect(resolveFirstMirror(null, cutoff + 1, cutoff, false)).toBeNull();
+  });
+});
+
+describe("attack timeline source keys", () => {
+  it("recovers attack order from stars, mirror, and attack penalty events", () => {
+    expect(extractAttackOrder("war:key:#TAG:attack:17:stars")).toBe(17);
+    expect(extractAttackOrder("war:key:#TAG:attack:18:observed-time")).toBe(18);
+    expect(extractAttackOrder("war:key:#TAG:mirror:19")).toBe(19);
+    expect(extractAttackOrder("war:key:#TAG:penalty:off-mirror:20")).toBe(20);
+    expect(extractAttackOrder("war:key:#TAG:penalty:early-second:21")).toBe(21);
+    expect(extractAttackOrder("war:key:#TAG:participation")).toBeNull();
   });
 });
