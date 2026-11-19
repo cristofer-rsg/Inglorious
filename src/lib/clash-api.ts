@@ -395,6 +395,27 @@ export async function fetchPlayerGamesProfile(playerTag: string): Promise<ClashG
   return { tag: returnedTag, name, achievementValue: value };
 }
 
+export async function fetchPlayerWarPreference(playerTag: string): Promise<"in" | "out" | "unknown"> {
+  const normalizedTag = playerTag.trim().toUpperCase();
+  if (!/^#[A-Z0-9]{3,15}$/.test(normalizedTag)) {
+    throw new Error(`Tag de jogador inválida: ${playerTag}`);
+  }
+
+  const profile = await apiGet<{
+    tag?: unknown;
+    warPreference?: unknown;
+  }>(`/players/${encodeURIComponent(normalizedTag)}`);
+
+  const returnedTag = typeof profile.tag === "string" ? profile.tag.trim().toUpperCase() : "";
+  if (returnedTag !== normalizedTag) {
+    throw new Error(`A API retornou um perfil incompatível para ${normalizedTag}.`);
+  }
+
+  return profile.warPreference === "in" || profile.warPreference === "out"
+    ? profile.warPreference
+    : "unknown";
+}
+
 export async function fetchPlayerDonationProfile(playerTag: string): Promise<ClashDonationProfile> {
   const normalizedTag = playerTag.trim().toUpperCase();
   if (!/^#[A-Z0-9]{3,15}$/.test(normalizedTag)) {
