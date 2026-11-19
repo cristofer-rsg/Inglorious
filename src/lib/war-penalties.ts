@@ -58,6 +58,7 @@ export function resolveFirstMirror(
   cutoff: number,
   mirrorResult: WarAuditCheck,
 ): WarAuditCheck {
+  if (mirrorResult === true) return true;
   if (actualAttackTime !== null && actualAttackTime >= cutoff) return true;
   if (actualAttackTime !== null) return mirrorResult;
   return observedAt !== null && observedAt < cutoff ? mirrorResult : null;
