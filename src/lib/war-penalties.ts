@@ -62,3 +62,13 @@ export function resolveFirstMirror(
   if (actualAttackTime !== null) return mirrorResult;
   return observedAt !== null && observedAt < cutoff ? mirrorResult : null;
 }
+
+export function extractAttackOrder(sourceKey: string): number | null {
+  const match = sourceKey.match(
+    /:attack:(\d+):(?:stars|observed-time|battle-time)$|:mirror:(\d+)$|:penalty:(?:off-mirror|early-second):(\d+)$/,
+  );
+  const rawOrder = match?.[1] ?? match?.[2] ?? match?.[3];
+  if (!rawOrder) return null;
+  const order = Number(rawOrder);
+  return Number.isInteger(order) && order > 0 ? order : null;
+}
