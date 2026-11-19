@@ -63,9 +63,15 @@ async function loadCurrentWar() {
       const observationRow = own.find((entry) => entry.source_key.endsWith(":attack:" + attack.order + ":observed-time"));
       const battleTimeRow = own.find((entry) => entry.source_key.endsWith(":attack:" + attack.order + ":battle-time"));
       const starRow = own.find((entry) => entry.source_key.endsWith(":attack:" + attack.order + ":stars"));
+      const mirrorRow = own.find((entry) => entry.source_key.endsWith(":mirror:" + attack.order));
+      const offMirrorPenaltyRow = own.find((entry) => entry.source_key.endsWith(":penalty:off-mirror:" + attack.order));
+      const earlySecondPenaltyRow = own.find((entry) => entry.source_key.endsWith(":penalty:early-second:" + attack.order));
       const observationEvent = observationRow?.event_id ? eventMap.get(Number(observationRow.event_id)) : null;
       const battleTimeEvent = battleTimeRow?.event_id ? eventMap.get(Number(battleTimeRow.event_id)) : null;
       const starEvent = starRow?.event_id ? eventMap.get(Number(starRow.event_id)) : null;
+      const mirrorEvent = mirrorRow?.event_id ? eventMap.get(Number(mirrorRow.event_id)) : null;
+      const offMirrorPenaltyEvent = offMirrorPenaltyRow?.event_id ? eventMap.get(Number(offMirrorPenaltyRow.event_id)) : null;
+      const earlySecondPenaltyEvent = earlySecondPenaltyRow?.event_id ? eventMap.get(Number(earlySecondPenaltyRow.event_id)) : null;
       const battleTime = parseClashTime(attack.battleTime ?? "")?.getTime()
         ?? (battleTimeEvent?.battle_time ? new Date(battleTimeEvent.battle_time).getTime() : null)
         ?? (starEvent?.battle_time ? new Date(starEvent.battle_time).getTime() : null);
@@ -74,6 +80,9 @@ async function loadCurrentWar() {
         : earliestObservedTime(
           starEvent ? new Date(starEvent.created_at).getTime() : undefined,
           battleTimeEvent ? new Date(battleTimeEvent.created_at).getTime() : undefined,
+          mirrorEvent ? new Date(mirrorEvent.created_at).getTime() : undefined,
+          offMirrorPenaltyEvent ? new Date(offMirrorPenaltyEvent.created_at).getTime() : undefined,
+          earlySecondPenaltyEvent ? new Date(earlySecondPenaltyEvent.created_at).getTime() : undefined,
         );
       return {
         order: attack.order,
@@ -221,10 +230,23 @@ async function loadHistory() {
           const attacks=attackOrders.map((order)=>{
             const starRow=own.find((row)=>row.source_key.endsWith(`:attack:${order}:stars`));
             const timeRow=own.find((row)=>row.source_key.endsWith(`:attack:${order}:battle-time`));
+            const mirrorRow=own.find((row)=>row.source_key.endsWith(`:mirror:${order}`));
+            const offMirrorPenaltyRow=own.find((row)=>row.source_key.endsWith(`:penalty:off-mirror:${order}`));
+            const earlySecondPenaltyRow=own.find((row)=>row.source_key.endsWith(`:penalty:early-second:${order}`));
             const starEvent=starRow?.event_id?eventMap.get(Number(starRow.event_id)):null;
             const timeEvent=timeRow?.event_id?eventMap.get(Number(timeRow.event_id)):null;
+            const mirrorEvent=mirrorRow?.event_id?eventMap.get(Number(mirrorRow.event_id)):null;
+            const offMirrorPenaltyEvent=offMirrorPenaltyRow?.event_id?eventMap.get(Number(offMirrorPenaltyRow.event_id)):null;
+            const earlySecondPenaltyEvent=earlySecondPenaltyRow?.event_id?eventMap.get(Number(earlySecondPenaltyRow.event_id)):null;
             const battleTime=starEvent?.battle_time??timeEvent?.battle_time??null;
-            const observedAt=earliestObservedTime(observedTimes.get(order),starEvent?new Date(starEvent.created_at).getTime():undefined,timeEvent?new Date(timeEvent.created_at).getTime():undefined);
+            const observedAt=earliestObservedTime(
+              observedTimes.get(order),
+              starEvent?new Date(starEvent.created_at).getTime():undefined,
+              timeEvent?new Date(timeEvent.created_at).getTime():undefined,
+              mirrorEvent?new Date(mirrorEvent.created_at).getTime():undefined,
+              offMirrorPenaltyEvent?new Date(offMirrorPenaltyEvent.created_at).getTime():undefined,
+              earlySecondPenaltyEvent?new Date(earlySecondPenaltyEvent.created_at).getTime():undefined,
+            );
             return {order,time:battleTime?new Date(battleTime).getTime():null,observedAt};
           });
           const expectedAttacks=Number(snapshot.war_attacks??attacks.length);
