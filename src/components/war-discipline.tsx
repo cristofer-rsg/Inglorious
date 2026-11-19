@@ -3,6 +3,7 @@ import "server-only";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { fetchCurrentWar } from "@/lib/clash-api";
 import {
+  extractAttackOrder,
   resolveFirstMirror,
   resolveFirstWithin12h,
   resolveSecondAfter12h,
@@ -216,7 +217,7 @@ async function loadHistory() {
             const event=row.event_id?eventMap.get(Number(row.event_id)):null;
             if(observedMatch&&event)observedTimes.set(Number(observedMatch[1]),new Date(event.created_at).getTime());
           }
-          const attackOrders=[...new Set(own.flatMap((row)=>{const match=row.source_key.match(/:attack:(\d+):(stars|observed-time|battle-time)$/);return match?[Number(match[1])]:[];}))].sort((a,b)=>a-b);
+          const attackOrders=[...new Set(own.flatMap((row)=>{const order=extractAttackOrder(row.source_key);return order!==null?[order]:[];}))].sort((a,b)=>a-b);
           const attacks=attackOrders.map((order)=>{
             const starRow=own.find((row)=>row.source_key.endsWith(`:attack:${order}:stars`));
             const timeRow=own.find((row)=>row.source_key.endsWith(`:attack:${order}:battle-time`));
