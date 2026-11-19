@@ -72,6 +72,7 @@ describe("war discipline audit certainty", () => {
 
   it("waives the mirror requirement only when the official first-attack time proves it was in the final window", () => {
     expect(resolveFirstMirror(cutoff + 1, null, cutoff, false)).toBe(true);
+    expect(resolveFirstMirror(null, null, cutoff, true)).toBe(true);
     expect(resolveFirstMirror(cutoff - 1, null, cutoff, true)).toBe(true);
     expect(resolveFirstMirror(cutoff - 1, null, cutoff, false)).toBe(false);
     expect(resolveFirstMirror(null, cutoff + 1, cutoff, false)).toBeNull();
