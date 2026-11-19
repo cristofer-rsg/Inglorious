@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       const membersWithoutSnapshot = war.clan.members.filter(
         (member) => !savedTags.has(member.tag.trim().toUpperCase()),
       );
-      const preferenceSnapshots = [];
+      const preferenceSnapshots: Array<{war_key:string;player_tag:string;player_name:string;war_preference:"in"|"out"|"unknown"}> = [];
       const preferenceResults = await Promise.allSettled(
         membersWithoutSnapshot.map(async (member) => ({
           war_key: warKey,
