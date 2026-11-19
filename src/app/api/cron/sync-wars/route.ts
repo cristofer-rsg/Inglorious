@@ -38,25 +38,33 @@ export async function GET(request: Request) {
       const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
       const { data: savedPreferences, error: preferenceReadError } = await preferenceDb
         .from("clan_war_preferences")
-        .select("player_tag")
+        .select("player_tag,observed_at")
         .eq("war_key", warKey);
       if (preferenceReadError) {
         throw new Error(`Falha ao consultar preferências da guerra: ${preferenceReadError.message}`);
       }
 
-      const savedTags = new Set((savedPreferences ?? []).map((row) => row.player_tag.trim().toUpperCase()));
-      const membersWithoutSnapshot = war.clan.members.filter(
-        (member) => !savedTags.has(member.tag.trim().toUpperCase()),
+      const refreshBefore = Date.now() - 30 * 60 * 1000;
+      const lastObserved = new Map(
+        (savedPreferences ?? []).map((row) => [
+          row.player_tag.trim().toUpperCase(),
+          row.observed_at ? new Date(row.observed_at).getTime() : 0,
+        ]),
       );
-      const preferenceSnapshots: Array<{war_key:string;player_tag:string;player_name:string;war_preference:"in"|"out"|"unknown"}> = [];
-      for (let index = 0; index < membersWithoutSnapshot.length; index += 8) {
-        const batch = membersWithoutSnapshot.slice(index, index + 8);
+      const membersToRefresh = war.clan.members.filter((member) => {
+        const observedAt = lastObserved.get(member.tag.trim().toUpperCase()) ?? 0;
+        return !Number.isFinite(observedAt) || observedAt < refreshBefore;
+      });
+      const preferenceSnapshots: Array<{war_key:string;player_tag:string;player_name:string;war_preference:"in"|"out"|"unknown";observed_at:string}> = [];
+      for (let index = 0; index < membersToRefresh.length; index += 8) {
+        const batch = membersToRefresh.slice(index, index + 8);
         const preferenceResults = await Promise.allSettled(
           batch.map(async (member) => ({
             war_key: warKey,
             player_tag: member.tag.trim().toUpperCase(),
             player_name: member.name,
             war_preference: await fetchPlayerWarPreference(member.tag),
+            observed_at: new Date().toISOString(),
           })),
         );
         for (const result of preferenceResults) {
@@ -70,7 +78,7 @@ export async function GET(request: Request) {
           .from("clan_war_preferences")
           .upsert(preferenceSnapshots, {
             onConflict: "war_key,player_tag",
-            ignoreDuplicates: true,
+            ignoreDuplicates: false,
           });
         if (preferenceWriteError) {
           throw new Error(`Falha ao salvar preferências da guerra: ${preferenceWriteError.message}`);
