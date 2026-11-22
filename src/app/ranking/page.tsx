@@ -4,8 +4,24 @@ import HomeRankingList from "@/components/home-ranking-list";
 
 export const dynamic = "force-dynamic";
 
+function getPreviousMonthKey(monthKey: string) {
+  const [year, month] = monthKey.split("-").map(Number);
+  const previous = new Date(Date.UTC(year, month - 2, 1));
+  return `${previous.getUTCFullYear()}-${String(previous.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
 export default async function RankingPage() {
   const data = await getDashboardData();
+  const previousData = await getDashboardData(getPreviousMonthKey(data.monthKey));
+  if (data.connected && !previousData.connected) throw new Error(previousData.error ?? "Não foi possível validar os vencedores do mês anterior.");
+  const previousWinners = previousData.connected ? previousData.ranking.filter((player) => player.position <= 2) : [];
+  const winnerTags = new Set(previousWinners.map((player) => player.tag.trim().toUpperCase()).filter(Boolean));
+  const winnerNames = new Set(previousWinners.map((player) => player.player.trim().toLocaleLowerCase("pt-BR")));
+  const ranking = data.ranking
+    .filter((player) => !winnerTags.has(player.tag.trim().toUpperCase())
+      && !winnerNames.has(player.player.trim().toLocaleLowerCase("pt-BR")))
+    .map((player, index) => ({ ...player, position: index + 1 }));
+
   return (
     <main className="app-shell gh-home gh-home-v2">
       <header className="topbar">
@@ -22,7 +38,7 @@ export default async function RankingPage() {
           <div className="gh-v2-full-ranking-head"><div><small>CLASSIFICAÇÃO GERAL</small><h3>Todos os jogadores</h3></div><span>{data.monthLabel.toUpperCase()}</span></div>
           <div className="ranking-panel">
             <div className="ranking-head"><span>JOGADOR</span><span>PONTUAÇÃO</span></div>
-            {data.ranking.length ? <HomeRankingList players={data.ranking} /> : <div className="empty-state"><span className="empty-icon">♜</span><b>{data.connected ? "Ainda não há jogadores classificados" : "Conectando os dados do clã"}</b><p>O ranking será exibido assim que os dados estiverem disponíveis.</p></div>}
+            {ranking.length ? <HomeRankingList players={ranking} /> : <div className="empty-state"><span className="empty-icon">♜</span><b>{data.connected ? "Ainda não há jogadores classificados" : "Conectando os dados do clã"}</b><p>O ranking será exibido assim que os dados estiverem disponíveis.</p></div>}
           </div>
           <a className="back-link" href="/Inglorious/">← Voltar ao início</a>
         </section>
