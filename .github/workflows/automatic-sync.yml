@@ -131,10 +131,36 @@ jobs:
           set -euo pipefail
           for endpoint in sync-league sync-donations sync-clan-games; do
             echo "Executando $endpoint"
-            curl --fail-with-body --silent --show-error --max-time 180 \
-              -H "Authorization: Bearer $CRON_SECRET" \
-              "http://127.0.0.1:3000/inglorious/api/cron/$endpoint" | tee /tmp/cron-result.json
-            jq -e '.success == true' /tmp/cron-result.json
+            success=false
+            for attempt in 1 2 3 4; do
+              http_status="$(curl --silent --show-error --max-time 180 \
+                -o /tmp/cron-result.json -w '%{http_code}' \
+                -H "Authorization: Bearer $CRON_SECRET" \
+                "http://127.0.0.1:3000/inglorious/api/cron/$endpoint" || true)"
+
+              if [[ "$http_status" =~ ^2 ]] && jq -e '.success == true' /tmp/cron-result.json >/dev/null 2>&1; then
+                cat /tmp/cron-result.json
+                success=true
+                break
+              fi
+
+              if [[ "$http_status" =~ ^5 ]] || [[ "$http_status" == "000" ]]; then
+                echo "Falha temporária em $endpoint (HTTP $http_status), tentativa $attempt/4."
+                if [[ "$attempt" -lt 4 ]]; then
+                  sleep $((attempt * 15))
+                  continue
+                fi
+              fi
+
+              cat /tmp/cron-result.json 2>/dev/null || true
+              echo "::error::A sincronização $endpoint falhou sem condição segura para nova tentativa."
+              exit 1
+            done
+
+            if [[ "$success" != true ]]; then
+              echo "::error::A sincronização $endpoint não foi concluída após 4 tentativas."
+              exit 1
+            fi
           done
 
       - name: Sincronizar membros do clã (a cada hora)
