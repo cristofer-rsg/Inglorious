@@ -75,8 +75,8 @@ export async function GET(request: Request) {
     if (war.state !== "notInWar" && war.startTime) {
       const preferenceDb = createSupabaseAdmin();
       const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
-      const { data: savedPreferences, error: preferenceReadError } = await retrySupabase(() =>
-        preferenceDb
+      const { data: savedPreferences, error: preferenceReadError } = await retrySupabase(async () =>
+        await preferenceDb
           .from("clan_war_preferences")
           .select("player_tag,observed_at")
           .eq("war_key", warKey),
@@ -115,8 +115,8 @@ export async function GET(request: Request) {
       }
 
       if (preferenceSnapshots.length > 0) {
-        const { error: preferenceWriteError } = await retrySupabase(() =>
-          preferenceDb
+        const { error: preferenceWriteError } = await retrySupabase(async () =>
+          await preferenceDb
             .from("clan_war_preferences")
             .upsert(preferenceSnapshots, {
               onConflict: "war_key,player_tag",
