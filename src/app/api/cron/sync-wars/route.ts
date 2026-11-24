@@ -15,21 +15,27 @@ export const maxDuration = 30;
 
 const TRANSIENT_SUPABASE_ERROR = /(?:HTTP\\s*(?:522|502|503|504)|\\b(?:522|502|503|504)\\b|timed?\\s*out|timeout|connection reset|ECONNRESET|fetch failed|network error)/i;
 
-async function retrySupabase<T extends { error: { message: string } | null }>(
-  operation: () => Promise<T>,
-): Promise<T> {
+function getSupabaseErrorMessage(result: unknown): string | null {
+  if (typeof result !== "object" || result === null || !("error" in result)) return null;
+  const error = result.error;
+  if (typeof error !== "object" || error === null || !("message" in error)) return null;
+  return typeof error.message === "string" ? error.message : null;
+}
+
+async function retrySupabase<T>(operation: () => Promise<T>): Promise<T> {
   const maxAttempts = 3;
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       const result = await operation();
-      if (!result.error) return result;
+      const errorMessage = getSupabaseErrorMessage(result);
+      if (!errorMessage) return result;
 
-      if (!TRANSIENT_SUPABASE_ERROR.test(result.error.message) || attempt === maxAttempts) {
+      if (!TRANSIENT_SUPABASE_ERROR.test(errorMessage) || attempt === maxAttempts) {
         return result;
       }
-      lastError = new Error(result.error.message);
+      lastError = new Error(errorMessage);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (!TRANSIENT_SUPABASE_ERROR.test(message) || attempt === maxAttempts) {
