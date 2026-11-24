@@ -13,6 +13,39 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
+const TRANSIENT_SUPABASE_ERROR = /(?:HTTP\\s*(?:522|502|503|504)|\\b(?:522|502|503|504)\\b|timed?\\s*out|timeout|connection reset|ECONNRESET|fetch failed|network error)/i;
+
+async function retrySupabase<T extends { error: { message: string } | null }>(
+  operation: () => Promise<T>,
+): Promise<T> {
+  const maxAttempts = 3;
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const result = await operation();
+      if (!result.error) return result;
+
+      if (!TRANSIENT_SUPABASE_ERROR.test(result.error.message) || attempt === maxAttempts) {
+        return result;
+      }
+      lastError = new Error(result.error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!TRANSIENT_SUPABASE_ERROR.test(message) || attempt === maxAttempts) {
+        throw error;
+      }
+      lastError = error;
+    }
+
+    const delayMs = attempt * 2000;
+    console.warn(`Falha temporária no Supabase. Nova tentativa ${attempt + 1}/${maxAttempts} em ${delayMs}ms.`);
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Falha temporária ao acessar o Supabase.");
+}
+
 function getMonthKey(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: APP_CONFIG.timeZone,
@@ -36,10 +69,12 @@ export async function GET(request: Request) {
     if (war.state !== "notInWar" && war.startTime) {
       const preferenceDb = createSupabaseAdmin();
       const warKey = `${APP_CONFIG.clanTag}:${war.startTime}`;
-      const { data: savedPreferences, error: preferenceReadError } = await preferenceDb
-        .from("clan_war_preferences")
-        .select("player_tag,observed_at")
-        .eq("war_key", warKey);
+      const { data: savedPreferences, error: preferenceReadError } = await retrySupabase(() =>
+        preferenceDb
+          .from("clan_war_preferences")
+          .select("player_tag,observed_at")
+          .eq("war_key", warKey),
+      );
       if (preferenceReadError) {
         throw new Error(`Falha ao consultar preferências da guerra: ${preferenceReadError.message}`);
       }
@@ -74,12 +109,14 @@ export async function GET(request: Request) {
       }
 
       if (preferenceSnapshots.length > 0) {
-        const { error: preferenceWriteError } = await preferenceDb
-          .from("clan_war_preferences")
-          .upsert(preferenceSnapshots, {
-            onConflict: "war_key,player_tag",
-            ignoreDuplicates: false,
-          });
+        const { error: preferenceWriteError } = await retrySupabase(() =>
+          preferenceDb
+            .from("clan_war_preferences")
+            .upsert(preferenceSnapshots, {
+              onConflict: "war_key,player_tag",
+              ignoreDuplicates: false,
+            }),
+        );
         if (preferenceWriteError) {
           throw new Error(`Falha ao salvar preferências da guerra: ${preferenceWriteError.message}`);
         }
